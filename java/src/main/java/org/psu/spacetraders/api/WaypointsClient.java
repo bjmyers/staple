@@ -1,6 +1,10 @@
 package org.psu.spacetraders.api;
 
+import java.util.List;
+
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.psu.spacetraders.dto.DataWrapper;
+import org.psu.spacetraders.dto.Waypoint;
 
 import jakarta.enterprise.context.Dependent;
 import jakarta.ws.rs.GET;
@@ -16,6 +20,6 @@ public interface WaypointsClient {
 
 	@GET
 	@Path("/v2/systems/{systemId}/waypoints")
-	public String getWaypoints(@PathParam("systemId") String system);
+	public DataWrapper<List<Waypoint>> getWaypoints(@PathParam("systemId") String system);
 
 }
