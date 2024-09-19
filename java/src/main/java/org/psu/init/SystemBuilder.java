@@ -7,7 +7,9 @@ import org.psu.spacetraders.api.WaypointsClient;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
+import lombok.extern.jbosslog.JBossLog;
 
+@JBossLog
 @ApplicationScoped
 public class SystemBuilder {
 
@@ -21,8 +23,8 @@ public class SystemBuilder {
 	 * This method queries the space traders API for system information
 	 */
     void onStartup(@Observes StartupEvent event) {
-		System.out.println("Initializing the System");
-		System.out.println("Found Waypoints: " + waypointsClient.getWaypoints(systemId));
+    	log.info("Initializing the System");
+    	log.info("Found Waypoints: " + waypointsClient.getWaypoints(systemId));
 	}
 
 }
