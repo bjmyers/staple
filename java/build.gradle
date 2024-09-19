@@ -16,6 +16,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-rest-jackson'
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
+    testImplementation 'org.mockito:mockito-core'
     
     // Third-Party
     compileOnly 'org.projectlombok:lombok:1.18.34'

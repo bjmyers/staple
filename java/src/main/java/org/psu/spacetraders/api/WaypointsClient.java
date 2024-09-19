@@ -10,6 +10,7 @@ import jakarta.enterprise.context.Dependent;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 
 /**
  * Class to query the space traders API for waypoint information in a system
@@ -20,6 +21,7 @@ public interface WaypointsClient {
 
 	@GET
 	@Path("/v2/systems/{systemId}/waypoints")
-	public DataWrapper<List<Waypoint>> getWaypoints(@PathParam("systemId") String system);
+	public DataWrapper<List<Waypoint>> getWaypoints(@PathParam("systemId") String system,
+			@QueryParam("limit") int limit, @QueryParam("page") int page);
 
 }
