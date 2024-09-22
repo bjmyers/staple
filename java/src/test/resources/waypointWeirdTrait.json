@@ -1,0 +1,28 @@
+{
+    "systemSymbol": "X1-N57",
+    "symbol": "X1-N57-F46",
+    "type": "PLANET",
+    "x": -11,
+    "y": 74,
+    "orbitals": [
+        {
+            "symbol": "X1-N57-F47"
+        }
+    ],
+    "traits": [
+        {
+            "symbol": "TRAIT_THAT_DOESNT_EXIST",
+            "name": "Funky guy",
+            "description": "A weird trait that doesn't exist."
+        }
+    ],
+    "modifiers": [],
+    "chart": {
+        "submittedBy": "COSMIC",
+        "submittedOn": "2024-09-01T16:04:17.352Z"
+    },
+    "faction": {
+        "symbol": "COSMIC"
+    },
+    "isUnderConstruction": false
+}

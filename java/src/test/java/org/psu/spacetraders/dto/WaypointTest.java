@@ -1,12 +1,16 @@
 package org.psu.spacetraders.dto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -15,34 +19,50 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class WaypointTest {
 
 	/**
-	 * Tests serialization and deserialization of a waypoint
-	 * @throws JsonProcessingException if something goes wrong
+	 * Tests if a waypoint can be deserialized
+	 * @throws IOException
+	 * @throws DatabindException
+	 * @throws StreamReadException
 	 */
 	@Test
-	public void serializeDeserialize() throws JsonProcessingException {
+	public void deserialize() throws StreamReadException, DatabindException, IOException {
 
+		final File jsonFile = new File("src/test/resources/waypoint.json");
 		final ObjectMapper mapper = new ObjectMapper();
 
-		final String symbol = "X1-N57-F46";
-		final WaypointType type = WaypointType.ASTEROID;
-		final List<Orbital> orbitals = List.of(new Orbital("X1-N57-F47"));
-		final List<Trait> traits = List.of(new Trait(Trait.Type.BARREN), new Trait(Trait.Type.MARKETPLACE));
-		final int x = -47;
-		final int y = 32;
+		final Waypoint waypoint = mapper.readValue(jsonFile, Waypoint.class);
 
-		final Waypoint waypoint = new Waypoint(symbol, type, orbitals, traits, x, y);
+		assertEquals("X1-N57-F46", waypoint.getSymbol());
+		assertEquals(WaypointType.PLANET, waypoint.getType());
+		assertEquals(1, waypoint.getOrbitals().size());
+		assertEquals("X1-N57-F47", waypoint.getOrbitals().get(0).getSymbol());
+		assertEquals(3, waypoint.getTraits().size());
 
-		final String json = mapper.writeValueAsString(waypoint);
+		final List<Trait.Type> traits = waypoint.getTraits().stream().map(Trait::getSymbol).toList();
+		assertTrue(traits.contains(Trait.Type.BARREN));
+		assertTrue(traits.contains(Trait.Type.EXPLOSIVE_GASES));
+		assertTrue(traits.contains(Trait.Type.MARKETPLACE));
 
-		final Waypoint deserializedWaypoint = mapper.readValue(json, Waypoint.class);
+		assertEquals(-11, waypoint.getX());
+		assertEquals(74, waypoint.getY());
+	}
 
-		assertEquals(waypoint.getSymbol(), deserializedWaypoint.getSymbol());
-		assertEquals(waypoint.getType(), deserializedWaypoint.getType());
-		assertEquals(waypoint.getOrbitals(), deserializedWaypoint.getOrbitals());
-		assertEquals(waypoint.getTraits(), deserializedWaypoint.getTraits());
-		assertEquals(waypoint.getX(), deserializedWaypoint.getX());
-		assertEquals(waypoint.getY(), deserializedWaypoint.getY());
+	/**
+	 * Tests if a waypoint can be deserialized when there is an unknown trait
+	 * @throws IOException
+	 * @throws DatabindException
+	 * @throws StreamReadException
+	 */
+	@Test
+	public void deserializeUnknownTrait() throws StreamReadException, DatabindException, IOException {
 
+		final File jsonFile = new File("src/test/resources/waypointWeirdTrait.json");
+		final ObjectMapper mapper = new ObjectMapper();
+
+		final Waypoint waypoint = mapper.readValue(jsonFile, Waypoint.class);
+
+		assertEquals(1, waypoint.getTraits().size());
+		assertEquals(Trait.Type.UNKNOWN, waypoint.getTraits().get(0).getSymbol());
 	}
 
 }

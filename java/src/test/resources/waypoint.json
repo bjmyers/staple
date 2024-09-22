@@ -1,0 +1,38 @@
+{
+    "systemSymbol": "X1-N57",
+    "symbol": "X1-N57-F46",
+    "type": "PLANET",
+    "x": -11,
+    "y": 74,
+    "orbitals": [
+        {
+            "symbol": "X1-N57-F47"
+        }
+    ],
+    "traits": [
+        {
+            "symbol": "BARREN",
+            "name": "Barren",
+            "description": "A desolate world with little to no vegetation or water, presenting unique challenges for habitation and resource extraction."
+        },
+        {
+            "symbol": "EXPLOSIVE_GASES",
+            "name": "Explosive Gases",
+            "description": "A volatile environment filled with highly reactive gases, posing a constant risk to those who venture too close and offering opportunities for harvesting valuable materials such as hydrocarbons."
+        },
+        {
+            "symbol": "MARKETPLACE",
+            "name": "Marketplace",
+            "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
+        }
+    ],
+    "modifiers": [],
+    "chart": {
+        "submittedBy": "COSMIC",
+        "submittedOn": "2024-09-01T16:04:17.352Z"
+    },
+    "faction": {
+        "symbol": "COSMIC"
+    },
+    "isUnderConstruction": false
+}

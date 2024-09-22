@@ -1,6 +1,7 @@
 package org.psu.spacetraders.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import lombok.AllArgsConstructor;
@@ -12,8 +13,9 @@ import lombok.extern.jbosslog.JBossLog;
  * A trait of a Waypoint
  */
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Trait {
 
 	private Type symbol;
