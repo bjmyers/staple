@@ -16,7 +16,7 @@ public class ShipRoleManager {
 	 * @return the proper role of the ship
 	 */
 	public ShipRole determineRole(final Ship ship) {
-		if (ship.getModules().stream().anyMatch(ShipComponent::isMiningLaser)) {
+		if (ship.getMounts().stream().anyMatch(ShipComponent::isMiningLaser)) {
 			return ShipRole.MINING;
 		}
 		return ShipRole.TRADE;

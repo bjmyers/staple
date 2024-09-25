@@ -27,7 +27,7 @@ public class ShipRoleManagerTest {
 		final ShipComponent component3 = new ShipComponent("MODULE_Z");
 
 		final Ship ship = mock(Ship.class);
-		when(ship.getModules()).thenReturn(List.of(component1, component2, component3));
+		when(ship.getMounts()).thenReturn(List.of(component1, component2, component3));
 
 		assertEquals(ShipRole.MINING, roleManager.determineRole(ship));
 	}
@@ -42,7 +42,7 @@ public class ShipRoleManagerTest {
 		final ShipComponent component3 = new ShipComponent("MODULE_Z");
 
 		final Ship ship = mock(Ship.class);
-		when(ship.getModules()).thenReturn(List.of(component1, component2, component3));
+		when(ship.getMounts()).thenReturn(List.of(component1, component2, component3));
 
 		assertEquals(ShipRole.TRADE, roleManager.determineRole(ship));
 	}
