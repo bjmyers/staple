@@ -12,9 +12,7 @@ import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.DataWrapper.WrapperMetadata;
 import org.psu.spacetraders.dto.Waypoint;
 
-import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import lombok.extern.jbosslog.JBossLog;
 
@@ -22,31 +20,21 @@ import lombok.extern.jbosslog.JBossLog;
 @ApplicationScoped
 public class SystemBuilder {
 
-	private String systemId;
 	private int limit;
 	private WaypointsClient waypointsClient;
 
 	@Inject
-	public SystemBuilder(@ConfigProperty(name = "app.system") final String systemId,
-			@ConfigProperty(name = "app.max-items-per-page") final int limit,
+	public SystemBuilder(@ConfigProperty(name = "app.max-items-per-page") final int limit,
 			@RestClient WaypointsClient waypointsClient) {
-		this.systemId = systemId;
 		this.limit = limit;
 		this.waypointsClient = waypointsClient;
 	}
 
-	/**
-	 * This method queries the space traders API for system information
-	 */
-    void onStartup(@Observes StartupEvent event) {
-    	log.info("Initializing the System");
-
-    	final List<Waypoint> systemWaypoints = gatherWaypoints();
-
-    	log.infof("Found %s Waypoints", systemWaypoints.size());
-	}
-
-	private List<Waypoint> gatherWaypoints() {
+    /**
+     * @param systemId The ID of the system
+     * @return All of the {@link Waypoint}s in the system
+     */
+    public List<Waypoint> gatherWaypoints(final String systemId) {
 		final DataWrapper<List<Waypoint>> initialPage = waypointsClient.getWaypoints(systemId, limit, 1);
 		log.info("Gathered waypoint page 1");
 

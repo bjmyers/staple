@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ShipNavigation {
 
+	private String systemSymbol;
 	private String waypointSymbol;
 	private ShipRoute route;
 	private Status status;

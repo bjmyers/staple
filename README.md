@@ -15,7 +15,7 @@ The executable will be called StapleApplication-runner.exe and will be located i
 
 ### Running the project
 
-Create a `user.env` file in the `java` folder. Include your API token in it in this form:
+Create a `.env` file in the `java` folder. Include your API token in it in this form:
 
 QUARKUS_DATASOURCE_SPACETRADERS_API_KEY=yourTokenHere
 

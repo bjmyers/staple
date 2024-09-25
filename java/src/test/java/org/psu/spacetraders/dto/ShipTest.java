@@ -37,6 +37,7 @@ public class ShipTest {
 		assertEquals(40, ship.getCargo().capacity());
 
 		final ShipNavigation nav = ship.getNav();
+		assertEquals("X1-N57", nav.getSystemSymbol());
 		assertEquals("X1-N57-A1", nav.getWaypointSymbol());
 		assertEquals(ShipNavigation.Status.DOCKED, nav.getStatus());
 		assertEquals(ShipNavigation.FlightMode.CRUISE, nav.getFlightMode());
