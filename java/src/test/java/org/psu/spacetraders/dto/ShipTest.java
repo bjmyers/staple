@@ -1,9 +1,11 @@
 package org.psu.spacetraders.dto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +37,13 @@ public class ShipTest {
 		assertEquals(400, ship.getFuel().capacity());
 		assertEquals(0, ship.getCargo().units());
 		assertEquals(40, ship.getCargo().capacity());
+
+		final List<ShipComponent> modules = ship.getModules();
+		assertEquals(4, modules.size());
+		assertTrue(modules.contains(new ShipComponent("MODULE_CARGO_HOLD_II")));
+		assertTrue(modules.contains(new ShipComponent("MODULE_CREW_QUARTERS_I")));
+		assertTrue(modules.contains(new ShipComponent("MODULE_MINERAL_PROCESSOR_I")));
+		assertTrue(modules.contains(new ShipComponent("MODULE_GAS_PROCESSOR_I")));
 
 		final ShipNavigation nav = ship.getNav();
 		assertEquals("X1-N57", nav.getSystemSymbol());

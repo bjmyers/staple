@@ -106,17 +106,6 @@
             }
         },
         {
-            "symbol": "MODULE_CREW_QUARTERS_I",
-            "name": "Crew Quarters",
-            "description": "A module that provides living space and amenities for the crew.",
-            "capacity": 40,
-            "requirements": {
-                "crew": 2,
-                "power": 1,
-                "slots": 1
-            }
-        },
-        {
             "symbol": "MODULE_MINERAL_PROCESSOR_I",
             "name": "Mineral Processor",
             "description": "Crushes and processes extracted minerals and ores into their component parts, filters out impurities, and containerizes them into raw storage units.",

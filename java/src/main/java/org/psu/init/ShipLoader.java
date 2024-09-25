@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.api.ShipsClient;
 import org.psu.spacetraders.api.SpaceTradersUtils;
 import org.psu.spacetraders.dto.DataWrapper;
@@ -34,13 +35,16 @@ public class ShipLoader {
 	private int limit;
 	private final SystemBuilder systemBuilder;
 	private final ShipsClient shipsClient;
+	private final ShipRoleManager shipRoleManager;
 
 	@Inject
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
-			final SystemBuilder systemBuilder, @RestClient final ShipsClient shipsClient) {
+			final SystemBuilder systemBuilder, @RestClient final ShipsClient shipsClient,
+			final ShipRoleManager shipRoleManager) {
 		this.limit = limit;
 		this.systemBuilder = systemBuilder;
 		this.shipsClient = shipsClient;
+		this.shipRoleManager = shipRoleManager;
 	}
 
 	/**
@@ -51,7 +55,7 @@ public class ShipLoader {
 
 		final List<Ship> ships = gatherShips();
 
-		log.infof("Found %s ships", ships.size());
+		ships.forEach(s -> log.infof("Found ship %s with type %s", s.getSymbol(), shipRoleManager.determineRole(s)));
 
 		final Map<String, Long> shipCountBySystem = ships.stream().map(Ship::getNav)
 				.collect(Collectors.groupingBy(ShipNavigation::getSystemSymbol, Collectors.counting()));

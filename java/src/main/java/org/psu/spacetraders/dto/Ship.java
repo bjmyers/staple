@@ -1,5 +1,7 @@
 package org.psu.spacetraders.dto;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +19,7 @@ public class Ship {
 
 	private String symbol;
 	private ShipNavigation nav;
+	private List<ShipComponent> modules;
 	private FuelStatus fuel;
 	private Cargo cargo;
 
