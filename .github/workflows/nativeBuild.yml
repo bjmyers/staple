@@ -28,7 +28,7 @@ jobs:
       uses: graalvm/setup-graalvm@v1
       with:
         graalvm-version: '22.3.0'
-        java-version: '17'
+        java-version: '21'
 
     - name: Set up cache for Gradle
       uses: actions/cache@v2
