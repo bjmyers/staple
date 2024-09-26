@@ -40,6 +40,7 @@ jobs:
 
     - name: Build Quarkus native executable
       run: ./buildExecutable.sh
+      working-directory: ${{ github.workspace }}/java
 
     - name: Upload native executable
       uses: actions/upload-artifact@v4
