@@ -39,10 +39,10 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build Quarkus native executable
-        run: ./buildExecutable.sh
+      run: ./buildExecutable.sh
 
     - name: Upload native executable
-        uses: actions/upload-artifact@v2
-        with:
-          name: quarkus-app
-          path: build/StapleApplication-runner
+      uses: actions/upload-artifact@v2
+      with:
+        name: quarkus-app
+        path: build/StapleApplication-runner
