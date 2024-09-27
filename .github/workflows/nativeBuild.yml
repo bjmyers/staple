@@ -30,6 +30,9 @@ jobs:
         graalvm-version: '22.3.0'
         java-version: '21'
 
+    - name: Install Mingw-w64 for Windows cross-compilation
+      run: sudo apt-get update && sudo apt-get install -y mingw-w64
+
     - name: Set up cache for Gradle
       uses: actions/cache@v2
       with:
@@ -48,5 +51,5 @@ jobs:
     - name: Upload native executable
       uses: actions/upload-artifact@v4
       with:
-        name: StapleApplication
+        name: StapleApplication.exe
         path: ${{ github.workspace }}/java/build/StapleApplication-runner
