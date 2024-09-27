@@ -8,10 +8,12 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.WaypointsClient;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.DataWrapper.WrapperMetadata;
 import org.psu.spacetraders.dto.Waypoint;
+import org.psu.testutils.TestRequestThrottler;
 
 /**
  * Tests for {@link SystemBuilder}
@@ -39,7 +41,8 @@ public class SystemBuilderTest {
 		when(waypointsClient.getWaypoints(systemId, limit, 1)).thenReturn(waypointResponse1);
 		when(waypointsClient.getWaypoints(systemId, limit, 2)).thenReturn(waypointResponse2);
 
-		final SystemBuilder builder = new SystemBuilder(limit, waypointsClient);
+		final RequestThrottler throttler = TestRequestThrottler.get();
+		final SystemBuilder builder = new SystemBuilder(limit, throttler, waypointsClient);
 
 		final List<Waypoint> waypoints = builder.gatherWaypoints(systemId);
 
