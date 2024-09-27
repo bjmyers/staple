@@ -19,6 +19,7 @@ public class Ship {
 
 	private String symbol;
 	private ShipNavigation nav;
+	private List<ShipComponent> modules;
 	private List<ShipComponent> mounts;
 	private FuelStatus fuel;
 	private Cargo cargo;

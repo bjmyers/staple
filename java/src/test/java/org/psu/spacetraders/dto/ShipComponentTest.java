@@ -23,4 +23,17 @@ public class ShipComponentTest {
 		assertFalse(notMiningLaser.isMiningLaser());
 	}
 
+	/**
+	 * Tests {@link ShipComponent#isCargoHold}
+	 */
+	@Test
+	public void isCargoHold() {
+
+		final ShipComponent cargoHold = new ShipComponent("MODULE_CARGO_HOLD_II");
+		final ShipComponent notCargoHold = new ShipComponent("MODULE_CREW_QUARTERS_I");
+
+		assertTrue(cargoHold.isCargoHold());
+		assertFalse(notCargoHold.isCargoHold());
+	}
+
 }
