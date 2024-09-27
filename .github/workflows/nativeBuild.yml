@@ -46,4 +46,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: StapleApplication
-        path: build/StapleApplication-runner
+        path: ${{ github.workspace }}/java/build
