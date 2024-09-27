@@ -11,11 +11,13 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.psu.shiporchestrator.ShipRoleManager;
+import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipsClient;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.DataWrapper.WrapperMetadata;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
+import org.psu.testutils.TestRequestThrottler;
 
 /**
  * Tests for {@link ShipLoader}
@@ -42,7 +44,8 @@ public class ShipLoaderTest {
 		when(shipsClient.getShips(limit, 1)).thenReturn(shipResponse1);
 		when(shipsClient.getShips(limit, 2)).thenReturn(shipResponse2);
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
-		final ShipLoader shipLoader = new ShipLoader(limit, null, shipsClient, shipRoleManager);
+		final RequestThrottler throttler = TestRequestThrottler.get();
+		final ShipLoader shipLoader = new ShipLoader(limit, throttler, null, shipsClient, shipRoleManager);
 
 		final List<Ship> ships = shipLoader.gatherShips();
 
@@ -73,7 +76,8 @@ public class ShipLoaderTest {
 
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
 
-		final ShipLoader shipLoader = new ShipLoader(limit, systemBuilder, shipsClient, shipRoleManager);
+		final RequestThrottler throttler = TestRequestThrottler.get();
+		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager);
 
 		shipLoader.onStartup(null);
 
@@ -96,7 +100,8 @@ public class ShipLoaderTest {
 
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
 
-		final ShipLoader shipLoader = new ShipLoader(limit, systemBuilder, shipsClient, shipRoleManager);
+		final RequestThrottler throttler = TestRequestThrottler.get();
+		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager);
 
 		assertThrows(IllegalStateException.class, () -> shipLoader.onStartup(null));
 	}

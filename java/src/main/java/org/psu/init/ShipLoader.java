@@ -1,6 +1,5 @@
 package org.psu.init;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +10,7 @@ import java.util.stream.Collectors;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.shiporchestrator.ShipRoleManager;
+import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipsClient;
 import org.psu.spacetraders.api.SpaceTradersUtils;
 import org.psu.spacetraders.dto.DataWrapper;
@@ -33,15 +33,17 @@ import lombok.extern.jbosslog.JBossLog;
 public class ShipLoader {
 
 	private int limit;
+	private final RequestThrottler throttler;
 	private final SystemBuilder systemBuilder;
 	private final ShipsClient shipsClient;
 	private final ShipRoleManager shipRoleManager;
 
 	@Inject
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
-			final SystemBuilder systemBuilder, @RestClient final ShipsClient shipsClient,
-			final ShipRoleManager shipRoleManager) {
+			final RequestThrottler throttler, final SystemBuilder systemBuilder,
+			@RestClient final ShipsClient shipsClient, final ShipRoleManager shipRoleManager) {
 		this.limit = limit;
+		this.throttler = throttler;
 		this.systemBuilder = systemBuilder;
 		this.shipsClient = shipsClient;
 		this.shipRoleManager = shipRoleManager;
@@ -77,7 +79,7 @@ public class ShipLoader {
 	}
 
     public List<Ship> gatherShips() {
-		final DataWrapper<List<Ship>> initialPage = shipsClient.getShips(limit, 1);
+		final DataWrapper<List<Ship>> initialPage = throttler.throttle(() -> shipsClient.getShips(limit, 1));
 		log.info("Gathered ship page 1");
 
 		final WrapperMetadata metaData = initialPage.getMeta();
@@ -87,15 +89,11 @@ public class ShipLoader {
 		ships.addAll(initialPage.getData());
 
 		for (int i = 2; i < numPages + 1; i++) {
-			//TODO: Remove this when the throttler exists
-			try {
-				Thread.sleep(Duration.ofSeconds(1));
-			} catch (InterruptedException e) {
-				log.error("Sleep between pages interrupted");
-			}
+			// Make this final so it can be given to the throttler
+			final int page = i;
 
-			final DataWrapper<List<Ship>> nextPage = shipsClient.getShips(limit, i);
-			log.infof("Gathered waypoint page %s", i);
+			final DataWrapper<List<Ship>> nextPage = throttler.throttle(() -> shipsClient.getShips(limit, page));
+			log.infof("Gathered ship page %s", i);
 			ships.addAll(nextPage.getData());
 		}
 
