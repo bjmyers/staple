@@ -1,0 +1,58 @@
+name: Build Native Executable
+
+on:
+  # Trigger the workflow manually
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Install GraalVM
+      uses: graalvm/setup-graalvm@v1
+      with:
+        graalvm-version: '22.3.0'
+        java-version: '21'
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Visual Studio shell
+      uses: egor-tensin/vs-shell@v1
+
+    - name: Set up cache for Gradle
+      uses: actions/cache@v2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Build Quarkus native executable
+      run: ./gradlew build "-Dquarkus.native.enabled=true" "-Dquarkus.package.jar.enabled=false" --no-daemon
+      working-directory: ${{ github.workspace }}/java
+    
+    - name: View files
+      run: ls ${{ github.workspace }}\java\build\StapleApplication-native-image-source-jar
+      
+    - name: View files
+      run: ls ${{ github.workspace }}\java\build\StapleApplication-native-image-source-jar/lib
+      
+    - name: View files2
+      run: ls ${{ github.workspace }}\java\build
+
+    - name: Upload native executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: StapleApplication.exe
+        path: ${{ github.workspace }}\java\build\StapleApplication-runner.exe
