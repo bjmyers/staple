@@ -42,8 +42,11 @@ jobs:
       run: ./buildExecutable.sh
       working-directory: ${{ github.workspace }}/java
 
+    - name: View build folder
+      run: ls ${{ github.workspace }}/java/build
+
     - name: Upload native executable
       uses: actions/upload-artifact@v4
       with:
         name: StapleApplication
-        path: ${{ github.workspace }}/java/build/StapleApplication-native-image-source-jar/StapleApplciation-runner
+        path: ${{ github.workspace }}/java/build/StapleApplication-runner
