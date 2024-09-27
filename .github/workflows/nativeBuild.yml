@@ -30,6 +30,11 @@ jobs:
         graalvm-version: '22.3.0'
         java-version: '21'
 
+    - name: Install Visual Studio Build Tools
+      run: |
+        choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --includeOptional --quiet --norestart"
+      shell: cmd
+
     - name: Set up cache for Gradle
       uses: actions/cache@v2
       with:
@@ -39,7 +44,7 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build Quarkus native executable
-      run: ./gradlew build "-Dquarkus.native.enabled=true" "-Dquarkus.package.jar.enabled=false"
+      run: ./gradlew build "-Dquarkus.native.enabled=true" "-Dquarkus.package.jar.enabled=false" --no-daemon
       working-directory: ${{ github.workspace }}/java
 
     - name: Upload native executable
