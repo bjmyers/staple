@@ -50,9 +50,15 @@ jobs:
     
     - name: View files
       run: ls ${{ github.workspace }}\java\build\StapleApplication-native-image-source-jar
+      
+    - name: View files
+      run: ls ${{ github.workspace }}\java\build\StapleApplication-native-image-source-jar/lib
+      
+    - name: View files2
+      run: ls ${{ github.workspace }}\java\build
 
     - name: Upload native executable
       uses: actions/upload-artifact@v4
       with:
         name: StapleApplication.exe
-        path: ${{ github.workspace }}\java\build\StapleApplication-native-image-source-jar\StapleApplication-runner
+        path: ${{ github.workspace }}\java\build\StapleApplication-native-image-source-jar\StapleApplication-runner.jar
