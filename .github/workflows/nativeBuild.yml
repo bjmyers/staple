@@ -47,6 +47,15 @@ jobs:
     - name: Build Quarkus native executable
       run: ./gradlew build "-Dquarkus.native.enabled=true" "-Dquarkus.package.jar.enabled=false" --no-daemon
       working-directory: ${{ github.workspace }}/java
+    
+    - name: view files1
+      run: ls ${{ github.workspace }}
+      
+    - name: view files2
+      run: ls ${{ github.workspace }}\java
+      
+    - name: view files3
+      run: ls ${{ github.workspace }}\java\build
 
     - name: Upload native executable
       uses: actions/upload-artifact@v4
