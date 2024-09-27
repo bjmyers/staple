@@ -30,10 +30,11 @@ jobs:
         graalvm-version: '22.3.0'
         java-version: '21'
 
-    - name: Install Visual Studio Build Tools
-      run: |
-        choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --includeOptional --quiet --norestart"
-      shell: cmd
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Visual Studio shell
+      uses: egor-tensin/vs-shell@v1
 
     - name: Set up cache for Gradle
       uses: actions/cache@v2
