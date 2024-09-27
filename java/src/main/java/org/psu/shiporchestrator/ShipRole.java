@@ -5,5 +5,6 @@ package org.psu.shiporchestrator;
  */
 public enum ShipRole {
 	TRADE,
-	MINING
+	MINING,
+	PROBE
 }

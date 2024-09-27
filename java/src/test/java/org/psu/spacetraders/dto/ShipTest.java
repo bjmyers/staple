@@ -38,12 +38,19 @@ public class ShipTest {
 		assertEquals(0, ship.getCargo().units());
 		assertEquals(40, ship.getCargo().capacity());
 
-		final List<ShipComponent> modules = ship.getMounts();
+		final List<ShipComponent> modules = ship.getModules();
 		assertEquals(4, modules.size());
-		assertTrue(modules.contains(new ShipComponent("MOUNT_SENSOR_ARRAY_II")));
-		assertTrue(modules.contains(new ShipComponent("MOUNT_GAS_SIPHON_II")));
-		assertTrue(modules.contains(new ShipComponent("MOUNT_MINING_LASER_II")));
-		assertTrue(modules.contains(new ShipComponent("MOUNT_SURVEYOR_II")));
+		assertTrue(modules.contains(new ShipComponent("MODULE_CARGO_HOLD_II")));
+		assertTrue(modules.contains(new ShipComponent("MODULE_CREW_QUARTERS_I")));
+		assertTrue(modules.contains(new ShipComponent("MODULE_MINERAL_PROCESSOR_I")));
+		assertTrue(modules.contains(new ShipComponent("MODULE_GAS_PROCESSOR_I")));
+
+		final List<ShipComponent> mounts = ship.getMounts();
+		assertEquals(4, mounts.size());
+		assertTrue(mounts.contains(new ShipComponent("MOUNT_SENSOR_ARRAY_II")));
+		assertTrue(mounts.contains(new ShipComponent("MOUNT_GAS_SIPHON_II")));
+		assertTrue(mounts.contains(new ShipComponent("MOUNT_MINING_LASER_II")));
+		assertTrue(mounts.contains(new ShipComponent("MOUNT_SURVEYOR_II")));
 
 		final ShipNavigation nav = ship.getNav();
 		assertEquals("X1-N57", nav.getSystemSymbol());

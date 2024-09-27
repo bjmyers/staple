@@ -19,7 +19,10 @@ public class ShipRoleManager {
 		if (ship.getMounts().stream().anyMatch(ShipComponent::isMiningLaser)) {
 			return ShipRole.MINING;
 		}
-		return ShipRole.TRADE;
+		if (ship.getModules().stream().anyMatch(ShipComponent::isCargoHold)) {
+			return ShipRole.TRADE;
+		}
+		return ShipRole.PROBE;
 	}
 
 }

@@ -21,4 +21,8 @@ public class ShipComponent {
 		return symbol.contains("MINING_LASER");
 	}
 
+	public boolean isCargoHold() {
+		return symbol.contains("CARGO_HOLD");
+	}
+
 }
