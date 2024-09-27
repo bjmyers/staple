@@ -19,6 +19,13 @@ import jakarta.ws.rs.QueryParam;
 @RegisterRestClient(configKey="spacetraders-api")
 public interface WaypointsClient {
 
+	/**
+	 * Gets the waypoints from a given system
+	 * @param system The system name
+	 * @param limit The number of waypoints to request
+	 * @param page The page to request
+	 * @return A wrapped list of {@link Waypoint}s
+	 */
 	@GET
 	@Path("/v2/systems/{systemId}/waypoints")
 	public DataWrapper<List<Waypoint>> getWaypoints(@PathParam("systemId") String system,

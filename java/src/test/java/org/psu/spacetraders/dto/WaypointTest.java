@@ -32,6 +32,7 @@ public class WaypointTest {
 
 		final Waypoint waypoint = mapper.readValue(jsonFile, Waypoint.class);
 
+		assertEquals("X1-N57", waypoint.getSystemSymbol());
 		assertEquals("X1-N57-F46", waypoint.getSymbol());
 		assertEquals(WaypointType.PLANET, waypoint.getType());
 		assertEquals(1, waypoint.getOrbitals().size());

@@ -15,6 +15,7 @@ import org.psu.spacetraders.api.ShipsClient;
 import org.psu.spacetraders.api.SpaceTradersUtils;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.DataWrapper.WrapperMetadata;
+import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
@@ -76,6 +77,10 @@ public class ShipLoader {
     	final List<Waypoint> systemWaypoints = systemBuilder.gatherWaypoints(primarySystemId);
 
     	log.infof("Found %s Waypoints", systemWaypoints.size());
+
+    	log.info("Gathering Market Info");
+    	final Map<Waypoint, MarketInfo> marketInfo = systemBuilder.gatherMarketInfo(systemWaypoints);
+    	log.infof("Found Market Info for %s marketplaces", marketInfo.size());
 	}
 
     public List<Ship> gatherShips() {

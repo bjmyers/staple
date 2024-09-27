@@ -9,20 +9,16 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Represents a single waypoint in a system
+ * Encapsulates the products that a marketplace trades
  */
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Waypoint {
+public class MarketInfo {
 
-	private String systemSymbol;
-	private String symbol;
-	private WaypointType type;
-	private List<Orbital> orbitals;
-	private List<Trait> traits;
-	private int x;
-	private int y;
+	private List<Product> imports;
+	private List<Product> exports;
+	private List<Product> exchange;
 
 }
