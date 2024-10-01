@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -47,5 +48,26 @@ public class MarketInfoTest {
 
 		assertEquals(1, marketInfo.getExchange().size());
 		assertTrue(marketInfo.getExchange().contains(new Product("FUEL")));
+	}
+
+	/**
+	 * Tests {@link MarketInfo#getPotentialExports}
+	 */
+	@Test
+	public void getPotentialExports() {
+
+		final Product p1 = new Product("A");
+		final Product p2 = new Product("B");
+		final Product p3 = new Product("C");
+		final Product p4 = new Product("D");
+
+		// The only common product exported by the exporting market and imported by the importing market is p1
+		final MarketInfo exportingMarket = new MarketInfo(List.of(), List.of(p1, p2, p3), List.of());
+		final MarketInfo importingMarket = new MarketInfo(List.of(p1, p4), List.of(p2), List.of(p3));
+
+		final List<Product> potentialExports = exportingMarket.getPotentialExports(importingMarket);
+
+		assertEquals(1, potentialExports.size());
+		assertTrue(potentialExports.contains(p1));
 	}
 }

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.psu.shiporchestrator.ShipRole;
 import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipsClient;
@@ -19,6 +20,7 @@ import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
+import org.psu.trademanager.TradeShipManager;
 
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -38,16 +40,19 @@ public class ShipLoader {
 	private final SystemBuilder systemBuilder;
 	private final ShipsClient shipsClient;
 	private final ShipRoleManager shipRoleManager;
+	private final TradeShipManager tradeShipManager;
 
 	@Inject
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
 			final RequestThrottler throttler, final SystemBuilder systemBuilder,
-			@RestClient final ShipsClient shipsClient, final ShipRoleManager shipRoleManager) {
+			@RestClient final ShipsClient shipsClient, final ShipRoleManager shipRoleManager,
+			final TradeShipManager tradeShipManager) {
 		this.limit = limit;
 		this.throttler = throttler;
 		this.systemBuilder = systemBuilder;
 		this.shipsClient = shipsClient;
 		this.shipRoleManager = shipRoleManager;
+		this.tradeShipManager = tradeShipManager;
 	}
 
 	/**
@@ -81,6 +86,12 @@ public class ShipLoader {
     	log.info("Gathering Market Info");
     	final Map<Waypoint, MarketInfo> marketInfo = systemBuilder.gatherMarketInfo(systemWaypoints);
     	log.infof("Found Market Info for %s marketplaces", marketInfo.size());
+
+		// TODO: Get the application to handle more than one ship
+    	// TODO: Make the mining ship manager so we're not sending the mining ship to the trading manager
+		final Ship tradeShip = ships.stream().filter(s -> ShipRole.MINING.equals(shipRoleManager.determineRole(s)))
+				.findFirst().get();
+		tradeShipManager.manageTradeShip(marketInfo, tradeShip);
 	}
 
     public List<Ship> gatherShips() {
