@@ -1,5 +1,7 @@
 package org.psu.spacetraders.dto;
 
+import java.time.Instant;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
@@ -14,8 +16,8 @@ public class ShipRoute {
 
 	private RoutePoint origin;
 	private RoutePoint destination;
-	private String departureTime;
-	private String arrival;
+	private Instant departureTime;
+	private Instant arrival;
 
 
 	@Data
