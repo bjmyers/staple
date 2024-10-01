@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,8 @@ import org.psu.spacetraders.dto.ShipRoute.RoutePoint;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * Tests for {@link Ship}
@@ -31,7 +34,7 @@ public class ShipTest {
 	public void deserialize() throws StreamReadException, DatabindException, IOException {
 
 		final File jsonFile = new File("src/test/resources/ship.json");
-		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectMapper mapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
 
 		final Ship ship = mapper.readValue(jsonFile, Ship.class);
 
@@ -61,6 +64,9 @@ public class ShipTest {
 		assertEquals(ShipNavigation.Status.DOCKED, nav.getStatus());
 		assertEquals(ShipNavigation.FlightMode.CRUISE, nav.getFlightMode());
 
+		final Instant expectedArrival = Instant.parse("2024-09-16T23:40:54.067Z");
+		final Instant expectedDeparture = Instant.parse("2024-09-16T23:40:54.067Z");
+
 		final ShipRoute route = nav.getRoute();
 		assertEquals("X1-N57-A1", route.getOrigin().getSymbol());
 		assertEquals(-11, route.getOrigin().getX());
@@ -68,8 +74,8 @@ public class ShipTest {
 		assertEquals("X1-N57-A1", route.getDestination().getSymbol());
 		assertEquals(-11, route.getDestination().getX());
 		assertEquals(23, route.getDestination().getY());
-		assertEquals("2024-09-16T23:40:54.067Z", route.getArrival());
-		assertEquals("2024-09-16T23:40:54.067Z", route.getDepartureTime());
+		assertEquals(expectedArrival, route.getArrival());
+		assertEquals(expectedDeparture, route.getDepartureTime());
 	}
 
 	/**
