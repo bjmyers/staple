@@ -2,12 +2,15 @@ package org.psu.spacetraders.dto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.psu.spacetraders.dto.ShipRoute.RoutePoint;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -67,6 +70,27 @@ public class ShipTest {
 		assertEquals(23, route.getDestination().getY());
 		assertEquals("2024-09-16T23:40:54.067Z", route.getArrival());
 		assertEquals("2024-09-16T23:40:54.067Z", route.getDepartureTime());
+	}
+
+	/**
+	 * Tests {@link Ship#distTo}
+	 */
+	@Test
+	public void distTo() {
+
+		final int shipX = 0;
+		final int shipY = 0;
+		final RoutePoint currentShipPosition = new RoutePoint("route", shipX, shipY);
+		final ShipRoute shipRoute = new ShipRoute(currentShipPosition, currentShipPosition, null, null);
+		final ShipNavigation nav = new ShipNavigation(null, null, shipRoute, null, null);
+		final Ship ship = new Ship("Ship", nav, null, null, null, null);
+
+		final Waypoint waypoint = mock(Waypoint.class);
+		when(waypoint.getX()).thenReturn(3);
+		when(waypoint.getY()).thenReturn(4);
+
+		assertEquals(5.0, ship.distTo(waypoint), 1e-9);
+
 	}
 
 }

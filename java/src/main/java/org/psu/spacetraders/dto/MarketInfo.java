@@ -21,4 +21,8 @@ public class MarketInfo {
 	private List<Product> exports;
 	private List<Product> exchange;
 
+	public List<Product> getPotentialExports(final MarketInfo importingMarket) {
+		return this.exports.stream().filter(product -> importingMarket.getImports().contains(product)).toList();
+	}
+
 }

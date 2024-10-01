@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.psu.shiporchestrator.ShipRole;
 import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipsClient;
@@ -18,6 +19,7 @@ import org.psu.spacetraders.dto.DataWrapper.WrapperMetadata;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.testutils.TestRequestThrottler;
+import org.psu.trademanager.TradeShipManager;
 
 /**
  * Tests for {@link ShipLoader}
@@ -44,8 +46,10 @@ public class ShipLoaderTest {
 		when(shipsClient.getShips(limit, 1)).thenReturn(shipResponse1);
 		when(shipsClient.getShips(limit, 2)).thenReturn(shipResponse2);
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
+		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final ShipLoader shipLoader = new ShipLoader(limit, throttler, null, shipsClient, shipRoleManager);
+		final ShipLoader shipLoader = new ShipLoader(limit, throttler, null, shipsClient, shipRoleManager,
+				tradeShipManager);
 
 		final List<Ship> ships = shipLoader.gatherShips();
 
@@ -75,9 +79,13 @@ public class ShipLoaderTest {
 		when(shipsClient.getShips(limit, 1)).thenReturn(shipResponse1);
 
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
+		when(shipRoleManager.determineRole(ship)).thenReturn(ShipRole.MINING);
+
+		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager);
+		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager,
+				tradeShipManager);
 
 		shipLoader.onStartup(null);
 
@@ -99,9 +107,11 @@ public class ShipLoaderTest {
 		when(shipsClient.getShips(limit, 1)).thenReturn(shipResponse1);
 
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
+		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager);
+		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager,
+				tradeShipManager);
 
 		assertThrows(IllegalStateException.class, () -> shipLoader.onStartup(null));
 	}
