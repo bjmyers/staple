@@ -9,6 +9,8 @@ import lombok.Data;
 public class DataWrapper<T> {
 
 	private final T data;
+	// The metadata of this request, can be null for requests which do not return
+	// multiple responses
 	private final WrapperMetadata meta;
 
 	/**
