@@ -27,12 +27,6 @@ public class Ship {
 	private Cargo cargo;
 
 	/**
-	 * Record containing the current and maximum fuel values
-	 */
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static record FuelStatus(int current, int capacity) {};
-
-	/**
 	 * @param waypoint a {@link Waypoint}
 	 * @return the distance of the ship to the waypoint
 	 */
