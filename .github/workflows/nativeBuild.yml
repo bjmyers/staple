@@ -41,15 +41,6 @@ jobs:
     - name: Build Quarkus native executable
       run: ./gradlew build "-Dquarkus.native.enabled=true" "-Dquarkus.package.jar.enabled=false" --no-daemon
       working-directory: ${{ github.workspace }}/java
-    
-    - name: View files
-      run: ls ${{ github.workspace }}\java\build\StapleApplication-native-image-source-jar
-      
-    - name: View files
-      run: ls ${{ github.workspace }}\java\build\StapleApplication-native-image-source-jar/lib
-      
-    - name: View files2
-      run: ls ${{ github.workspace }}\java\build
 
     - name: Upload native executable
       uses: actions/upload-artifact@v4
