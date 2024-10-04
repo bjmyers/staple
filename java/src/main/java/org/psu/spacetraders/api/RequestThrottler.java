@@ -49,7 +49,11 @@ public class RequestThrottler {
 		// Sleep until the API is available again
 		whenToCall.ifPresent(time -> {
 			try {
-				Thread.sleep(Duration.between(Instant.now(), time));
+				final Duration timeToSleep = Duration.between(Instant.now(), time);
+				if (timeToSleep.compareTo(Duration.ofSeconds(1)) > 0) {
+					log.infof("API Limit reached, next request can be processed in %s", timeToSleep);
+				}
+				Thread.sleep(timeToSleep);
 			} catch (InterruptedException e) {
 				log.warn("Request Throttler interrupted, you may see API requests fail");
 				log.warn(e);
