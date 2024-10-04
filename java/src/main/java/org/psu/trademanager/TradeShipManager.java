@@ -58,7 +58,7 @@ public class TradeShipManager {
 
 		log.info("Building trade routes");
 		final List<TradeRoute> routes = routeBuilder.buildTradeRoutes(systemMarketInfo);
-		log.infof("Build %s trade routes", routes.size());
+		log.infof("Built %s trade routes", routes.size());
 
 		if (routes.isEmpty()) {
 			log.warn("Unable to find any valid trade routes for this system, terminating trade manager");
@@ -102,7 +102,7 @@ public class TradeShipManager {
 			final Product productToSell = closestRoute.getGoods().stream().findFirst().get();
 			final TradeRequest sellRequest = new TradeRequest(productToSell.getSymbol(), quantityToTrade);
 			final DataWrapper<TradeResponse> sellResponse = throttler
-					.throttle(() -> marketClient.purchase(shipId, sellRequest));
+					.throttle(() -> marketClient.sell(shipId, sellRequest));
 
 			log.infof("Sold one unit of %s for %s credits", productToSell.getSymbol(),
 					sellResponse.getData().getTransaction().getTotalPrice());
