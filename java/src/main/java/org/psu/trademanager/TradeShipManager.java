@@ -67,8 +67,10 @@ public class TradeShipManager {
 
 		while (true) {
 			// The route whose start point is closest to the ship's current position
-			final TradeRoute closestRoute = routes.stream().min((way1, way2) -> Double
-					.compare(tradeShip.distTo(way1.getExportWaypoint()), tradeShip.distTo(way2.getExportWaypoint())))
+			// Filter out impossible routes
+			final TradeRoute closestRoute = routes.stream().filter(t -> t.isPossible(tradeShip))
+					.min((way1, way2) -> Double.compare(tradeShip.distTo(way1.getExportWaypoint()),
+							tradeShip.distTo(way2.getExportWaypoint())))
 					.get();
 			log.infof("Using Trade Route with Starting point %s and ending point %s",
 					closestRoute.getExportWaypoint().getSymbol(), closestRoute.getImportWaypoint().getSymbol());
@@ -106,6 +108,15 @@ public class TradeShipManager {
 
 			log.infof("Sold one unit of %s for %s credits", productToSell.getSymbol(),
 					sellResponse.getData().getTransaction().getTotalPrice());
+
+			if (systemMarketInfo.get(closestRoute.getImportWaypoint()).sellsProduct(Product.FUEL)) {
+				throttler.throttle(() -> marketClient.refuel(shipId));
+				log.infof("Refuled ship %s", shipId);
+			}
+			else {
+				log.warnf("Unable to refuel ship %s at waypoint %s", shipId,
+						closestRoute.getImportWaypoint().getSymbol());
+			}
 
 			return;
 		}

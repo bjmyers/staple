@@ -66,4 +66,21 @@ public class WaypointTest {
 		assertEquals(Trait.Type.UNKNOWN, waypoint.getTraits().get(0).getSymbol());
 	}
 
+	/**
+	 * Tests {@link Waypoint#distTo}
+	 */
+	@Test
+	public void distTo() {
+		final Waypoint way1 = new Waypoint();
+		way1.setX(0);
+		way1.setY(0);
+
+		final Waypoint way2 = new Waypoint();
+		way2.setX(3);
+		way2.setY(4);
+
+		assertEquals(5.0, way1.distTo(way2), 1e-9);
+		assertEquals(5.0, way2.distTo(way1), 1e-9);
+	}
+
 }

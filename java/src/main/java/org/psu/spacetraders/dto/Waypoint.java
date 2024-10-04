@@ -25,4 +25,13 @@ public class Waypoint {
 	private int x;
 	private int y;
 
+	/**
+	 * @param waypoint another {@link Waypoint}
+	 * @return the distance between this waypoint and the given waypoint
+	 */
+	public double distTo(final Waypoint waypoint) {
+		return Math.sqrt(Math.pow(this.getX() - waypoint.getX(), 2)
+				+ Math.pow(this.getY() - waypoint.getY(), 2));
+	}
+
 }

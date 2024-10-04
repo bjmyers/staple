@@ -1,6 +1,7 @@
 package org.psu.spacetraders.dto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -70,4 +71,23 @@ public class MarketInfoTest {
 		assertEquals(1, potentialExports.size());
 		assertTrue(potentialExports.contains(p1));
 	}
+
+	/**
+	 * Tests {@link MarketInfo#sellsProduct}
+	 */
+	@Test
+	public void sellsProduct() {
+		final Product product = new Product("A");
+
+		final MarketInfo importingMarket = new MarketInfo(List.of(product), List.of(), List.of());
+		final MarketInfo exportingMarket = new MarketInfo(List.of(), List.of(product), List.of());
+		final MarketInfo exchangingMarket = new MarketInfo(List.of(), List.of(), List.of(product));
+		final MarketInfo notSellingMarket = new MarketInfo(List.of(), List.of(), List.of());
+
+		assertTrue(importingMarket.sellsProduct(product));
+		assertTrue(exportingMarket.sellsProduct(product));
+		assertTrue(exchangingMarket.sellsProduct(product));
+		assertFalse(notSellingMarket.sellsProduct(product));
+	}
+
 }

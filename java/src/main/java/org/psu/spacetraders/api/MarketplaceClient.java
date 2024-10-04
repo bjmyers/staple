@@ -3,6 +3,7 @@ package org.psu.spacetraders.api;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.MarketInfo;
+import org.psu.spacetraders.dto.RefuelResponse;
 import org.psu.spacetraders.dto.TradeRequest;
 import org.psu.spacetraders.dto.TradeResponse;
 
@@ -35,7 +36,7 @@ public interface MarketplaceClient {
 	 * Sells goods from a ship's cargo
 	 * @param shipId The ship ID
 	 * @param tradeRequest Contains the product and quantity to sell
-	 * @return
+	 * @return a wrapped {@link TradeResponse}
 	 */
 	@POST
 	@Path("/v2/my/ships/{shipId}/sell")
@@ -45,10 +46,19 @@ public interface MarketplaceClient {
 	 * Purchases goods from a market
 	 * @param shipId The ship ID
 	 * @param tradeRequest Contains the product and quantity to purchase
-	 * @return
+	 * @return a wrapped {@link TradeResponse}
 	 */
 	@POST
 	@Path("/v2/my/ships/{shipId}/purchase")
 	public DataWrapper<TradeResponse> purchase(@PathParam("shipId") String shipId, TradeRequest tradeRequest);
+
+	/**
+	 * Refuels a ship, must be docked at a waypoint which sells fuel
+	 * @param shipId The ship ID
+	 * @return a wrapped {@link RefuelResponse}
+	 */
+	@POST
+	@Path("/v2/my/ships/{shipId}/refuel")
+	public DataWrapper<RefuelResponse> refuel(@PathParam("shipId") String shipId);
 
 }
