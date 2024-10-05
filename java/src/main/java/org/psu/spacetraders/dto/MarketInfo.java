@@ -1,6 +1,12 @@
 package org.psu.spacetraders.dto;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -20,6 +26,7 @@ public class MarketInfo {
 	private List<Product> imports;
 	private List<Product> exports;
 	private List<Product> exchange;
+	private List<TradeGood> tradeGoods;
 
 	public List<Product> getPotentialExports(final MarketInfo importingMarket) {
 		return this.exports.stream().filter(product -> importingMarket.getImports().contains(product)).toList();
@@ -27,6 +34,69 @@ public class MarketInfo {
 
 	public boolean sellsProduct(final Product product) {
 		return exchange.contains(product) || exports.contains(product) || imports.contains(product);
+	}
+
+	/**
+	 * Finds the most profitable {@link TradeRequest}s at this market
+	 * @param productsToBuy The products which can be bought
+	 * @param capacity The total number of items to buy
+	 * @return The {@link TradeRequest}s
+	 */
+	public List<TradeRequest> buildPurchaseRequest(final List<Product> productsToBuy, final int capacity) {
+		final Set<String> productSymbolsToBuy = productsToBuy.stream().map(Product::getSymbol)
+				.collect(Collectors.toSet());
+		final List<TradeGood> sortedTradeGoods = this.tradeGoods.stream()
+				.filter(t -> productSymbolsToBuy.contains(t.getSymbol()))
+				// Sort by purchase price, negate so that the most expensive item is first
+				.sorted((t1, t2) -> -1 * Integer.compare(t1.getSellPrice(), t2.getSellPrice())).toList();
+
+		final List<TradeRequest> output = new ArrayList<>();
+		int remainingItemsToBuy = capacity;
+		for (final TradeGood tradeGood : sortedTradeGoods) {
+			final int quantityToBuy = Math.min(remainingItemsToBuy, tradeGood.getTradeVolume());
+			output.add(new TradeRequest(tradeGood.getSymbol(), quantityToBuy));
+
+			remainingItemsToBuy -= quantityToBuy;
+			if (remainingItemsToBuy <= 0) {
+				break;
+			}
+		}
+		return output;
+	}
+
+	/**
+	 * @param tradeRequests A list of {@link TradeRequests} that were performed at
+	 *                      some other market
+	 * @return A list of {@link TradeRequests for the same products in the same
+	 * quantity that respects this market's trade limits
+	 * @apiNote Assumes that every trade request is for a product that is traded at
+	 *          this market
+	 */
+	public List<TradeRequest> rebalanceTradeRequests(final List<TradeRequest> tradeRequests) {
+		final Map<String, Integer> amountByProduct = new HashMap<>();
+		tradeRequests.forEach(t -> amountByProduct.merge(t.getSymbol(), t.getUnits(), Integer::sum));
+
+		final List<TradeRequest> output = new ArrayList<>();
+		for (Entry<String, Integer> productToTrade : amountByProduct.entrySet()) {
+			final String product = productToTrade.getKey();
+
+			// Assume that good in trade request is traded here
+			final TradeGood tradeGood = this.tradeGoods.stream()
+					.filter(t -> product.equals(t.getSymbol())).findFirst().get();
+
+			// Floor division, the number of full requests to make
+			final int numFullRequestsToMake = productToTrade.getValue() / tradeGood.getTradeVolume();
+			for (int i = 0; i < numFullRequestsToMake; i++) {
+				output.add(new TradeRequest(product, tradeGood.getTradeVolume()));
+			}
+
+			// The remaining goods which couldn't fit into a full trade request
+			final int remainingGoods = productToTrade.getValue() % tradeGood.getTradeVolume();
+			if (remainingGoods > 0) {
+				output.add(new TradeRequest(product, remainingGoods));
+			}
+		}
+		return output;
 	}
 
 }

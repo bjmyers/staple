@@ -43,11 +43,14 @@ public class RouteBuilderTest {
 		when(market3.getPotentialExports(market1)).thenReturn(List.of());
 		when(market3.getPotentialExports(market2)).thenReturn(List.of(prod1));
 
-		final Map<Waypoint, MarketInfo> input = Map.of(way1, market1, way2, market2, way3, market3);
+		final Map<Waypoint, MarketInfo> marketInfo = Map.of(way1, market1, way2, market2, way3, market3);
 
-		final RouteBuilder routeBuilder = new RouteBuilder();
+		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
+		when(marketplaceManager.getAllMarketInfo()).thenReturn(marketInfo);
 
-		final List<TradeRoute> routes = routeBuilder.buildTradeRoutes(input);
+		final RouteBuilder routeBuilder = new RouteBuilder(marketplaceManager);
+
+		final List<TradeRoute> routes = routeBuilder.buildTradeRoutes();
 
 		final TradeRoute expectedRoute1 = new TradeRoute(way1, way3, List.of(prod1, prod2));
 		final TradeRoute expectedRoute2 = new TradeRoute(way3, way2, List.of(prod1));

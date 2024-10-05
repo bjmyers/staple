@@ -20,6 +20,7 @@ import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
+import org.psu.trademanager.MarketplaceManager;
 import org.psu.trademanager.TradeShipManager;
 
 import io.quarkus.runtime.StartupEvent;
@@ -41,18 +42,20 @@ public class ShipLoader {
 	private final ShipsClient shipsClient;
 	private final ShipRoleManager shipRoleManager;
 	private final TradeShipManager tradeShipManager;
+	private final MarketplaceManager marketplaceManager;
 
 	@Inject
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
 			final RequestThrottler throttler, final SystemBuilder systemBuilder,
 			@RestClient final ShipsClient shipsClient, final ShipRoleManager shipRoleManager,
-			final TradeShipManager tradeShipManager) {
+			final TradeShipManager tradeShipManager, final MarketplaceManager marketplaceManager) {
 		this.limit = limit;
 		this.throttler = throttler;
 		this.systemBuilder = systemBuilder;
 		this.shipsClient = shipsClient;
 		this.shipRoleManager = shipRoleManager;
 		this.tradeShipManager = tradeShipManager;
+		this.marketplaceManager = marketplaceManager;
 	}
 
 	/**
@@ -85,13 +88,14 @@ public class ShipLoader {
 
     	log.info("Gathering Market Info");
     	final Map<Waypoint, MarketInfo> marketInfo = systemBuilder.gatherMarketInfo(systemWaypoints);
+    	marketplaceManager.updateMarketData(marketInfo);
     	log.infof("Found Market Info for %s marketplaces", marketInfo.size());
 
 		// TODO: Get the application to handle more than one ship
     	// TODO: Make the mining ship manager so we're not sending the mining ship to the trading manager
 		final Ship tradeShip = ships.stream().filter(s -> ShipRole.MINING.equals(shipRoleManager.determineRole(s)))
 				.findFirst().get();
-		tradeShipManager.manageTradeShip(marketInfo, tradeShip);
+		tradeShipManager.manageTradeShip(tradeShip);
 	}
 
     public List<Ship> gatherShips() {

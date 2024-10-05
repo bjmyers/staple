@@ -1,12 +1,13 @@
 package org.psu.trademanager;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.psu.spacetraders.api.MarketplaceClient;
@@ -19,6 +20,7 @@ import org.psu.spacetraders.dto.Product;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.ShipRoute;
+import org.psu.spacetraders.dto.TradeRequest;
 import org.psu.spacetraders.dto.TradeResponse;
 import org.psu.spacetraders.dto.Transaction;
 import org.psu.spacetraders.dto.Waypoint;
@@ -40,8 +42,10 @@ public class TradeShipManagerTest {
 		final RouteBuilder routeBuilder = mock(RouteBuilder.class);
 		final MarketplaceClient marketClient = mock(MarketplaceClient.class);
 		final NavigationClient navClient = mock(NavigationClient.class);
+		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final TradeShipManager manager = new TradeShipManager(throttler, routeBuilder, marketClient, navClient);
+		final TradeShipManager manager = new TradeShipManager(throttler, routeBuilder, marketClient, navClient,
+				marketManager);
 
 		final Ship ship = mock(Ship.class);
 
@@ -69,15 +73,20 @@ public class TradeShipManagerTest {
 		when(ship.distTo(way1)).thenReturn(1.0);
 		when(ship.distTo(way2)).thenReturn(5.0);
 
+		final TradeRequest tradeRequest = mock(TradeRequest.class);
+
 		final MarketInfo marketInfo = mock(MarketInfo.class);
-		final Map<Waypoint, MarketInfo> systemMarketInfo = Map.of(way1, marketInfo, way2, marketInfo);
 		when(marketInfo.sellsProduct(Product.FUEL)).thenReturn(true);
+		when(marketInfo.buildPurchaseRequest(any(), anyInt())).thenReturn(List.of(tradeRequest));
+
+		when(marketManager.updateMarketInfo(way1)).thenReturn(marketInfo);
+		when(marketManager.getMarketInfo(way1)).thenReturn(marketInfo);
 
 		final ShipNavigation nav = mock(ShipNavigation.class);
 		when(nav.getWaypointSymbol()).thenReturn("some other waypoint");
 		when(ship.getNav()).thenReturn(nav);
 
-		when(routeBuilder.buildTradeRoutes(systemMarketInfo)).thenReturn(List.of(route1, route2, route3));
+		when(routeBuilder.buildTradeRoutes()).thenReturn(List.of(route1, route2, route3));
 
 		final NavigationResponse navResponse = mock(NavigationResponse.class);
 		final ShipNavigation shipNavResponse = mock(ShipNavigation.class);
@@ -90,10 +99,12 @@ public class TradeShipManagerTest {
 		final Transaction transaction = mock(Transaction.class);
 		final TradeResponse tradeResponse = mock(TradeResponse.class);
 		when(tradeResponse.getTransaction()).thenReturn(transaction);
-		when(marketClient.purchase(any(), any())).thenReturn(new DataWrapper<TradeResponse>(tradeResponse, null));
-		when(marketClient.sell(any(), any())).thenReturn(new DataWrapper<TradeResponse>(tradeResponse, null));
+		when(marketClient.purchase(any(), same(tradeRequest)))
+				.thenReturn(new DataWrapper<TradeResponse>(tradeResponse, null));
+		when(marketClient.sell(any(), same(tradeRequest)))
+				.thenReturn(new DataWrapper<TradeResponse>(tradeResponse, null));
 
-		manager.manageTradeShip(systemMarketInfo, ship);
+		manager.manageTradeShip(ship);
 	}
 
 
@@ -106,12 +117,14 @@ public class TradeShipManagerTest {
 		final RouteBuilder routeBuilder = mock(RouteBuilder.class);
 		final MarketplaceClient marketClient = mock(MarketplaceClient.class);
 		final NavigationClient navClient = mock(NavigationClient.class);
+		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final TradeShipManager manager = new TradeShipManager(throttler, routeBuilder, marketClient, navClient);
+		final TradeShipManager manager = new TradeShipManager(throttler, routeBuilder, marketClient, navClient,
+				marketManager);
 
-		when(routeBuilder.buildTradeRoutes(any())).thenReturn(List.of());
+		when(routeBuilder.buildTradeRoutes()).thenReturn(List.of());
 
-		manager.manageTradeShip(Map.of(), mock(Ship.class));
+		manager.manageTradeShip(mock(Ship.class));
 
 	}
 

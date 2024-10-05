@@ -99,4 +99,17 @@ public class ShipTest {
 
 	}
 
+	/**
+	 * Tests {@link Ship#getRemainingCargo}
+	 */
+	@Test
+	public void getRemainingCargo() {
+
+		final Cargo cargo = new Cargo(20, 10);
+		final Ship ship = new Ship();
+		ship.setCargo(cargo);
+
+		assertEquals(10, ship.getRemainingCargo());
+	}
+
 }
