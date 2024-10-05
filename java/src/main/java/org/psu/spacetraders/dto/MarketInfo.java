@@ -25,4 +25,8 @@ public class MarketInfo {
 		return this.exports.stream().filter(product -> importingMarket.getImports().contains(product)).toList();
 	}
 
+	public boolean sellsProduct(final Product product) {
+		return exchange.contains(product) || exports.contains(product) || imports.contains(product);
+	}
+
 }

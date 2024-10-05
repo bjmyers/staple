@@ -7,16 +7,15 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
- * A given item for trade
+ * The response from a request to refuel
  */
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Product {
+public class RefuelResponse {
 
-	public static Product FUEL = new Product("FUEL");
-
-	private String symbol;
+	private FuelStatus fuel;
+	private Transaction transaction;
 
 }
