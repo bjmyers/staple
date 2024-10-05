@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.psu.shiporchestrator.ShipRole;
@@ -16,9 +17,12 @@ import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipsClient;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.DataWrapper.WrapperMetadata;
+import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
+import org.psu.spacetraders.dto.Waypoint;
 import org.psu.testutils.TestRequestThrottler;
+import org.psu.trademanager.MarketplaceManager;
 import org.psu.trademanager.TradeShipManager;
 
 /**
@@ -47,9 +51,10 @@ public class ShipLoaderTest {
 		when(shipsClient.getShips(limit, 2)).thenReturn(shipResponse2);
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
 		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
+		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, throttler, null, shipsClient, shipRoleManager,
-				tradeShipManager);
+				tradeShipManager, marketplaceManager);
 
 		final List<Ship> ships = shipLoader.gatherShips();
 
@@ -82,14 +87,21 @@ public class ShipLoaderTest {
 		when(shipRoleManager.determineRole(ship)).thenReturn(ShipRole.MINING);
 
 		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
+		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
+
+		final Waypoint waypoint = mock(Waypoint.class);
+		final MarketInfo marketInfo = mock(MarketInfo.class);
+		when(systemBuilder.gatherWaypoints(systemId)).thenReturn(List.of(waypoint));
+    	when(systemBuilder.gatherMarketInfo(List.of(waypoint))).thenReturn(Map.of(waypoint, marketInfo));
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager,
-				tradeShipManager);
+				tradeShipManager, marketplaceManager);
 
 		shipLoader.onStartup(null);
 
 		verify(systemBuilder).gatherWaypoints(systemId);
+		verify(marketplaceManager).updateMarketData(Map.of(waypoint, marketInfo));
 	}
 
 	/**
@@ -108,10 +120,11 @@ public class ShipLoaderTest {
 
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
 		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
+		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager,
-				tradeShipManager);
+				tradeShipManager, marketplaceManager);
 
 		assertThrows(IllegalStateException.class, () -> shipLoader.onStartup(null));
 	}

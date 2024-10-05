@@ -36,4 +36,11 @@ public class Ship {
 				+ Math.pow(shipPosition.getY() - waypoint.getY(), 2));
 	}
 
+	/**
+	 * @return The amount of open cargo space on the ship
+	 */
+	public int getRemainingCargo() {
+		return this.cargo.capacity() - this.cargo.units();
+	}
+
 }

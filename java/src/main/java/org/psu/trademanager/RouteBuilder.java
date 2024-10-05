@@ -11,6 +11,7 @@ import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.dto.TradeRoute;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * Builds potential {@link TradeRoute}s given the market information of a system
@@ -18,7 +19,16 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class RouteBuilder {
 
-	public List<TradeRoute> buildTradeRoutes(final Map<Waypoint, MarketInfo> systemMarketInfo) {
+	private MarketplaceManager marketplaceManager;
+
+	@Inject
+	public RouteBuilder(final MarketplaceManager marketplaceManager) {
+		this.marketplaceManager = marketplaceManager;
+	}
+
+	public List<TradeRoute> buildTradeRoutes() {
+
+		final Map<Waypoint, MarketInfo> systemMarketInfo = marketplaceManager.getAllMarketInfo();
 
 		final List<TradeRoute> routes = new ArrayList<>();
 

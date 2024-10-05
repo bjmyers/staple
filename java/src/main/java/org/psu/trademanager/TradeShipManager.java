@@ -3,7 +3,6 @@ package org.psu.trademanager;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.spacetraders.api.MarketplaceClient;
@@ -18,7 +17,6 @@ import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.TradeRequest;
 import org.psu.spacetraders.dto.TradeResponse;
-import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.dto.TradeRoute;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -37,27 +35,29 @@ public class TradeShipManager {
 	private RouteBuilder routeBuilder;
 	private MarketplaceClient marketClient;
 	private NavigationClient navigationClient;
+	private MarketplaceManager marketplaceManager;
 
 	@Inject
 	public TradeShipManager(final RequestThrottler throttler, final RouteBuilder routeBuilder,
-			@RestClient final MarketplaceClient marketClient, @RestClient final NavigationClient navigationClient) {
+			@RestClient final MarketplaceClient marketClient, @RestClient final NavigationClient navigationClient,
+			final MarketplaceManager marketplaceManager) {
 		this.throttler = throttler;
 		this.routeBuilder = routeBuilder;
 		this.marketClient = marketClient;
 		this.navigationClient = navigationClient;
+		this.marketplaceManager = marketplaceManager;
 	}
 
 	/**
 	 * Sends a single ship on trade routes until terminated. This function will not return
 	 * TODO: Hook this up to a job queue so that we can handle more than a single trade ship
-	 * @param systemMarketInfo All of the market information for a system
 	 * @param tradeShip The trade ship to manage
 	 */
-	public void manageTradeShip(final Map<Waypoint, MarketInfo> systemMarketInfo, final Ship tradeShip) {
+	public void manageTradeShip(final Ship tradeShip) {
 		final String shipId = tradeShip.getSymbol();
 
 		log.info("Building trade routes");
-		final List<TradeRoute> routes = routeBuilder.buildTradeRoutes(systemMarketInfo);
+		final List<TradeRoute> routes = routeBuilder.buildTradeRoutes();
 		log.infof("Built %s trade routes", routes.size());
 
 		if (routes.isEmpty()) {
@@ -84,32 +84,63 @@ public class TradeShipManager {
 
 			// Dock and purchase goods
 			throttler.throttle(() -> navigationClient.dock(shipId));
-			// Trade routes always need at least one Product to trade
-			final Product productToPurchase = closestRoute.getGoods().stream().findFirst().get();
-			// TODO: Make this code purchase more than just one unit
-			final int quantityToTrade = 1;
-			final TradeRequest purchaseRequest = new TradeRequest(productToPurchase.getSymbol(), quantityToTrade);
-			final DataWrapper<TradeResponse> purchaseResponse = throttler
-					.throttle(() -> marketClient.purchase(shipId, purchaseRequest));
 
-			log.infof("Purchased one unit of %s for %s credits", productToPurchase.getSymbol(),
-					purchaseResponse.getData().getTransaction().getTotalPrice());
+			// TODO: Remove this when space traders fixes their bug, it takes a while for markets to realize
+			// a ship is docked at them
+			try {
+				Thread.sleep(Duration.ofSeconds(5));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			// Force an update to we know the most up to date prices and trade limits
+			final MarketInfo exportMarketInfo = marketplaceManager.updateMarketInfo(closestRoute.getExportWaypoint());
+			final List<TradeRequest> purchaseRequests = exportMarketInfo.buildPurchaseRequest(closestRoute.getGoods(),
+					tradeShip.getRemainingCargo());
+
+			int total = 0;
+			for (final TradeRequest tradeRequest : purchaseRequests) {
+				final DataWrapper<TradeResponse> purchaseResponse = throttler
+						.throttle(() -> marketClient.purchase(shipId, tradeRequest));
+
+				total += purchaseResponse.getData().getTransaction().getTotalPrice();
+				log.infof("Purchased %s unit(s) of %s for %s credits", tradeRequest.getUnits(),
+						tradeRequest.getSymbol(), purchaseResponse.getData().getTransaction().getTotalPrice());
+			}
+			log.infof("Total Purchase Price: %s", total);
 
 			final ShipNavigation newNav = orbitAndNavigate(shipId, closestRoute.getImportWaypoint().getSymbol());
 			tradeShip.setNav(newNav);
 
 			// Dock and sell goods
 			throttler.throttle(() -> navigationClient.dock(shipId));
-			// Trade routes always need at least one Product to trade
-			final Product productToSell = closestRoute.getGoods().stream().findFirst().get();
-			final TradeRequest sellRequest = new TradeRequest(productToSell.getSymbol(), quantityToTrade);
-			final DataWrapper<TradeResponse> sellResponse = throttler
-					.throttle(() -> marketClient.sell(shipId, sellRequest));
 
-			log.infof("Sold one unit of %s for %s credits", productToSell.getSymbol(),
-					sellResponse.getData().getTransaction().getTotalPrice());
+			// TODO: Remove this when space traders fixes their bug, it takes a while for markets to realize
+			// a ship is docked at them
+			try {
+				Thread.sleep(Duration.ofSeconds(5));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
-			if (systemMarketInfo.get(closestRoute.getImportWaypoint()).sellsProduct(Product.FUEL)) {
+			// Force an update to we know the most up to date prices and trade limits
+			final MarketInfo importMarketInfo = marketplaceManager.updateMarketInfo(closestRoute.getImportWaypoint());
+
+			// Re-balance the sell requests because trade limits might be different
+			final List<TradeRequest> sellRequests = importMarketInfo.rebalanceTradeRequests(purchaseRequests);
+
+			int sellTotal = 0;
+			for (final TradeRequest tradeRequest : sellRequests) {
+				final DataWrapper<TradeResponse> purchaseResponse = throttler
+						.throttle(() -> marketClient.sell(shipId, tradeRequest));
+
+				sellTotal += purchaseResponse.getData().getTransaction().getTotalPrice();
+				log.infof("Sold %s unit(s) of %s for %s credits", tradeRequest.getUnits(),
+						tradeRequest.getSymbol(), purchaseResponse.getData().getTransaction().getTotalPrice());
+			}
+			log.infof("Total Sell Price: %s", sellTotal);
+
+			if (marketplaceManager.getMarketInfo(closestRoute.getImportWaypoint()).sellsProduct(Product.FUEL)) {
 				throttler.throttle(() -> marketClient.refuel(shipId));
 				log.infof("Refuled ship %s", shipId);
 			}
