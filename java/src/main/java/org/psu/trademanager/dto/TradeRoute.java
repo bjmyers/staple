@@ -29,4 +29,12 @@ public class TradeRoute {
 		return ship.getFuel().current() > totalDist;
 	}
 
+	/**
+	 * @return The distance between the two waypoints in this trade route
+	 */
+	public double getDistance() {
+		return Math.sqrt(Math.pow(this.exportWaypoint.getX() - this.importWaypoint.getX(), 2) +
+				Math.pow(this.exportWaypoint.getY() - this.importWaypoint.getY(), 2));
+	}
+
 }
