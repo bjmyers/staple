@@ -1,5 +1,6 @@
 package org.psu.spacetraders.dto;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -73,6 +74,24 @@ public class TradeRouteTest {
 		final TradeRoute route = new TradeRoute(exportWaypoint, importWaypoint, List.of());
 
 		assertTrue(route.isPossible(ship));
+	}
+
+	/**
+	 * Tests {@link TradeRoute#getDistance}
+	 */
+	@Test
+	public void getDistance() {
+
+		final Waypoint importWaypoint = mock(Waypoint.class);
+		when(importWaypoint.getX()).thenReturn(0);
+		when(importWaypoint.getY()).thenReturn(0);
+		final Waypoint exportWaypoint = mock(Waypoint.class);
+		when(exportWaypoint.getX()).thenReturn(3);
+		when(exportWaypoint.getY()).thenReturn(4);
+
+		final TradeRoute route = new TradeRoute(exportWaypoint, importWaypoint, List.of());
+
+		assertEquals(5.0, route.getDistance(), 1e-9);
 	}
 
 }

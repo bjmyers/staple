@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Product;
+import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.dto.TradeRoute;
 
@@ -14,19 +16,22 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * Builds potential {@link TradeRoute}s given the market information of a system
+ * Builds and stores potential {@link TradeRoute}s for a given system
  */
 @ApplicationScoped
-public class RouteBuilder {
+public class RouteManager {
 
 	private MarketplaceManager marketplaceManager;
 
+	private List<TradeRoute> tradeRoutes;
+
 	@Inject
-	public RouteBuilder(final MarketplaceManager marketplaceManager) {
+	public RouteManager(final MarketplaceManager marketplaceManager) {
 		this.marketplaceManager = marketplaceManager;
+		this.tradeRoutes = null;
 	}
 
-	public List<TradeRoute> buildTradeRoutes() {
+	void buildTradeRoutes() {
 
 		final Map<Waypoint, MarketInfo> systemMarketInfo = marketplaceManager.getAllMarketInfo();
 
@@ -49,7 +54,29 @@ public class RouteBuilder {
 			}
 		}
 
-		return routes;
+		this.tradeRoutes = routes;
+	}
+
+	List<TradeRoute> getTradeRoutes() {
+		return this.tradeRoutes;
+	}
+
+	/**
+	 * @param ship The {@link Ship} which is to perform a trade route
+	 * @return The route with the shorted travel distance for the ship, or an empty
+	 *         optional if no route is possible
+	 */
+	public Optional<TradeRoute> getClosestRoute(final Ship ship) {
+		if (this.tradeRoutes == null) {
+			// Lazy load trade routes
+			buildTradeRoutes();
+		}
+
+		// The route whose total travel distance for the ship is smalled
+		// Filter out impossible routes
+		return this.tradeRoutes.stream().filter(t -> t.isPossible(ship))
+				.min((tr1, tr2) -> Double.compare(ship.distTo(tr1.getExportWaypoint()) + tr1.getDistance(),
+						ship.distTo(tr2.getExportWaypoint()) + tr2.getDistance()));
 	}
 
 }

@@ -32,17 +32,17 @@ import lombok.extern.jbosslog.JBossLog;
 public class TradeShipManager {
 
 	private RequestThrottler throttler;
-	private RouteBuilder routeBuilder;
+	private RouteManager routeManager;
 	private MarketplaceClient marketClient;
 	private NavigationClient navigationClient;
 	private MarketplaceManager marketplaceManager;
 
 	@Inject
-	public TradeShipManager(final RequestThrottler throttler, final RouteBuilder routeBuilder,
+	public TradeShipManager(final RequestThrottler throttler, final RouteManager routeManager,
 			@RestClient final MarketplaceClient marketClient, @RestClient final NavigationClient navigationClient,
 			final MarketplaceManager marketplaceManager) {
 		this.throttler = throttler;
-		this.routeBuilder = routeBuilder;
+		this.routeManager = routeManager;
 		this.marketClient = marketClient;
 		this.navigationClient = navigationClient;
 		this.marketplaceManager = marketplaceManager;
@@ -56,22 +56,8 @@ public class TradeShipManager {
 	public void manageTradeShip(final Ship tradeShip) {
 		final String shipId = tradeShip.getSymbol();
 
-		log.info("Building trade routes");
-		final List<TradeRoute> routes = routeBuilder.buildTradeRoutes();
-		log.infof("Built %s trade routes", routes.size());
-
-		if (routes.isEmpty()) {
-			log.warn("Unable to find any valid trade routes for this system, terminating trade manager");
-			return;
-		}
-
 		while (true) {
-			// The route whose start point is closest to the ship's current position
-			// Filter out impossible routes
-			final TradeRoute closestRoute = routes.stream().filter(t -> t.isPossible(tradeShip))
-					.min((way1, way2) -> Double.compare(tradeShip.distTo(way1.getExportWaypoint()),
-							tradeShip.distTo(way2.getExportWaypoint())))
-					.get();
+			final TradeRoute closestRoute = routeManager.getClosestRoute(tradeShip).get();
 			log.infof("Using Trade Route with Starting point %s and ending point %s",
 					closestRoute.getExportWaypoint().getSymbol(), closestRoute.getImportWaypoint().getSymbol());
 
