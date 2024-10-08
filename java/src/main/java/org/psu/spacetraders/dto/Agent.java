@@ -7,16 +7,17 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
- * The response from a trade request with a market
+ * A user's information
  */
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TradeResponse {
+public class Agent {
 
-	private Agent agent;
-	private Cargo cargo;
-	private Transaction transaction;
+	private String accountId;
+	private String symbol;
+	private int credits;
+	private int shipCount;
 
 }

@@ -14,7 +14,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 
 /**
- * Rest client to view a market's information
+ * Rest client to view a market's information. Note that users are expected to
+ * use a {@link MarketplaceRequester} for requests to buy or sell goods
  */
 @Dependent
 @RegisterRestClient(configKey="spacetraders-api")

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.psu.spacetraders.api.MarketplaceClient;
+import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationClient;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.dto.DataWrapper;
@@ -41,13 +41,13 @@ public class TradeShipManagerTest {
 	@Test
 	public void manageTradeShip() {
 
-		final RouteManager routeBuilder = mock(RouteManager.class);
-		final MarketplaceClient marketClient = mock(MarketplaceClient.class);
-		final NavigationClient navClient = mock(NavigationClient.class);
-		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final TradeShipManager manager = new TradeShipManager(throttler, routeBuilder, marketClient, navClient,
-				marketManager);
+		final NavigationClient navClient = mock(NavigationClient.class);
+		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
+		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
+		final RouteManager routeManager = mock(RouteManager.class);
+		final TradeShipManager manager = new TradeShipManager(throttler, navClient, marketRequester, marketManager,
+				routeManager);
 
 		final Ship ship = mock(Ship.class);
 
@@ -59,7 +59,7 @@ public class TradeShipManagerTest {
 		when(tradeRoute.getImportWaypoint()).thenReturn(way1);
 		when(tradeRoute.getGoods()).thenReturn(List.of(new Product("eggs")));
 
-		when(routeBuilder.getClosestRoute(ship)).thenReturn(Optional.of(tradeRoute));
+		when(routeManager.getClosestRoute(ship)).thenReturn(Optional.of(tradeRoute));
 
 		final TradeRequest tradeRequest = mock(TradeRequest.class);
 
@@ -86,10 +86,8 @@ public class TradeShipManagerTest {
 		final Transaction transaction = mock(Transaction.class);
 		final TradeResponse tradeResponse = mock(TradeResponse.class);
 		when(tradeResponse.getTransaction()).thenReturn(transaction);
-		when(marketClient.purchase(any(), same(tradeRequest)))
-				.thenReturn(new DataWrapper<TradeResponse>(tradeResponse, null));
-		when(marketClient.sell(any(), same(tradeRequest)))
-				.thenReturn(new DataWrapper<TradeResponse>(tradeResponse, null));
+		when(marketRequester.purchase(any(), same(tradeRequest))).thenReturn(tradeResponse);
+		when(marketRequester.sell(any(), same(tradeRequest))).thenReturn(tradeResponse);
 
 		manager.manageTradeShip(ship);
 	}
