@@ -38,26 +38,37 @@ public class MarketInfo {
 
 	/**
 	 * Finds the most profitable {@link TradeRequest}s at this market
+	 *
 	 * @param productsToBuy The products which can be bought
-	 * @param capacity The total number of items to buy
+	 * @param capacity      The total number of items to buy
+	 * @param totalCredits  the number of credits the user has, should not spend
+	 *                      more than half of their total
 	 * @return The {@link TradeRequest}s
 	 */
-	public List<TradeRequest> buildPurchaseRequest(final List<Product> productsToBuy, final int capacity) {
+	public List<TradeRequest> buildPurchaseRequest(final List<Product> productsToBuy, final int capacity,
+			final int totalCredits) {
 		final Set<String> productSymbolsToBuy = productsToBuy.stream().map(Product::getSymbol)
 				.collect(Collectors.toSet());
 		final List<TradeGood> sortedTradeGoods = this.tradeGoods.stream()
 				.filter(t -> productSymbolsToBuy.contains(t.getSymbol()))
 				// Sort by purchase price, negate so that the most expensive item is first
-				.sorted((t1, t2) -> -1 * Integer.compare(t1.getSellPrice(), t2.getSellPrice())).toList();
+				.sorted((t1, t2) -> -1 * Integer.compare(t1.getPurchasePrice(), t2.getPurchasePrice())).toList();
 
 		final List<TradeRequest> output = new ArrayList<>();
 		int remainingItemsToBuy = capacity;
+		int remainingBudget = totalCredits / 2;
+
 		for (final TradeGood tradeGood : sortedTradeGoods) {
-			final int quantityToBuy = Math.min(remainingItemsToBuy, tradeGood.getTradeVolume());
+			// Find how many items we can hold (in the ship or in the request)
+			final int requestCapacity = Math.min(remainingItemsToBuy, tradeGood.getTradeVolume());
+			// Limit the quantity to buy if it would be too expensive
+			final int quantityToBuy = Math.min(requestCapacity, remainingBudget / tradeGood.getPurchasePrice());
 			output.add(new TradeRequest(tradeGood.getSymbol(), quantityToBuy));
 
 			remainingItemsToBuy -= quantityToBuy;
-			if (remainingItemsToBuy <= 0) {
+			remainingBudget -= quantityToBuy * tradeGood.getPurchasePrice();
+			if (remainingItemsToBuy <= 0 || remainingBudget <= 0) {
+				// Unable to fit more items or unable to afford more items
 				break;
 			}
 		}
