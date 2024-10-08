@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-import org.psu.spacetraders.api.MarketplaceClient;
+import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationClient;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.dto.DataWrapper;
@@ -32,20 +32,20 @@ import lombok.extern.jbosslog.JBossLog;
 public class TradeShipManager {
 
 	private RequestThrottler throttler;
-	private RouteManager routeManager;
-	private MarketplaceClient marketClient;
 	private NavigationClient navigationClient;
+	private MarketplaceRequester marketplaceRequester;
 	private MarketplaceManager marketplaceManager;
+	private RouteManager routeManager;
 
 	@Inject
-	public TradeShipManager(final RequestThrottler throttler, final RouteManager routeManager,
-			@RestClient final MarketplaceClient marketClient, @RestClient final NavigationClient navigationClient,
-			final MarketplaceManager marketplaceManager) {
+	public TradeShipManager(final RequestThrottler throttler, @RestClient final NavigationClient navigationClient,
+			final MarketplaceRequester marketplaceRequester, final MarketplaceManager marketplaceManager,
+			final RouteManager routeManager) {
 		this.throttler = throttler;
-		this.routeManager = routeManager;
-		this.marketClient = marketClient;
 		this.navigationClient = navigationClient;
+		this.marketplaceRequester = marketplaceRequester;
 		this.marketplaceManager = marketplaceManager;
+		this.routeManager = routeManager;
 	}
 
 	/**
@@ -86,12 +86,12 @@ public class TradeShipManager {
 
 			int total = 0;
 			for (final TradeRequest tradeRequest : purchaseRequests) {
-				final DataWrapper<TradeResponse> purchaseResponse = throttler
-						.throttle(() -> marketClient.purchase(shipId, tradeRequest));
+				final TradeResponse purchaseResponse = throttler
+						.throttle(() -> marketplaceRequester.purchase(shipId, tradeRequest));
 
-				total += purchaseResponse.getData().getTransaction().getTotalPrice();
+				total += purchaseResponse.getTransaction().getTotalPrice();
 				log.infof("Purchased %s unit(s) of %s for %s credits", tradeRequest.getUnits(),
-						tradeRequest.getSymbol(), purchaseResponse.getData().getTransaction().getTotalPrice());
+						tradeRequest.getSymbol(), purchaseResponse.getTransaction().getTotalPrice());
 			}
 			log.infof("Total Purchase Price: %s", total);
 
@@ -117,17 +117,17 @@ public class TradeShipManager {
 
 			int sellTotal = 0;
 			for (final TradeRequest tradeRequest : sellRequests) {
-				final DataWrapper<TradeResponse> purchaseResponse = throttler
-						.throttle(() -> marketClient.sell(shipId, tradeRequest));
+				final TradeResponse purchaseResponse = throttler
+						.throttle(() -> marketplaceRequester.sell(shipId, tradeRequest));
 
-				sellTotal += purchaseResponse.getData().getTransaction().getTotalPrice();
+				sellTotal += purchaseResponse.getTransaction().getTotalPrice();
 				log.infof("Sold %s unit(s) of %s for %s credits", tradeRequest.getUnits(),
-						tradeRequest.getSymbol(), purchaseResponse.getData().getTransaction().getTotalPrice());
+						tradeRequest.getSymbol(), purchaseResponse.getTransaction().getTotalPrice());
 			}
 			log.infof("Total Sell Price: %s", sellTotal);
 
 			if (marketplaceManager.getMarketInfo(closestRoute.getImportWaypoint()).sellsProduct(Product.FUEL)) {
-				throttler.throttle(() -> marketClient.refuel(shipId));
+				throttler.throttle(() -> marketplaceRequester.refuel(shipId));
 				log.infof("Refuled ship %s", shipId);
 			}
 			else {

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RefuelResponse {
 
+	private Agent agent;
 	private FuelStatus fuel;
 	private Transaction transaction;
 
