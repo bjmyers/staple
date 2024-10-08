@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.psu.spacetraders.api.AccountManager;
 import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationClient;
 import org.psu.spacetraders.api.RequestThrottler;
@@ -43,11 +44,12 @@ public class TradeShipManagerTest {
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationClient navClient = mock(NavigationClient.class);
+		final AccountManager accountManager = mock(AccountManager.class);
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(throttler, navClient, marketRequester, marketManager,
-				routeManager);
+		final TradeShipManager manager = new TradeShipManager(throttler, navClient, accountManager, marketRequester,
+				marketManager, routeManager);
 
 		final Ship ship = mock(Ship.class);
 
@@ -63,9 +65,12 @@ public class TradeShipManagerTest {
 
 		final TradeRequest tradeRequest = mock(TradeRequest.class);
 
+		final int credits = 5000;
+		when(accountManager.getCredits()).thenReturn(credits);
+
 		final MarketInfo marketInfo = mock(MarketInfo.class);
 		when(marketInfo.sellsProduct(Product.FUEL)).thenReturn(true);
-		when(marketInfo.buildPurchaseRequest(any(), anyInt())).thenReturn(List.of(tradeRequest));
+		when(marketInfo.buildPurchaseRequest(any(), anyInt(), eq(credits))).thenReturn(List.of(tradeRequest));
 		when(marketInfo.rebalanceTradeRequests(eq(List.of(tradeRequest)))).thenReturn(List.of(tradeRequest));
 
 		when(marketManager.updateMarketInfo(way1)).thenReturn(marketInfo);

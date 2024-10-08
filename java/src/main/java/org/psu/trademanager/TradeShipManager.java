@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.psu.spacetraders.api.AccountManager;
 import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationClient;
 import org.psu.spacetraders.api.RequestThrottler;
@@ -33,16 +34,18 @@ public class TradeShipManager {
 
 	private RequestThrottler throttler;
 	private NavigationClient navigationClient;
+	private AccountManager accountManager;
 	private MarketplaceRequester marketplaceRequester;
 	private MarketplaceManager marketplaceManager;
 	private RouteManager routeManager;
 
 	@Inject
 	public TradeShipManager(final RequestThrottler throttler, @RestClient final NavigationClient navigationClient,
-			final MarketplaceRequester marketplaceRequester, final MarketplaceManager marketplaceManager,
-			final RouteManager routeManager) {
+			final AccountManager accountManager, final MarketplaceRequester marketplaceRequester,
+			final MarketplaceManager marketplaceManager, final RouteManager routeManager) {
 		this.throttler = throttler;
 		this.navigationClient = navigationClient;
+		this.accountManager = accountManager;
 		this.marketplaceRequester = marketplaceRequester;
 		this.marketplaceManager = marketplaceManager;
 		this.routeManager = routeManager;
@@ -81,8 +84,9 @@ public class TradeShipManager {
 
 			// Force an update to we know the most up to date prices and trade limits
 			final MarketInfo exportMarketInfo = marketplaceManager.updateMarketInfo(closestRoute.getExportWaypoint());
+			final int totalCredits = accountManager.getCredits();
 			final List<TradeRequest> purchaseRequests = exportMarketInfo.buildPurchaseRequest(closestRoute.getGoods(),
-					tradeShip.getRemainingCargo());
+					tradeShip.getRemainingCargo(), totalCredits);
 
 			int total = 0;
 			for (final TradeRequest tradeRequest : purchaseRequests) {
