@@ -22,6 +22,7 @@ import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.MarketplaceManager;
 import org.psu.trademanager.TradeShipManager;
+import org.psu.trademanager.dto.TradeShipJob;
 
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -95,7 +96,12 @@ public class ShipLoader {
     	// TODO: Make the mining ship manager so we're not sending the mining ship to the trading manager
 		final Ship tradeShip = ships.stream().filter(s -> ShipRole.MINING.equals(shipRoleManager.determineRole(s)))
 				.findFirst().get();
-		tradeShipManager.manageTradeShip(tradeShip);
+
+		// Manage the job three times, TODO hook this up to a queue
+		final TradeShipJob job = tradeShipManager.createJob(tradeShip);
+		tradeShipManager.manageTradeShip(job);
+		tradeShipManager.manageTradeShip(job);
+		tradeShipManager.manageTradeShip(job);
 	}
 
     public List<Ship> gatherShips() {

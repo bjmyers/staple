@@ -72,7 +72,7 @@ public class RouteManager {
 			buildTradeRoutes();
 		}
 
-		// The route whose total travel distance for the ship is smalled
+		// The route whose total travel distance for the ship is smallest
 		// Filter out impossible routes
 		return this.tradeRoutes.stream().filter(t -> t.isPossible(ship))
 				.min((tr1, tr2) -> Double.compare(ship.distTo(tr1.getExportWaypoint()) + tr1.getDistance(),
