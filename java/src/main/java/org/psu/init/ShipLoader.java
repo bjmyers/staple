@@ -24,9 +24,7 @@ import org.psu.trademanager.MarketplaceManager;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
 
-import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import lombok.extern.jbosslog.JBossLog;
 
@@ -62,7 +60,7 @@ public class ShipLoader {
 	/**
 	 * This method queries the space traders API for system information
 	 */
-    void onStartup(@Observes StartupEvent event) {
+    public void run() {
     	log.info("Initializing the Ships");
 
 		final List<Ship> ships = gatherShips();
