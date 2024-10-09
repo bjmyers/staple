@@ -98,7 +98,7 @@ public class ShipLoaderTest {
 		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager,
 				tradeShipManager, marketplaceManager);
 
-		shipLoader.onStartup(null);
+		shipLoader.run();
 
 		verify(systemBuilder).gatherWaypoints(systemId);
 		verify(marketplaceManager).updateMarketData(Map.of(waypoint, marketInfo));
@@ -126,7 +126,7 @@ public class ShipLoaderTest {
 		final ShipLoader shipLoader = new ShipLoader(limit, throttler, systemBuilder, shipsClient, shipRoleManager,
 				tradeShipManager, marketplaceManager);
 
-		assertThrows(IllegalStateException.class, () -> shipLoader.onStartup(null));
+		assertThrows(IllegalStateException.class, () -> shipLoader.run());
 	}
 
 }
