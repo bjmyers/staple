@@ -3,6 +3,8 @@ package org.psu.trademanager;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -10,6 +12,7 @@ import org.psu.spacetraders.api.AccountManager;
 import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationClient;
 import org.psu.spacetraders.api.RequestThrottler;
+import org.psu.spacetraders.dto.CargoItem;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.NavigationRequest;
@@ -59,6 +62,42 @@ public class TradeShipManager {
 	}
 
 	public TradeShipJob createJob(final Ship ship) {
+
+		// If the ship has goods in its cargo hold, see if we can sell them
+		if (ship.getCargo().units() > 0) {
+
+			// Sorted so that the item with the highest count is first
+			final List<CargoItem> items = ship.getCargo().inventory().stream()
+					.sorted((c1, c2) -> Integer.compare(c2.units(), c1.units()))
+					.toList();
+
+			// First check the destination to see if it buys anything we've got
+			final Optional<Entry<Waypoint, MarketInfo>> optionalDestinationMarketInfo = marketplaceManager
+					.getMarketInfoById(ship.getNav().getRoute().getDestination().getSymbol());
+			if (optionalDestinationMarketInfo.isPresent()) {
+				final Entry<Waypoint, MarketInfo> destinationMarketInfo = optionalDestinationMarketInfo.get();
+				final List<String> importProductSymbols = destinationMarketInfo.getValue().getImports().stream()
+						.map(Product::getSymbol).toList();
+				final List<CargoItem> itemsToSell = items.stream()
+						.filter(i -> importProductSymbols.contains(i.symbol())).toList();
+				if (itemsToSell.size() > 0) {
+					// We are able to sell some of our inventory at the destination, build a trade
+					// route
+					final List<Product> productsToSell = itemsToSell.stream().map(c -> new Product(c.symbol()))
+							.toList();
+					final TradeRoute route = new TradeRoute(null, destinationMarketInfo.getKey(), productsToSell);
+					final TradeShipJob job = new TradeShipJob(ship, route);
+					job.setState(State.TRAVELING_TO_IMPORT);
+					job.setNextAction(ship.getNav().getRoute().getArrival());
+					final List<TradeRequest> purchases = itemsToSell.stream()
+							.map(c -> new TradeRequest(c.symbol(), c.units())).toList();
+					job.setPurchases(purchases);
+					return job;
+				}
+			}
+		}
+
+		// Nothing in the cargo bay, let's go and make normal trade routes
 		final TradeRoute closestRoute = routeManager.getClosestRoute(ship).get();
 		return new TradeShipJob(ship, closestRoute);
 	}
@@ -131,6 +170,7 @@ public class TradeShipManager {
 		for (final TradeRequest tradeRequest : purchaseRequests) {
 			final TradeResponse purchaseResponse = throttler
 					.throttle(() -> marketplaceRequester.purchase(ship.getSymbol(), tradeRequest));
+			job.getShip().setCargo(purchaseResponse.getCargo());
 
 			total += purchaseResponse.getTransaction().getTotalPrice();
 			log.infof("Purchased %s unit(s) of %s for %s credits", tradeRequest.getUnits(),
@@ -166,6 +206,7 @@ public class TradeShipManager {
 		for (final TradeRequest tradeRequest : sellRequests) {
 			final TradeResponse purchaseResponse = throttler
 					.throttle(() -> marketplaceRequester.sell(shipId, tradeRequest));
+			job.getShip().setCargo(purchaseResponse.getCargo());
 
 			sellTotal += purchaseResponse.getTransaction().getTotalPrice();
 			log.infof("Sold %s unit(s) of %s for %s credits", tradeRequest.getUnits(),

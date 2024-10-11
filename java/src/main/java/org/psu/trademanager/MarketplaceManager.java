@@ -2,11 +2,15 @@ package org.psu.trademanager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.spacetraders.api.MarketplaceClient;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.dto.MarketInfo;
+import org.psu.spacetraders.dto.Product;
+import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.Waypoint;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -64,10 +68,33 @@ public class MarketplaceManager {
 	}
 
 	/**
+	 * @param waypointId The waypointID
+	 * @return An optional entry of the waypoint and marketInfo, will be present if
+	 *         a waypoint with a matching ID is found, will be absent if there is no
+	 *         matching waypoint
+	 * @apiNote It is recommended to use getMarketInfo when possible
+	 */
+	public Optional<Entry<Waypoint, MarketInfo>> getMarketInfoById(final String waypointId) {
+		return this.marketData.entrySet().stream().filter(entry -> entry.getKey().getSymbol().equals(waypointId))
+				.findAny();
+	}
+
+	/**
 	 * @return all current market info for the current system, grouped by waypoint
 	 */
 	public Map<Waypoint, MarketInfo> getAllMarketInfo() {
 		return marketData;
+	}
+
+	/**
+	 * @param ship    The {@link Ship} which has the product
+	 * @param product The {@link Product} being sold
+	 * @return The closest {@link Waypoint} to the ship which sells the product
+	 */
+	public Optional<Waypoint> getClosestImport(final Ship ship, final Product product) {
+		return this.marketData.entrySet().stream().filter(entry -> entry.getValue().getImports().contains(product))
+				.min((entry1, entry2) -> Double.compare(ship.distTo(entry1.getKey()), ship.distTo(entry2.getKey())))
+				.map(Entry::getKey);
 	}
 
 }
