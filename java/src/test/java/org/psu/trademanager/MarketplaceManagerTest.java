@@ -1,18 +1,25 @@
 package org.psu.trademanager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.psu.spacetraders.api.MarketplaceClient;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.MarketInfo;
+import org.psu.spacetraders.dto.Product;
+import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.testutils.TestRequestThrottler;
 
@@ -61,6 +68,63 @@ public class MarketplaceManagerTest {
 
 		final Map<Waypoint, MarketInfo> allData = manager.getAllMarketInfo();
 		assertEquals(3, allData.size());
+	}
+
+	/**
+	 * Tests {@link MarkerplaceManager#getMarketInfoById}
+	 */
+	@Test
+	public void getMarketInfoById() {
+
+		final String way1Id = "way1";
+		final Waypoint way1 = mock(Waypoint.class);
+		when(way1.getSymbol()).thenReturn(way1Id);
+		final MarketInfo market1 = mock(MarketInfo.class);
+		final String way2Id = "way2";
+		final Waypoint way2 = mock(Waypoint.class);
+		when(way2.getSymbol()).thenReturn(way2Id);
+		final MarketInfo market2 = mock(MarketInfo.class);
+
+		final MarketplaceManager manager = new MarketplaceManager(null, null);
+		manager.updateMarketData(Map.of(way1, market1, way2, market2));
+
+		final Entry<Waypoint, MarketInfo> expected1 = new SimpleEntry<Waypoint, MarketInfo>(way1, market1);
+		final Entry<Waypoint, MarketInfo> expected2 = new SimpleEntry<Waypoint, MarketInfo>(way2, market2);
+		assertEquals(expected1, manager.getMarketInfoById(way1Id).get());
+		assertEquals(expected2, manager.getMarketInfoById(way2Id).get());
+		assertTrue(manager.getMarketInfoById("other waypoint").isEmpty());
+	}
+
+	/**
+	 * Tests {@link MarketplaceManager#getClosestImport}
+	 */
+	@Test
+	public void getClosestImport() {
+
+		final Waypoint way1 = mock(Waypoint.class);
+		final MarketInfo market1 = mock(MarketInfo.class);
+		final Waypoint way2 = mock(Waypoint.class);
+		final MarketInfo market2 = mock(MarketInfo.class);
+		final Waypoint way3 = mock(Waypoint.class);
+		final MarketInfo market3 = mock(MarketInfo.class);
+
+		final Ship ship = mock(Ship.class);
+		final Product product = mock(Product.class);
+
+		// Way1 is closest to the ship, but doesn't import the product, way2 is the closest which does import
+		when(ship.distTo(way1)).thenReturn(1.0);
+		when(ship.distTo(way2)).thenReturn(2.0);
+		when(ship.distTo(way3)).thenReturn(3.0);
+		when(market1.getImports()).thenReturn(List.of());
+		when(market2.getImports()).thenReturn(List.of(product));
+		when(market3.getImports()).thenReturn(List.of(product));
+
+		final MarketplaceManager manager = new MarketplaceManager(null, null);
+		manager.updateMarketData(Map.of(way1, market1, way2, market2, way3, market3));
+
+		final Optional<Waypoint> closestImport = manager.getClosestImport(ship, product);
+		assertTrue(closestImport.isPresent());
+		assertEquals(way2, closestImport.get());
 	}
 
 }

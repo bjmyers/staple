@@ -105,7 +105,7 @@ public class ShipTest {
 	@Test
 	public void getRemainingCargo() {
 
-		final Cargo cargo = new Cargo(20, 10);
+		final Cargo cargo = new Cargo(20, 10, List.of());
 		final Ship ship = new Ship();
 		ship.setCargo(cargo);
 
