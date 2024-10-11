@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.spacetraders.api.AccountManager;
 import org.psu.spacetraders.api.MarketplaceRequester;
@@ -35,6 +36,7 @@ import lombok.extern.jbosslog.JBossLog;
 @ApplicationScoped
 public class TradeShipManager {
 
+	private Duration navigationPad;
 	private RequestThrottler throttler;
 	private NavigationClient navigationClient;
 	private AccountManager accountManager;
@@ -43,9 +45,11 @@ public class TradeShipManager {
 	private RouteManager routeManager;
 
 	@Inject
-	public TradeShipManager(final RequestThrottler throttler, @RestClient final NavigationClient navigationClient,
+	public TradeShipManager(@ConfigProperty(name = "app.navigation-pad-ms") final int navigationPad,
+			final RequestThrottler throttler, @RestClient final NavigationClient navigationClient,
 			final AccountManager accountManager, final MarketplaceRequester marketplaceRequester,
 			final MarketplaceManager marketplaceManager, final RouteManager routeManager) {
+		this.navigationPad = Duration.ofMillis(navigationPad);
 		this.throttler = throttler;
 		this.navigationClient = navigationClient;
 		this.accountManager = accountManager;
@@ -96,7 +100,7 @@ public class TradeShipManager {
 		if (!ship.getNav().getWaypointSymbol().equals(waypointSymbol)) {
 			final ShipNavigation newNav = orbitAndNavigate(ship.getSymbol(), waypointSymbol);
 			ship.setNav(newNav);
-			return newNav.getRoute().getArrival();
+			return newNav.getRoute().getArrival().plus(navigationPad);
 		}
 		// Navigation is done!
 		return Instant.now();
@@ -190,12 +194,6 @@ public class TradeShipManager {
 		final Instant arrivalTime = navResponse.getData().getNav().getRoute().getArrival();
 		final Duration tripTime = Duration.between(Instant.now(), arrivalTime);
 		log.infof("Navigation will take %s", tripTime);
-		try {
-			Thread.sleep(tripTime);
-		} catch (InterruptedException e) {
-			log.error("Interrupted while waiting for navigation");
-			log.error(e);
-		}
 
 		return navResponse.getData().getNav();
 	}

@@ -54,7 +54,7 @@ public class TradeShipManagerTest {
 		final TradeRoute route = mock(TradeRoute.class);
 		when(routeManager.getClosestRoute(ship)).thenReturn(Optional.of(route));
 
-		final TradeShipManager manager = new TradeShipManager(null, null, null, null, null, routeManager);
+		final TradeShipManager manager = new TradeShipManager(0, null, null, null, null, null, routeManager);
 
 		final TradeShipJob job = manager.createJob(ship);
 
@@ -68,14 +68,15 @@ public class TradeShipManagerTest {
 	@Test
 	public void manageTradeShipNotStarted() {
 
+		final int navPadMs = 250;
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationClient navClient = mock(NavigationClient.class);
 		final AccountManager accountManager = mock(AccountManager.class);
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(throttler, navClient, accountManager, marketRequester,
-				marketManager, routeManager);
+		final TradeShipManager manager = new TradeShipManager(navPadMs, throttler, navClient, accountManager,
+				marketRequester, marketManager, routeManager);
 
 		final NavigationResponse navResponse = mock(NavigationResponse.class);
 		final ShipNavigation shipNavResponse = mock(ShipNavigation.class);
@@ -100,8 +101,10 @@ public class TradeShipManagerTest {
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
+		final Instant expectedArrivalTime = arrivalTime.plus(Duration.ofMillis(navPadMs));
+
 		assertEquals(State.TRAVELING_TO_EXPORT, outputJob.getState());
-		assertEquals(arrivalTime, outputJob.getNextAction());
+		assertEquals(expectedArrivalTime, outputJob.getNextAction());
 		verify(ship).setNav(shipNavResponse);
 	}
 
@@ -111,14 +114,15 @@ public class TradeShipManagerTest {
 	@Test
 	public void manageTradeShipStartingAtExport() {
 
+		final int navPadMs = 250;
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationClient navClient = mock(NavigationClient.class);
 		final AccountManager accountManager = mock(AccountManager.class);
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(throttler, navClient, accountManager, marketRequester,
-				marketManager, routeManager);
+		final TradeShipManager manager = new TradeShipManager(navPadMs, throttler, navClient, accountManager,
+				marketRequester, marketManager, routeManager);
 
 		final String waypointSymbol = "waypoint";
 		final Ship ship = mock(Ship.class);
@@ -146,14 +150,15 @@ public class TradeShipManagerTest {
 	@Test
 	public void manageTradeShipTravelingToExport() {
 
+		final int navPadMs = 250;
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationClient navClient = mock(NavigationClient.class);
 		final AccountManager accountManager = mock(AccountManager.class);
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(throttler, navClient, accountManager, marketRequester,
-				marketManager, routeManager);
+		final TradeShipManager manager = new TradeShipManager(navPadMs, throttler, navClient, accountManager,
+				marketRequester, marketManager, routeManager);
 
 		final NavigationResponse navResponse = mock(NavigationResponse.class);
 		final ShipNavigation shipNavResponse = mock(ShipNavigation.class);
@@ -195,8 +200,10 @@ public class TradeShipManagerTest {
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
+		final Instant expectedArrivalTime = arrivalTime.plus(Duration.ofMillis(navPadMs));
+
 		assertEquals(State.TRAVELING_TO_IMPORT, outputJob.getState());
-		assertEquals(arrivalTime, outputJob.getNextAction());
+		assertEquals(expectedArrivalTime, outputJob.getNextAction());
 		verify(ship).setNav(shipNavResponse);
 		assertEquals(List.of(tradeRequest), job.getPurchases());
 	}
@@ -208,14 +215,15 @@ public class TradeShipManagerTest {
 	@Test
 	public void manageTradeShipTravelingToImport() {
 
+		final int navPadMs = 250;
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationClient navClient = mock(NavigationClient.class);
 		final AccountManager accountManager = mock(AccountManager.class);
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(throttler, navClient, accountManager, marketRequester,
-				marketManager, routeManager);
+		final TradeShipManager manager = new TradeShipManager(navPadMs, throttler, navClient, accountManager,
+				marketRequester, marketManager, routeManager);
 
 		final String shipId = "Ship";
 		final Ship ship = mock(Ship.class);
@@ -265,14 +273,15 @@ public class TradeShipManagerTest {
 	@Test
 	public void manageTradeShipTravelingToImportNoFuel() {
 
+		final int navPadMs = 250;
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationClient navClient = mock(NavigationClient.class);
 		final AccountManager accountManager = mock(AccountManager.class);
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(throttler, navClient, accountManager, marketRequester,
-				marketManager, routeManager);
+		final TradeShipManager manager = new TradeShipManager(navPadMs, throttler, navClient, accountManager,
+				marketRequester, marketManager, routeManager);
 
 		final String shipId = "Ship";
 		final Ship ship = mock(Ship.class);
