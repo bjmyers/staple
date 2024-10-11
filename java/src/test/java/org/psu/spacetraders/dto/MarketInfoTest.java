@@ -196,62 +196,41 @@ public class MarketInfoTest {
 	}
 
 	/**
-	 * Tests {@link MarketInfo#rebalanceTradeRequests}
+	 * Tests {@link MarketInfo#buildSellRequests}
 	 */
 	@Test
-	public void rebalanceTradeRequests() {
+	public void buildSellRequests() {
 
 		// This product starts as a single request and will end as a full request
 		final String product1 = "p1";
 		final TradeGood tradeGood1 = new TradeGood();
 		tradeGood1.setSymbol(product1);
 		tradeGood1.setTradeVolume(10);
-		final TradeRequest tradeRequest1 = new TradeRequest();
-		tradeRequest1.setSymbol(product1);
-		tradeRequest1.setUnits(10);
+		final CargoItem cargoItem1 = new CargoItem(product1, 10);
 
 		// This product starts as a single request and will not quite fill up a full request
 		final String product2 = "p2";
 		final TradeGood tradeGood2 = new TradeGood();
 		tradeGood2.setSymbol(product2);
 		tradeGood2.setTradeVolume(10);
-		final TradeRequest tradeRequest2 = new TradeRequest();
-		tradeRequest2.setSymbol(product2);
-		tradeRequest2.setUnits(8);
+		final CargoItem cargoItem2 = new CargoItem(product2, 8);
 
 		// This product starts as a single request and will turn into 3 requests
 		final String product3 = "p3";
 		final TradeGood tradeGood3 = new TradeGood();
 		tradeGood3.setSymbol(product3);
 		tradeGood3.setTradeVolume(8);
-		final TradeRequest tradeRequest3 = new TradeRequest();
-		tradeRequest3.setSymbol(product3);
-		tradeRequest3.setUnits(20);
-
-		// This product starts as multiple requests and will turn into a single request
-		final String product4 = "p4";
-		final TradeGood tradeGood4 = new TradeGood();
-		tradeGood4.setSymbol(product4);
-		tradeGood4.setTradeVolume(40);
-		final TradeRequest tradeRequest4 = new TradeRequest();
-		tradeRequest4.setSymbol(product4);
-		tradeRequest4.setUnits(10);
-		final TradeRequest tradeRequest5 = new TradeRequest();
-		tradeRequest5.setSymbol(product4);
-		tradeRequest5.setUnits(10);
-		final TradeRequest tradeRequest6 = new TradeRequest();
-		tradeRequest6.setSymbol(product4);
-		tradeRequest6.setUnits(8);
+		final CargoItem cargoItem3 = new CargoItem(product3, 20);
 
 		final MarketInfo marketInfo = new MarketInfo();
-		marketInfo.setTradeGoods(List.of(tradeGood1, tradeGood2, tradeGood3, tradeGood4));
+		marketInfo.setTradeGoods(List.of(tradeGood1, tradeGood2, tradeGood3));
 
-		final List<TradeRequest> rebalancedRequests = marketInfo.rebalanceTradeRequests(
-				List.of(tradeRequest1, tradeRequest2, tradeRequest3, tradeRequest4, tradeRequest5, tradeRequest6));
+		final List<TradeRequest> sellRequests = marketInfo.buildSellRequests(
+				List.of(cargoItem1, cargoItem2, cargoItem3));
 
-		assertEquals(6, rebalancedRequests.size());
+		assertEquals(5, sellRequests.size());
 
-		final Map<String, List<TradeRequest>> requestsByProduct = rebalancedRequests.stream()
+		final Map<String, List<TradeRequest>> requestsByProduct = sellRequests.stream()
 				.collect(Collectors.groupingBy(TradeRequest::getSymbol));
 
 		final List<TradeRequest> product1Requests = requestsByProduct.get(product1);
@@ -264,14 +243,10 @@ public class MarketInfoTest {
 
 		final List<TradeRequest> product3Requests = requestsByProduct.get(product3);
 		assertEquals(3, product3Requests.size());
-		//TODO: Get assetJ working so that I don't have to do this nonsense
+		//TODO: Get assertJ working so that I don't have to do this nonsense
 		assertEquals(8, product3Requests.get(0).getUnits());
 		assertEquals(8, product3Requests.get(1).getUnits());
 		assertEquals(4, product3Requests.get(2).getUnits());
-
-		final List<TradeRequest> product4Requests = requestsByProduct.get(product4);
-		assertEquals(1, product4Requests.size());
-		assertEquals(28, product4Requests.get(0).getUnits());
 
 	}
 

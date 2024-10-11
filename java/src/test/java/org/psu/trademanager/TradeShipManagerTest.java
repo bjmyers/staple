@@ -111,10 +111,10 @@ public class TradeShipManagerTest {
 		assertEquals(way, job.getRoute().getImportWaypoint());
 		assertEquals(arrivalTime, job.getNextAction());
 
-		final List<TradeRequest> purchases = job.getPurchases();
-		assertEquals(2, purchases.size());
-		assertTrue(purchases.contains(new TradeRequest(product1, product1Quantity)));
-		assertTrue(purchases.contains(new TradeRequest(product2, product2Quantity)));
+		final List<Product> products = job.getRoute().getGoods();
+		assertEquals(2, products.size());
+		assertTrue(products.contains(new Product(product1)));
+		assertTrue(products.contains(new Product(product2)));
 	}
 
 	/**
@@ -260,7 +260,6 @@ public class TradeShipManagerTest {
 		assertEquals(State.TRAVELING_TO_IMPORT, outputJob.getState());
 		assertEquals(expectedArrivalTime, outputJob.getNextAction());
 		verify(ship).setNav(shipNavResponse);
-		assertEquals(List.of(tradeRequest), job.getPurchases());
 	}
 
 	/**
@@ -280,9 +279,11 @@ public class TradeShipManagerTest {
 		final TradeShipManager manager = new TradeShipManager(navPadMs, throttler, navClient, accountManager,
 				marketRequester, marketManager, routeManager);
 
+		final String productName = "product";
 		final String shipId = "Ship";
 		final Ship ship = mock(Ship.class);
-		when(ship.getCargo()).thenReturn(new Cargo(10, 0, List.of()));
+		final CargoItem cargoItem = new CargoItem(productName, 1);
+		when(ship.getCargo()).thenReturn(new Cargo(10, 0, List.of(cargoItem)));
 		when(ship.getSymbol()).thenReturn(shipId);
 		final ShipNavigation shipNav = mock(ShipNavigation.class);
 		when(shipNav.getWaypointSymbol()).thenReturn("Starting Symbol");
@@ -291,6 +292,7 @@ public class TradeShipManagerTest {
 		final Waypoint importWaypoint = mock(Waypoint.class);
 		final TradeRoute tradeRoute = mock(TradeRoute.class);
 		when(tradeRoute.getImportWaypoint()).thenReturn(importWaypoint);
+		when(tradeRoute.getGoods()).thenReturn(List.of(new Product(productName)));
 
 		final int credits = 5000;
 		when(accountManager.getCredits()).thenReturn(credits);
@@ -298,21 +300,20 @@ public class TradeShipManagerTest {
 		final TradeRequest tradeRequest = mock(TradeRequest.class);
 		final MarketInfo marketInfo = mock(MarketInfo.class);
 		when(marketInfo.sellsProduct(Product.FUEL)).thenReturn(true);
-		when(marketInfo.rebalanceTradeRequests(eq(List.of(tradeRequest)))).thenReturn(List.of(tradeRequest));
+		when(marketInfo.buildSellRequests(List.of(cargoItem))).thenReturn(List.of(tradeRequest));
 		when(marketManager.updateMarketInfo(importWaypoint)).thenReturn(marketInfo);
 		when(marketManager.getMarketInfo(importWaypoint)).thenReturn(marketInfo);
 
 		final Transaction transaction = mock(Transaction.class);
 		final TradeResponse tradeResponse = mock(TradeResponse.class);
 		when(tradeResponse.getTransaction()).thenReturn(transaction);
-		when(marketRequester.sell(any(), same(tradeRequest))).thenReturn(tradeResponse);
+		when(marketRequester.sell(shipId, tradeRequest)).thenReturn(tradeResponse);
 
 		final TradeRoute newTradeRoute = mock(TradeRoute.class);
 		when(routeManager.getClosestRoute(ship)).thenReturn(Optional.of(newTradeRoute));
 
 		final TradeShipJob job = new TradeShipJob(ship, tradeRoute);
 		job.setState(State.TRAVELING_TO_IMPORT);
-		job.setPurchases(List.of(tradeRequest));
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
@@ -320,6 +321,7 @@ public class TradeShipManagerTest {
 		assertEquals(ship, outputJob.getShip());
 		assertEquals(newTradeRoute, outputJob.getRoute());
 		verify(marketRequester).refuel(shipId);
+		verify(marketRequester).sell(shipId, tradeRequest);
 	}
 
 	/**
@@ -339,9 +341,11 @@ public class TradeShipManagerTest {
 		final TradeShipManager manager = new TradeShipManager(navPadMs, throttler, navClient, accountManager,
 				marketRequester, marketManager, routeManager);
 
+		final String productName = "product";
 		final String shipId = "Ship";
 		final Ship ship = mock(Ship.class);
-		when(ship.getCargo()).thenReturn(new Cargo(10, 0, List.of()));
+		final CargoItem cargoItem = new CargoItem(productName, 1);
+		when(ship.getCargo()).thenReturn(new Cargo(10, 0, List.of(cargoItem)));
 		when(ship.getSymbol()).thenReturn(shipId);
 		final ShipNavigation shipNav = mock(ShipNavigation.class);
 		when(shipNav.getWaypointSymbol()).thenReturn("Starting Symbol");
@@ -350,6 +354,7 @@ public class TradeShipManagerTest {
 		final Waypoint importWaypoint = mock(Waypoint.class);
 		final TradeRoute tradeRoute = mock(TradeRoute.class);
 		when(tradeRoute.getImportWaypoint()).thenReturn(importWaypoint);
+		when(tradeRoute.getGoods()).thenReturn(List.of(new Product(productName)));
 
 		final int credits = 5000;
 		when(accountManager.getCredits()).thenReturn(credits);
@@ -358,7 +363,7 @@ public class TradeShipManagerTest {
 		final MarketInfo marketInfo = mock(MarketInfo.class);
 		// No Fuel!
 		when(marketInfo.sellsProduct(Product.FUEL)).thenReturn(false);
-		when(marketInfo.rebalanceTradeRequests(eq(List.of(tradeRequest)))).thenReturn(List.of(tradeRequest));
+		when(marketInfo.buildSellRequests(List.of(cargoItem))).thenReturn(List.of(tradeRequest));
 		when(marketManager.updateMarketInfo(importWaypoint)).thenReturn(marketInfo);
 		when(marketManager.getMarketInfo(importWaypoint)).thenReturn(marketInfo);
 
@@ -372,7 +377,6 @@ public class TradeShipManagerTest {
 
 		final TradeShipJob job = new TradeShipJob(ship, tradeRoute);
 		job.setState(State.TRAVELING_TO_IMPORT);
-		job.setPurchases(List.of(tradeRequest));
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
@@ -380,6 +384,7 @@ public class TradeShipManagerTest {
 		assertEquals(ship, outputJob.getShip());
 		assertEquals(newTradeRoute, outputJob.getRoute());
 		verify(marketRequester, times(0)).refuel(shipId);
+		verify(marketRequester).sell(shipId, tradeRequest);
 	}
 
 }

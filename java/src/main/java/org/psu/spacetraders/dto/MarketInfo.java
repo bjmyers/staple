@@ -1,10 +1,8 @@
 package org.psu.spacetraders.dto;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,35 +74,33 @@ public class MarketInfo {
 	}
 
 	/**
-	 * @param tradeRequests A list of {@link TradeRequests} that were performed at
-	 *                      some other market
+	 * @param cargoItems the {@link CargoItem}s which are in the ship's cargo that
+	 *                   are to be sold
 	 * @return A list of {@link TradeRequests for the same products in the same
-	 * quantity that respects this market's trade limits
-	 * @apiNote Assumes that every trade request is for a product that is traded at
-	 *          this market
+	 *         quantity that respects this market's trade limits
 	 */
-	public List<TradeRequest> rebalanceTradeRequests(final List<TradeRequest> tradeRequests) {
-		final Map<String, Integer> amountByProduct = new HashMap<>();
-		tradeRequests.forEach(t -> amountByProduct.merge(t.getSymbol(), t.getUnits(), Integer::sum));
-
+	public List<TradeRequest> buildSellRequests(final List<CargoItem> cargoItems) {
 		final List<TradeRequest> output = new ArrayList<>();
-		for (Entry<String, Integer> productToTrade : amountByProduct.entrySet()) {
-			final String product = productToTrade.getKey();
+		for (CargoItem item : cargoItems) {
 
-			// Assume that good in trade request is traded here
-			final TradeGood tradeGood = this.tradeGoods.stream()
-					.filter(t -> product.equals(t.getSymbol())).findFirst().get();
+			final Optional<TradeGood> optionalTradeGood = this.tradeGoods.stream()
+					.filter(t -> item.symbol().equals(t.getSymbol())).findFirst();
+			if (optionalTradeGood.isEmpty()) {
+				// Item in cargo isn't traded here, skip
+				continue;
+			}
+			final TradeGood tradeGood = optionalTradeGood.get();
 
 			// Floor division, the number of full requests to make
-			final int numFullRequestsToMake = productToTrade.getValue() / tradeGood.getTradeVolume();
+			final int numFullRequestsToMake = item.units() / tradeGood.getTradeVolume();
 			for (int i = 0; i < numFullRequestsToMake; i++) {
-				output.add(new TradeRequest(product, tradeGood.getTradeVolume()));
+				output.add(new TradeRequest(item.symbol(), tradeGood.getTradeVolume()));
 			}
 
 			// The remaining goods which couldn't fit into a full trade request
-			final int remainingGoods = productToTrade.getValue() % tradeGood.getTradeVolume();
+			final int remainingGoods = item.units() % tradeGood.getTradeVolume();
 			if (remainingGoods > 0) {
-				output.add(new TradeRequest(product, remainingGoods));
+				output.add(new TradeRequest(item.symbol(), remainingGoods));
 			}
 		}
 		return output;

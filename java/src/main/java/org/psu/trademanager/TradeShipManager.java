@@ -89,9 +89,6 @@ public class TradeShipManager {
 					final TradeShipJob job = new TradeShipJob(ship, route);
 					job.setState(State.TRAVELING_TO_IMPORT);
 					job.setNextAction(ship.getNav().getRoute().getArrival());
-					final List<TradeRequest> purchases = itemsToSell.stream()
-							.map(c -> new TradeRequest(c.symbol(), c.units())).toList();
-					job.setPurchases(purchases);
 					return job;
 				}
 			}
@@ -117,8 +114,7 @@ public class TradeShipManager {
 			job.setState(State.TRAVELING_TO_EXPORT);
 			break;
 		case TRAVELING_TO_EXPORT:
-			final List<TradeRequest> purchases = purchaseGoods(job);
-			job.setPurchases(purchases);
+			purchaseGoods(job);
 			final Instant importArrival = navigate(job.getShip(), job.getRoute().getImportWaypoint());
 			job.setNextAction(importArrival);
 			job.setState(State.TRAVELING_TO_IMPORT);
@@ -199,8 +195,11 @@ public class TradeShipManager {
 		// Force an update to we know the most up to date prices and trade limits
 		final MarketInfo importMarketInfo = marketplaceManager.updateMarketInfo(job.getRoute().getImportWaypoint());
 
-		// Re-balance the sell requests because trade limits might be different
-		final List<TradeRequest> sellRequests = importMarketInfo.rebalanceTradeRequests(job.getPurchases());
+		// Sell products at this waypoint
+		final List<String> productsToSell = route.getGoods().stream().map(Product::getSymbol).toList();
+		final List<CargoItem> cargoToSell = job.getShip().getCargo().inventory().stream()
+				.filter(c -> productsToSell.contains(c.symbol())).toList();
+		final List<TradeRequest> sellRequests = importMarketInfo.buildSellRequests(cargoToSell);
 
 		int sellTotal = 0;
 		for (final TradeRequest tradeRequest : sellRequests) {
