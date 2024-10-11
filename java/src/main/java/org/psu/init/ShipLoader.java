@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.psu.shiporchestrator.ShipJobQueue;
 import org.psu.shiporchestrator.ShipRole;
 import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.api.RequestThrottler;
@@ -36,25 +37,28 @@ import lombok.extern.jbosslog.JBossLog;
 public class ShipLoader {
 
 	private int limit;
+	private final ShipsClient shipsClient;
 	private final RequestThrottler throttler;
 	private final SystemBuilder systemBuilder;
-	private final ShipsClient shipsClient;
 	private final ShipRoleManager shipRoleManager;
 	private final TradeShipManager tradeShipManager;
 	private final MarketplaceManager marketplaceManager;
+	private final ShipJobQueue jobQueue;
 
 	@Inject
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
-			final RequestThrottler throttler, final SystemBuilder systemBuilder,
-			@RestClient final ShipsClient shipsClient, final ShipRoleManager shipRoleManager,
-			final TradeShipManager tradeShipManager, final MarketplaceManager marketplaceManager) {
+			@RestClient final ShipsClient shipsClient, final RequestThrottler throttler,
+			final SystemBuilder systemBuilder, final ShipRoleManager shipRoleManager,
+			final TradeShipManager tradeShipManager, final MarketplaceManager marketplaceManager,
+			final ShipJobQueue jobQueue) {
 		this.limit = limit;
+		this.shipsClient = shipsClient;
 		this.throttler = throttler;
 		this.systemBuilder = systemBuilder;
-		this.shipsClient = shipsClient;
 		this.shipRoleManager = shipRoleManager;
 		this.tradeShipManager = tradeShipManager;
 		this.marketplaceManager = marketplaceManager;
+		this.jobQueue = jobQueue;
 	}
 
 	/**
@@ -95,11 +99,9 @@ public class ShipLoader {
 		final Ship tradeShip = ships.stream().filter(s -> ShipRole.MINING.equals(shipRoleManager.determineRole(s)))
 				.findFirst().get();
 
-		// Manage the job three times, TODO hook this up to a queue
 		final TradeShipJob job = tradeShipManager.createJob(tradeShip);
-		tradeShipManager.manageTradeShip(job);
-		tradeShipManager.manageTradeShip(job);
-		tradeShipManager.manageTradeShip(job);
+		jobQueue.establishJobs(List.of(job));
+		jobQueue.beginJobQueue();
 	}
 
     public List<Ship> gatherShips() {
