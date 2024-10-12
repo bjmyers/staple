@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.shiporchestrator.ShipJobQueue;
-import org.psu.shiporchestrator.ShipRole;
 import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipsClient;
@@ -94,13 +93,10 @@ public class ShipLoader {
     	marketplaceManager.updateMarketData(marketInfo);
     	log.infof("Found Market Info for %s marketplaces", marketInfo.size());
 
-		// TODO: Get the application to handle more than one ship
     	// TODO: Make the mining ship manager so we're not sending the mining ship to the trading manager
-		final Ship tradeShip = ships.stream().filter(s -> ShipRole.MINING.equals(shipRoleManager.determineRole(s)))
-				.findFirst().get();
+		final List<TradeShipJob> jobs = ships.stream().map(tradeShipManager::createJob).toList();
 
-		final TradeShipJob job = tradeShipManager.createJob(tradeShip);
-		jobQueue.establishJobs(List.of(job));
+		jobQueue.establishJobs(jobs);
 		jobQueue.beginJobQueue();
 	}
 

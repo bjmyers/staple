@@ -49,7 +49,6 @@ public class SystemBuilder {
 	public List<Waypoint> gatherWaypoints(final String systemId) {
 		final DataWrapper<List<Waypoint>> initialPage = throttler
 				.throttle(() -> waypointsClient.getWaypoints(systemId, limit, 1));
-		log.info("Gathered waypoint page 1");
 
 		final WrapperMetadata metaData = initialPage.getMeta();
 		final int numPages = SpaceTradersUtils.getTotalNumPages(metaData);
@@ -63,7 +62,6 @@ public class SystemBuilder {
 
 			final DataWrapper<List<Waypoint>> nextPage = throttler
 					.throttle(() -> waypointsClient.getWaypoints(systemId, limit, page));
-			log.infof("Gathered waypoint page %s", i);
 			waypoints.addAll(nextPage.getData());
 		}
 
