@@ -109,12 +109,16 @@ public class TradeShipManager {
 		// The state of the job indicates what is was doing before it reached the manager
 		switch (job.getState()) {
 		case NOT_STARTED:
+			log.infof("Ship %s traveling to export waypoint %s", job.getShip().getSymbol(),
+					job.getRoute().getExportWaypoint().getSymbol());
 			final Instant exportArrival = navigate(job.getShip(), job.getRoute().getExportWaypoint());
 			job.setNextAction(exportArrival);
 			job.setState(State.TRAVELING_TO_EXPORT);
 			break;
 		case TRAVELING_TO_EXPORT:
 			purchaseGoods(job);
+			log.infof("Ship %s traveling to import waypoint %s", job.getShip().getSymbol(),
+					job.getRoute().getImportWaypoint().getSymbol());
 			final Instant importArrival = navigate(job.getShip(), job.getRoute().getImportWaypoint());
 			job.setNextAction(importArrival);
 			job.setState(State.TRAVELING_TO_IMPORT);
@@ -226,14 +230,13 @@ public class TradeShipManager {
 	private ShipNavigation orbitAndNavigate(final String shipId, final String waypointSymbol) {
 		throttler.throttle(() -> navigationClient.orbit(shipId));
 
-		log.infof("Navigating to %s", waypointSymbol);
 		final NavigationRequest navRequest = new NavigationRequest(waypointSymbol);
 		final DataWrapper<NavigationResponse> navResponse = throttler
 				.throttle(() -> navigationClient.navigate(shipId, navRequest));
 
 		final Instant arrivalTime = navResponse.getData().getNav().getRoute().getArrival();
 		final Duration tripTime = Duration.between(Instant.now(), arrivalTime);
-		log.infof("Navigation will take %s", tripTime);
+		log.infof("Navigation to %s will take %s", waypointSymbol, tripTime);
 
 		return navResponse.getData().getNav();
 	}

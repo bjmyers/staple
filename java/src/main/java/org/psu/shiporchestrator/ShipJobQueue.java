@@ -44,9 +44,10 @@ public class ShipJobQueue {
 			throw new IllegalStateException("The job queue must contain jobs");
 		}
 		while (true) {
+			log.debugf("Queue: %s", queue);
 			final Instant nextAction = this.queue.firstKey();
 			final Duration timeUntilNextAction = Duration.between(Instant.now(), nextAction);
-			log.infof("Time until next action: %s", timeUntilNextAction);
+			log.debugf("Time until next action: %s", timeUntilNextAction);
 			if (timeUntilNextAction.isPositive()) {
 				// Next action is in the future, sleep until its ready
 				try {
