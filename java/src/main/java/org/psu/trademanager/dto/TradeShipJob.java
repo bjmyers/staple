@@ -2,6 +2,7 @@ package org.psu.trademanager.dto;
 
 import java.time.Instant;
 
+import org.psu.shiporchestrator.ShipJob;
 import org.psu.spacetraders.dto.Ship;
 
 import lombok.EqualsAndHashCode;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class TradeShipJob {
+public class TradeShipJob implements ShipJob {
 
 	private Ship ship;
 	private TradeRoute route;
