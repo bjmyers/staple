@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.psu.miningmanager.MiningShipManager;
+import org.psu.miningmanager.dto.MiningShipJob;
 import org.psu.shiporchestrator.ShipJobQueue;
 import org.psu.shiporchestrator.ShipRole;
 import org.psu.shiporchestrator.ShipRoleManager;
@@ -52,13 +54,12 @@ public class ShipLoaderTest {
 		when(shipsClient.getShips(limit, 1)).thenReturn(shipResponse1);
 		when(shipsClient.getShips(limit, 2)).thenReturn(shipResponse2);
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
-		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
 
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final ShipJobQueue jobQueue = mock(ShipJobQueue.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, null, shipRoleManager,
-				tradeShipManager, marketplaceManager, jobQueue);
+				null, null, marketplaceManager, jobQueue);
 
 		final List<Ship> ships = shipLoader.gatherShips();
 
@@ -80,19 +81,31 @@ public class ShipLoaderTest {
 		final ShipNavigation shipNav = mock(ShipNavigation.class);
 		when(shipNav.getSystemSymbol()).thenReturn(systemId);
 
-		final Ship ship = mock(Ship.class);
-		when(ship.getNav()).thenReturn(shipNav);
+		final Ship tradeShip = mock(Ship.class);
+		when(tradeShip.getNav()).thenReturn(shipNav);
+		final Ship miningShip = mock(Ship.class);
+		when(miningShip.getNav()).thenReturn(shipNav);
+		final Ship probeShip = mock(Ship.class);
+		when(probeShip.getNav()).thenReturn(shipNav);
 
 		final WrapperMetadata metaData = new WrapperMetadata(1, 0, limit);
-		final DataWrapper<List<Ship>> shipResponse1 = new DataWrapper<>(List.of(ship), metaData);
+		final DataWrapper<List<Ship>> shipResponse1 = new DataWrapper<>(List.of(tradeShip, miningShip, probeShip),
+				metaData);
 		when(shipsClient.getShips(limit, 1)).thenReturn(shipResponse1);
 
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
-		when(shipRoleManager.determineRole(ship)).thenReturn(ShipRole.MINING);
+		when(shipRoleManager.determineRole(tradeShip)).thenReturn(ShipRole.TRADE);
+		when(shipRoleManager.determineRole(miningShip)).thenReturn(ShipRole.MINING);
+		when(shipRoleManager.determineRole(probeShip)).thenReturn(ShipRole.PROBE);
 
-		final TradeShipJob job = mock(TradeShipJob.class);
+		final TradeShipJob tradeJob = mock(TradeShipJob.class);
 		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
-		when(tradeShipManager.createJob(ship)).thenReturn(job);
+		when(tradeShipManager.createJob(tradeShip)).thenReturn(tradeJob);
+
+		final MiningShipJob miningJob = mock(MiningShipJob.class);
+		final MiningShipManager miningShipManager = mock(MiningShipManager.class);
+		when(miningShipManager.createJob(miningShip)).thenReturn(miningJob);
+
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 
 		final Waypoint waypoint = mock(Waypoint.class);
@@ -103,13 +116,13 @@ public class ShipLoaderTest {
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, systemBuilder, shipRoleManager,
-				tradeShipManager, marketplaceManager, jobQueue);
+				miningShipManager, tradeShipManager, marketplaceManager, jobQueue);
 
 		shipLoader.run();
 
 		verify(systemBuilder).gatherWaypoints(systemId);
 		verify(marketplaceManager).updateMarketData(Map.of(waypoint, marketInfo));
-		verify(jobQueue).establishJobs(List.of(job));
+		verify(jobQueue).establishJobs(List.of(tradeJob, miningJob));
 		verify(jobQueue).beginJobQueue();
 	}
 
@@ -128,13 +141,12 @@ public class ShipLoaderTest {
 		when(shipsClient.getShips(limit, 1)).thenReturn(shipResponse1);
 
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
-		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final ShipJobQueue jobQueue = mock(ShipJobQueue.class);
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, systemBuilder, shipRoleManager,
-				tradeShipManager, marketplaceManager, jobQueue);
+				null, null, marketplaceManager, jobQueue);
 
 		assertThrows(IllegalStateException.class, () -> shipLoader.run());
 	}

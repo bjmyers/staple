@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.psu.miningmanager.MiningShipManager;
+import org.psu.shiporchestrator.ShipJob;
 import org.psu.shiporchestrator.ShipJobQueue;
 import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.api.RequestThrottler;
@@ -22,7 +24,6 @@ import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.MarketplaceManager;
 import org.psu.trademanager.TradeShipManager;
-import org.psu.trademanager.dto.TradeShipJob;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -40,6 +41,7 @@ public class ShipLoader {
 	private final RequestThrottler throttler;
 	private final SystemBuilder systemBuilder;
 	private final ShipRoleManager shipRoleManager;
+	private final MiningShipManager miningShipManager;
 	private final TradeShipManager tradeShipManager;
 	private final MarketplaceManager marketplaceManager;
 	private final ShipJobQueue jobQueue;
@@ -48,6 +50,7 @@ public class ShipLoader {
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
 			@RestClient final ShipsClient shipsClient, final RequestThrottler throttler,
 			final SystemBuilder systemBuilder, final ShipRoleManager shipRoleManager,
+			final MiningShipManager miningShipManager,
 			final TradeShipManager tradeShipManager, final MarketplaceManager marketplaceManager,
 			final ShipJobQueue jobQueue) {
 		this.limit = limit;
@@ -55,6 +58,7 @@ public class ShipLoader {
 		this.throttler = throttler;
 		this.systemBuilder = systemBuilder;
 		this.shipRoleManager = shipRoleManager;
+		this.miningShipManager = miningShipManager;
 		this.tradeShipManager = tradeShipManager;
 		this.marketplaceManager = marketplaceManager;
 		this.jobQueue = jobQueue;
@@ -93,8 +97,19 @@ public class ShipLoader {
     	marketplaceManager.updateMarketData(marketInfo);
     	log.infof("Found Market Info for %s marketplaces", marketInfo.size());
 
-    	// TODO: Make the mining ship manager so we're not sending the mining ship to the trading manager
-		final List<TradeShipJob> jobs = ships.stream().map(tradeShipManager::createJob).toList();
+		final List<ShipJob> jobs = new ArrayList<>();
+		for (final Ship ship : ships) {
+			switch (shipRoleManager.determineRole(ship)) {
+			case MINING:
+				jobs.add(miningShipManager.createJob(ship));
+				break;
+			case TRADE:
+				jobs.add(tradeShipManager.createJob(ship));
+				break;
+			case PROBE:
+				break;
+			}
+		}
 
 		jobQueue.establishJobs(jobs);
 		jobQueue.beginJobQueue();

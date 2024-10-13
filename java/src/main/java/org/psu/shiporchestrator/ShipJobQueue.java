@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.psu.miningmanager.MiningShipManager;
+import org.psu.miningmanager.dto.MiningShipJob;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
 
@@ -20,13 +22,14 @@ import lombok.extern.jbosslog.JBossLog;
 @ApplicationScoped
 public class ShipJobQueue {
 
+	private MiningShipManager miningShipManager;
 	private TradeShipManager tradeShipManager;
 
-	//TODO: Make a Job interface so this can handle more than just trade ship jobs
-	final TreeMap<Instant, TradeShipJob> queue;
+	final TreeMap<Instant, ShipJob> queue;
 
 	@Inject
-	public ShipJobQueue(final TradeShipManager tradeShipManager) {
+	public ShipJobQueue(final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager) {
+		this.miningShipManager = miningShipManager;
 		this.tradeShipManager = tradeShipManager;
 		this.queue = new TreeMap<>();
 	}
@@ -34,7 +37,7 @@ public class ShipJobQueue {
 	/**
 	 * @param jobs The jobs to load into the job queue
 	 */
-	public void establishJobs(final List<TradeShipJob> jobs) {
+	public void establishJobs(final List<? extends ShipJob> jobs) {
 		log.infof("Loading %s jobs into the queue", jobs.size());
 		jobs.forEach(j -> queue.put(j.getNextAction(), j));
 	}
@@ -57,8 +60,17 @@ public class ShipJobQueue {
 				}
 			}
 
-			final Entry<Instant, TradeShipJob> jobToPerform = this.queue.pollFirstEntry();
-			final TradeShipJob nextJob = tradeShipManager.manageTradeShip(jobToPerform.getValue());
+			final Entry<Instant, ShipJob> jobToPerform = this.queue.pollFirstEntry();
+			ShipJob nextJob = null;
+			if (jobToPerform.getValue() instanceof TradeShipJob tradeJob) {
+				nextJob = tradeShipManager.manageTradeShip(tradeJob);
+			}
+			else if (jobToPerform.getValue() instanceof MiningShipJob miningJob) {
+				nextJob = miningShipManager.manageMiningShip(miningJob);
+			}
+			else {
+				log.warnf("Unknown job type, %s", jobToPerform.getValue());
+			}
 			this.queue.put(nextJob.getNextAction(), nextJob);
 		}
 	}
