@@ -38,12 +38,13 @@ public class MiningShipJob implements ShipJob {
 		this.nextAction = Instant.now();
 		this.surveys = null;
 		this.sellingWaypoint = null;
-		this.state = State.TRAVELING_TO_RESOURCE;
+		this.state = State.NOT_STARTED;
 	}
 
 	public static enum State {
-		TRAVELING_TO_RESOURCE,
+		NOT_STARTED,
 		SURVEYING,
+		TRAVELING_TO_RESOURCE,
 		EXTRACTING,
 		TRAVELING_TO_MARKET
 	}

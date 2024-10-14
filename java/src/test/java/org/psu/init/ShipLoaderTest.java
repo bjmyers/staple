@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.psu.miningmanager.MiningShipManager;
+import org.psu.miningmanager.MiningSiteManager;
 import org.psu.miningmanager.dto.MiningShipJob;
 import org.psu.shiporchestrator.ShipJobQueue;
 import org.psu.shiporchestrator.ShipRole;
@@ -57,9 +58,10 @@ public class ShipLoaderTest {
 
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final ShipJobQueue jobQueue = mock(ShipJobQueue.class);
+		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, null, shipRoleManager,
-				null, null, marketplaceManager, jobQueue);
+				null, null, marketplaceManager, miningSiteManager, jobQueue);
 
 		final List<Ship> ships = shipLoader.gatherShips();
 
@@ -114,9 +116,11 @@ public class ShipLoaderTest {
     	when(systemBuilder.gatherMarketInfo(List.of(waypoint))).thenReturn(Map.of(waypoint, marketInfo));
 		final ShipJobQueue jobQueue = mock(ShipJobQueue.class);
 
+		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
+
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, systemBuilder, shipRoleManager,
-				miningShipManager, tradeShipManager, marketplaceManager, jobQueue);
+				miningShipManager, tradeShipManager, marketplaceManager, miningSiteManager, jobQueue);
 
 		shipLoader.run();
 
@@ -124,6 +128,7 @@ public class ShipLoaderTest {
 		verify(marketplaceManager).updateMarketData(Map.of(waypoint, marketInfo));
 		verify(jobQueue).establishJobs(List.of(tradeJob, miningJob));
 		verify(jobQueue).beginJobQueue();
+		verify(miningSiteManager).addSites(List.of(waypoint));
 	}
 
 	/**
@@ -143,10 +148,11 @@ public class ShipLoaderTest {
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final ShipJobQueue jobQueue = mock(ShipJobQueue.class);
+		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, systemBuilder, shipRoleManager,
-				null, null, marketplaceManager, jobQueue);
+				null, null, marketplaceManager, miningSiteManager, jobQueue);
 
 		assertThrows(IllegalStateException.class, () -> shipLoader.run());
 	}

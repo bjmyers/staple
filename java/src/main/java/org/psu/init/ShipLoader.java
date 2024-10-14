@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.miningmanager.MiningShipManager;
+import org.psu.miningmanager.MiningSiteManager;
 import org.psu.shiporchestrator.ShipJob;
 import org.psu.shiporchestrator.ShipJobQueue;
 import org.psu.shiporchestrator.ShipRoleManager;
@@ -44,6 +45,7 @@ public class ShipLoader {
 	private final MiningShipManager miningShipManager;
 	private final TradeShipManager tradeShipManager;
 	private final MarketplaceManager marketplaceManager;
+	private final MiningSiteManager miningSiteManager;
 	private final ShipJobQueue jobQueue;
 
 	@Inject
@@ -52,6 +54,7 @@ public class ShipLoader {
 			final SystemBuilder systemBuilder, final ShipRoleManager shipRoleManager,
 			final MiningShipManager miningShipManager,
 			final TradeShipManager tradeShipManager, final MarketplaceManager marketplaceManager,
+			final MiningSiteManager miningSiteManager,
 			final ShipJobQueue jobQueue) {
 		this.limit = limit;
 		this.shipsClient = shipsClient;
@@ -61,6 +64,7 @@ public class ShipLoader {
 		this.miningShipManager = miningShipManager;
 		this.tradeShipManager = tradeShipManager;
 		this.marketplaceManager = marketplaceManager;
+		this.miningSiteManager = miningSiteManager;
 		this.jobQueue = jobQueue;
 	}
 
@@ -91,6 +95,8 @@ public class ShipLoader {
     	final List<Waypoint> systemWaypoints = systemBuilder.gatherWaypoints(primarySystemId);
 
     	log.infof("Found %s Waypoints", systemWaypoints.size());
+
+    	miningSiteManager.addSites(systemWaypoints);
 
     	log.info("Gathering Market Info");
     	final Map<Waypoint, MarketInfo> marketInfo = systemBuilder.gatherMarketInfo(systemWaypoints);
