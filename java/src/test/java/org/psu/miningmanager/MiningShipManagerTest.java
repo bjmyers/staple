@@ -5,11 +5,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
 import org.psu.miningmanager.dto.Cooldown;
 import org.psu.miningmanager.dto.ExtractResponse;
 import org.psu.miningmanager.dto.MiningShipJob;
@@ -32,15 +34,18 @@ import org.psu.testutils.TestRequestThrottler;
 public class MiningShipManagerTest {
 
 	/**
-	 * Tests createJob
+	 * Tests createJob for a ship that isn't doing anything
 	 */
 	@Test
-	public void createJob() {
+	public void createNewJob() {
 
-		final Ship ship = mock(Ship.class);
+		final String destination = "destination";
+		final Ship ship = mock(Ship.class, Answers.RETURNS_DEEP_STUBS);
+		when(ship.getNav().getWaypointSymbol()).thenReturn(destination);
 
 		final Waypoint way = mock(Waypoint.class);
 		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
+		when(miningSiteManager.getMiningSite(destination)).thenReturn(null);
 		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(way));
 
 		final MiningShipManager manager = new MiningShipManager(null, null, miningSiteManager, null);
@@ -50,6 +55,90 @@ public class MiningShipManagerTest {
 		assertEquals(ship, job.getShip());
 		assertEquals(way, job.getExtractionPoint());
 		assertEquals(State.NOT_STARTED, job.getState());
+	}
+
+	/**
+	 * Tests createJob for a ship that is traveling to a mining site
+	 */
+	@Test
+	public void createJobTravelingToMiningSite() {
+
+		final String destination = "destination";
+		final Ship ship = mock(Ship.class, Answers.RETURNS_DEEP_STUBS);
+		when(ship.getNav().getWaypointSymbol()).thenReturn(destination);
+		// Will arrive in the future
+		final Instant arrivalTime = Instant.now().plus(Duration.ofSeconds(30));
+		when(ship.getNav().getRoute().getArrival()).thenReturn(arrivalTime);
+
+		final Waypoint miningSite = mock(Waypoint.class);
+
+		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
+		when(miningSiteManager.getMiningSite(destination)).thenReturn(miningSite);
+
+		final MiningShipManager manager = new MiningShipManager(null, null, miningSiteManager, null);
+
+		final MiningShipJob job = manager.createJob(ship);
+
+		assertEquals(ship, job.getShip());
+		assertEquals(miningSite, job.getExtractionPoint());
+		assertEquals(State.TRAVELING_TO_RESOURCE, job.getState());
+		assertEquals(arrivalTime, job.getNextAction());
+	}
+
+	/**
+	 * Tests createJob for a ship that is at a mining site with room in its cargo
+	 */
+	@Test
+	public void createJobAtMiningSiteWithCargoSpace() {
+
+		final String destination = "destination";
+		final Ship ship = mock(Ship.class, Answers.RETURNS_DEEP_STUBS);
+		when(ship.getNav().getWaypointSymbol()).thenReturn(destination);
+		// Already arrived
+		final Instant arrivalTime = Instant.now().minus(Duration.ofSeconds(30));
+		when(ship.getNav().getRoute().getArrival()).thenReturn(arrivalTime);
+		when(ship.getRemainingCargo()).thenReturn(10);
+
+		final Waypoint miningSite = mock(Waypoint.class);
+
+		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
+		when(miningSiteManager.getMiningSite(destination)).thenReturn(miningSite);
+
+		final MiningShipManager manager = new MiningShipManager(null, null, miningSiteManager, null);
+
+		final MiningShipJob job = manager.createJob(ship);
+
+		assertEquals(ship, job.getShip());
+		assertEquals(miningSite, job.getExtractionPoint());
+		assertEquals(State.TRAVELING_TO_RESOURCE, job.getState());
+	}
+
+	/**
+	 * Tests createJob for a ship that is at a mining site with no room in its cargo
+	 */
+	@Test
+	public void createJobAtMiningSiteWithoutCargoSpace() {
+
+		final String destination = "destination";
+		final Ship ship = mock(Ship.class, Answers.RETURNS_DEEP_STUBS);
+		when(ship.getNav().getWaypointSymbol()).thenReturn(destination);
+		// Already arrived
+		final Instant arrivalTime = Instant.now().minus(Duration.ofSeconds(30));
+		when(ship.getNav().getRoute().getArrival()).thenReturn(arrivalTime);
+		when(ship.getRemainingCargo()).thenReturn(0);
+
+		final Waypoint miningSite = mock(Waypoint.class);
+
+		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
+		when(miningSiteManager.getMiningSite(destination)).thenReturn(miningSite);
+
+		final MiningShipManager manager = new MiningShipManager(null, null, miningSiteManager, null);
+
+		final MiningShipJob job = manager.createJob(ship);
+
+		assertEquals(ship, job.getShip());
+		assertEquals(miningSite, job.getExtractionPoint());
+		assertEquals(State.EXTRACTING, job.getState());
 	}
 
 	/**
@@ -216,14 +305,16 @@ public class MiningShipManagerTest {
 		final NavigationHelper navigationHelper = mock(NavigationHelper.class);
 		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
 
-		final String shipId = "shippy";
-		final Ship ship = mock(Ship.class);
-		when(ship.getSymbol()).thenReturn(shipId);
-
 		final String extractionSiteId = "waypoint";
 		final Waypoint extractionSite = mock(Waypoint.class);
 		when(extractionSite.getSymbol()).thenReturn(extractionSiteId);
 
+		final String shipId = "shippy";
+		final Ship ship = mock(Ship.class, Answers.RETURNS_DEEP_STUBS);
+		when(ship.getSymbol()).thenReturn(shipId);
+		when(ship.getNav().getWaypointSymbol()).thenReturn(extractionSiteId);
+
+		when(miningSiteManager.getMiningSite(extractionSiteId)).thenReturn(null);
 		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(extractionSite));
 
 		final MiningShipJob job = new MiningShipJob(ship, extractionSite);

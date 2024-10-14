@@ -36,6 +36,15 @@ public class MiningSiteManager {
 	}
 
 	/**
+	 * @param waypointId The waypoint symbol
+	 * @return The waypoint with that symbol is a mining site and has been loaded
+	 *         into this manager, null otherwise
+	 */
+	public Waypoint getMiningSite(final String waypointId) {
+		return this.miningSitesById.get(waypointId);
+	}
+
+	/**
 	 * @param ship a ship
 	 * @return The mining site closest to the ship's current position, empty if
 	 *         there are no mining sites loaded
