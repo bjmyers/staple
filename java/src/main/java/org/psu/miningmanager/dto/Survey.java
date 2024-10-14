@@ -21,7 +21,9 @@ import lombok.RequiredArgsConstructor;
 public class Survey {
 
 	private String signature;
+	private String symbol;
 	private List<Product> deposits;
 	private Instant expiration;
+	private String size;
 
 }
