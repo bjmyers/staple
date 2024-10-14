@@ -1,6 +1,7 @@
 package org.psu.miningmanager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,23 +31,27 @@ public class MiningSiteManagerTest {
 
 		final Ship ship = mock(Ship.class);
 
+		final String closeMiningSiteId = "closeMiningSite";
 		final Waypoint closeMiningSite = mock(Waypoint.class);
-		when(closeMiningSite.getSymbol()).thenReturn("closeMiningSite");
+		when(closeMiningSite.getSymbol()).thenReturn(closeMiningSiteId);
 		when(closeMiningSite.getTraits()).thenReturn(List.of(miningTrait, nonMiningTrait));
 		when(ship.distTo(closeMiningSite)).thenReturn(1.0);
 
+		final String mediumMiningSiteId = "mediumMiningSite";
 		final Waypoint mediumMiningSite = mock(Waypoint.class);
-		when(mediumMiningSite.getSymbol()).thenReturn("mediumMiningSite");
+		when(mediumMiningSite.getSymbol()).thenReturn(mediumMiningSiteId);
 		when(mediumMiningSite.getTraits()).thenReturn(List.of(miningTrait));
 		when(ship.distTo(mediumMiningSite)).thenReturn(2.0);
 
+		final String farMiningSiteId = "farMiningSite";
 		final Waypoint farMiningSite = mock(Waypoint.class);
-		when(farMiningSite.getSymbol()).thenReturn("farMiningSite");
+		when(farMiningSite.getSymbol()).thenReturn(farMiningSiteId);
 		when(farMiningSite.getTraits()).thenReturn(List.of(miningTrait, nonMiningTrait));
 		when(ship.distTo(farMiningSite)).thenReturn(3.0);
 
+		final String nonMiningSiteId = "nonMiningSite";
 		final Waypoint nonMiningSite = mock(Waypoint.class);
-		when(nonMiningSite.getSymbol()).thenReturn("nonMiningSite");
+		when(nonMiningSite.getSymbol()).thenReturn(nonMiningSiteId);
 		when(nonMiningSite.getTraits()).thenReturn(List.of(nonMiningTrait));
 		when(ship.distTo(nonMiningSite)).thenReturn(0.1);
 
@@ -56,6 +61,11 @@ public class MiningSiteManagerTest {
 		final Optional<Waypoint> closestMiningSite = manager.getClosestMiningSite(ship);
 		assertTrue(closestMiningSite.isPresent());
 		assertEquals(closeMiningSite, closestMiningSite.get());
+
+		assertEquals(closeMiningSite, manager.getMiningSite(closeMiningSiteId));
+		assertEquals(mediumMiningSite, manager.getMiningSite(mediumMiningSiteId));
+		assertEquals(farMiningSite, manager.getMiningSite(farMiningSiteId));
+		assertNull(manager.getMiningSite(nonMiningSiteId));
 	}
 
 }

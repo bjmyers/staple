@@ -40,6 +40,32 @@ public class MiningShipManager {
 	}
 
 	public MiningShipJob createJob(final Ship ship) {
+		final Waypoint destination = siteManager.getMiningSite(ship.getNav().getWaypointSymbol());
+		if (destination != null) {
+			// The ship is at or traveling to a mining site
+			if (ship.getNav().getRoute().getArrival().compareTo(Instant.now()) > 0) {
+				// The ship will arrive in the future
+				final MiningShipJob job = new MiningShipJob(ship, destination);
+				job.setState(State.TRAVELING_TO_RESOURCE);
+				job.setNextAction(ship.getNav().getRoute().getArrival());
+				return job;
+			}
+			// The ship is already at a mining site
+			if (ship.getRemainingCargo() > 0) {
+				// We're not full, start by surveying and then start extracting
+				final MiningShipJob job = new MiningShipJob(ship, destination);
+				job.setState(State.TRAVELING_TO_RESOURCE);
+				return job;
+			}
+			// We're full, let the job calculate the marketplace to sell
+			final MiningShipJob job = new MiningShipJob(ship, destination);
+			job.setState(State.EXTRACTING);
+			return job;
+		}
+		// The ship is not at a mining site or traveling to one.
+		//TODO: Figure out if we're traveling to a marketplace that can buy our cargo
+
+		// We're not in the middle of a mining job, make a new one
 		final Waypoint extractionSite = siteManager.getClosestMiningSite(ship).get();
 		return new MiningShipJob(ship, extractionSite);
 	}
@@ -66,22 +92,25 @@ public class MiningShipManager {
 					shipId, job.getNextAction());
 			break;
 		case SURVEYING, EXTRACTING:
+			// If we're full, finish extracting
+			if (ship.getRemainingCargo() == 0) {
+				//TODO: Find the closest market
+				job.setState(State.TRAVELING_TO_MARKET);
+				log.infof("Ship %s finished extracting, ready to extract again at %s",
+						shipId, job.getNextAction());
+				return job;
+			}
 			//TODO: Find a better way of swapping between surveys
 			log.infof("Ship %s extracting resources", shipId);
 			final Survey survey = job.getSurveys().get(0);
 			final ExtractResponse extractResponse = throttler.throttle(() -> surveyClient.extractSurvey(shipId, survey))
 					.getData();
 			ship.setCargo(extractResponse.getCargo());
+
 			job.setNextAction(extractResponse.getCooldown().getExpiration());
-			// If we're full, finish extracting
-			if (ship.getRemainingCargo() == 0) {
-				//TODO: Find the closest market
-				job.setState(State.TRAVELING_TO_MARKET);
-			}
-			else {
-				// Keep extracting
-				job.setState(State.EXTRACTING);
-			}
+			job.setState(State.EXTRACTING);
+			log.infof("Ship %s finished extraction, ready to extract again at %s",
+					shipId, job.getNextAction());
 			break;
 		case TRAVELING_TO_MARKET:
 			// Make a whole new job and return it
