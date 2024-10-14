@@ -82,7 +82,7 @@ public class NavigationHelper {
 
 		final Instant arrivalTime = navResponse.getData().getNav().getRoute().getArrival();
 		final Duration tripTime = Duration.between(Instant.now(), arrivalTime);
-		log.infof("Navigation to %s will take %s", waypointSymbol, tripTime);
+		log.infof("Navigation of ship %s to %s will take %s", shipId, waypointSymbol, tripTime);
 
 		return navResponse.getData().getNav();
 	}
