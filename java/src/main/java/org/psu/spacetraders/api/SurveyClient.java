@@ -1,6 +1,8 @@
 package org.psu.spacetraders.api;
 
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.psu.miningmanager.dto.ExtractResponse;
+import org.psu.miningmanager.dto.Survey;
 import org.psu.miningmanager.dto.SurveyResponse;
 import org.psu.spacetraders.dto.DataWrapper;
 
@@ -19,4 +21,8 @@ public interface SurveyClient {
 	@POST
 	@Path("/v2/my/ships/{shipId}/survey")
 	public DataWrapper<SurveyResponse> survey(@PathParam("shipId") String shipId);
+
+	@POST
+	@Path("/v2/my/ships/{shipId}/extract/survey")
+	public DataWrapper<ExtractResponse> extractSurvey(@PathParam("shipId") String shipId, final Survey survey);
 }

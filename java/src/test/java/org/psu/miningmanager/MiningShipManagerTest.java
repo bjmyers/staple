@@ -2,6 +2,7 @@ package org.psu.miningmanager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.psu.miningmanager.dto.Cooldown;
+import org.psu.miningmanager.dto.ExtractResponse;
 import org.psu.miningmanager.dto.MiningShipJob;
 import org.psu.miningmanager.dto.MiningShipJob.State;
 import org.psu.miningmanager.dto.Survey;
@@ -17,6 +19,7 @@ import org.psu.miningmanager.dto.SurveyResponse;
 import org.psu.spacetraders.api.NavigationHelper;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.SurveyClient;
+import org.psu.spacetraders.dto.Cargo;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.Waypoint;
@@ -115,6 +118,7 @@ public class MiningShipManagerTest {
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
 
 		assertEquals(State.SURVEYING, nextJob.getState());
+		assertEquals(List.of(survey), job.getSurveys());
 		assertEquals(cooldownTime, nextJob.getNextAction());
 	}
 
@@ -131,17 +135,33 @@ public class MiningShipManagerTest {
 		final String shipId = "shippy";
 		final Ship ship = mock(Ship.class);
 		when(ship.getSymbol()).thenReturn(shipId);
+		when(ship.getRemainingCargo()).thenReturn(8);
+
+		final Survey survey = mock(Survey.class);
 
 		final String extractionSiteId = "waypoint";
 		final Waypoint extractionSite = mock(Waypoint.class);
 		when(extractionSite.getSymbol()).thenReturn(extractionSiteId);
 
+		final Instant extractCooldown = Instant.ofEpochSecond(100);
+		final Cargo cargo = new Cargo(10, 2, List.of());
+		final ExtractResponse extractResponse = mock(ExtractResponse.class);
+		when(extractResponse.getCargo()).thenReturn(cargo);
+		when(extractResponse.getCooldown()).thenReturn(new Cooldown(extractCooldown));
+		when(surveyClient.extractSurvey(shipId, survey))
+				.thenReturn(new DataWrapper<ExtractResponse>(extractResponse, null));
+
 		final MiningShipJob job = new MiningShipJob(ship, extractionSite);
 		job.setState(State.SURVEYING);
+		job.setSurveys(List.of(survey));
 
 		final MiningShipManager manager = new MiningShipManager(surveyClient, throttler, null, navigationHelper);
 
-		manager.manageMiningShip(job);
+		final MiningShipJob nextJob = manager.manageMiningShip(job);
+
+		assertEquals(State.EXTRACTING, nextJob.getState());
+		assertEquals(extractCooldown, nextJob.getNextAction());
+		verify(ship).setCargo(cargo);
 	}
 
 	/**
@@ -157,17 +177,32 @@ public class MiningShipManagerTest {
 		final String shipId = "shippy";
 		final Ship ship = mock(Ship.class);
 		when(ship.getSymbol()).thenReturn(shipId);
+		// No remaining cargo, will finish extracting
+		when(ship.getRemainingCargo()).thenReturn(0);
 
 		final String extractionSiteId = "waypoint";
 		final Waypoint extractionSite = mock(Waypoint.class);
 		when(extractionSite.getSymbol()).thenReturn(extractionSiteId);
 
+		final Survey survey = mock(Survey.class);
+
+		final Instant extractCooldown = Instant.ofEpochSecond(100);
+		final Cargo cargo = new Cargo(10, 2, List.of());
+		final ExtractResponse extractResponse = mock(ExtractResponse.class);
+		when(extractResponse.getCargo()).thenReturn(cargo);
+		when(extractResponse.getCooldown()).thenReturn(new Cooldown(extractCooldown));
+		when(surveyClient.extractSurvey(shipId, survey))
+				.thenReturn(new DataWrapper<ExtractResponse>(extractResponse, null));
+
 		final MiningShipJob job = new MiningShipJob(ship, extractionSite);
 		job.setState(State.EXTRACTING);
+		job.setSurveys(List.of(survey));
 
 		final MiningShipManager manager = new MiningShipManager(surveyClient, throttler, null, navigationHelper);
 
-		manager.manageMiningShip(job);
+		final MiningShipJob nextJob = manager.manageMiningShip(job);
+
+		assertEquals(State.TRAVELING_TO_MARKET, nextJob.getState());
 	}
 
 	/**

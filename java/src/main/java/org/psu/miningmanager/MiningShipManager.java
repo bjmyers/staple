@@ -3,8 +3,10 @@ package org.psu.miningmanager;
 import java.time.Instant;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.psu.miningmanager.dto.ExtractResponse;
 import org.psu.miningmanager.dto.MiningShipJob;
 import org.psu.miningmanager.dto.MiningShipJob.State;
+import org.psu.miningmanager.dto.Survey;
 import org.psu.miningmanager.dto.SurveyResponse;
 import org.psu.spacetraders.api.NavigationHelper;
 import org.psu.spacetraders.api.RequestThrottler;
@@ -60,12 +62,26 @@ public class MiningShipManager {
 			job.setSurveys(surveyResponse.getSurveys());
 			job.setNextAction(surveyResponse.getCooldown().getExpiration());
 			job.setState(State.SURVEYING);
-			log.infof("Finished Surveying, found %s sites, ship in cooldown until %s", job.getSurveys().size(),
-					job.getNextAction());
+			log.infof("Finished Surveying, found %s sites, ship %s in cooldown until %s", job.getSurveys().size(),
+					shipId, job.getNextAction());
 			break;
-		case SURVEYING:
-			break;
-		case EXTRACTING:
+		case SURVEYING, EXTRACTING:
+			//TODO: Find a better way of swapping between surveys
+			log.infof("Ship %s extracting resources", shipId);
+			final Survey survey = job.getSurveys().get(0);
+			final ExtractResponse extractResponse = throttler.throttle(() -> surveyClient.extractSurvey(shipId, survey))
+					.getData();
+			ship.setCargo(extractResponse.getCargo());
+			job.setNextAction(extractResponse.getCooldown().getExpiration());
+			// If we're full, finish extracting
+			if (ship.getRemainingCargo() == 0) {
+				//TODO: Find the closest market
+				job.setState(State.TRAVELING_TO_MARKET);
+			}
+			else {
+				// Keep extracting
+				job.setState(State.EXTRACTING);
+			}
 			break;
 		case TRAVELING_TO_MARKET:
 			// Make a whole new job and return it
