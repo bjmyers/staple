@@ -37,6 +37,14 @@ public class Ship {
 	}
 
 	/**
+	 * @param waypoint a waypoint
+	 * @return true if this ship can travel to the waypoint given its fuel capacity
+	 */
+	public boolean canTravelTo(final Waypoint waypoint) {
+		return this.fuel.current() > this.distTo(waypoint);
+	}
+
+	/**
 	 * @return The amount of open cargo space on the ship
 	 */
 	public int getRemainingCargo() {
