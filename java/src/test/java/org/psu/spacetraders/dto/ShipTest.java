@@ -1,6 +1,7 @@
 package org.psu.spacetraders.dto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -96,7 +97,33 @@ public class ShipTest {
 		when(waypoint.getY()).thenReturn(4);
 
 		assertEquals(5.0, ship.distTo(waypoint), 1e-9);
+	}
 
+	/**
+	 * Tests canTravelTo
+	 */
+	@Test
+	public void canTravelTo() {
+
+		final int shipX = 0;
+		final int shipY = 0;
+		final RoutePoint currentShipPosition = new RoutePoint("route", shipX, shipY);
+		final ShipRoute shipRoute = new ShipRoute(currentShipPosition, currentShipPosition, null, null);
+		final ShipNavigation nav = new ShipNavigation(null, null, shipRoute, null, null);
+
+		final Waypoint waypoint = mock(Waypoint.class);
+		when(waypoint.getX()).thenReturn(3);
+		when(waypoint.getY()).thenReturn(4);
+
+		final FuelStatus lowFuel = new FuelStatus(3, 3);
+		final Ship lowFuelShip = new Ship("Ship", nav, null, null, lowFuel, null);
+
+		assertFalse(lowFuelShip.canTravelTo(waypoint));
+
+		final FuelStatus highFuel = new FuelStatus(6, 6);
+		final Ship highFuelShip = new Ship("Ship", nav, null, null, highFuel, null);
+
+		assertTrue(highFuelShip.canTravelTo(waypoint));
 	}
 
 	/**

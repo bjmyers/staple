@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -96,7 +95,7 @@ public class MarketplaceManagerTest {
 	}
 
 	/**
-	 * Tests {@link MarketplaceManager#getClosestImport}
+	 * Tests {@link MarketplaceManager#getClosestTradingWaypoint}
 	 */
 	@Test
 	public void getClosestImport() {
@@ -111,18 +110,18 @@ public class MarketplaceManagerTest {
 		final Ship ship = mock(Ship.class);
 		final Product product = mock(Product.class);
 
-		// Way1 is closest to the ship, but doesn't import the product, way2 is the closest which does import
+		// Way1 is closest to the ship, but doesn't sell the product, way2 is the closest which does sell it
 		when(ship.distTo(way1)).thenReturn(1.0);
 		when(ship.distTo(way2)).thenReturn(2.0);
 		when(ship.distTo(way3)).thenReturn(3.0);
-		when(market1.getImports()).thenReturn(List.of());
-		when(market2.getImports()).thenReturn(List.of(product));
-		when(market3.getImports()).thenReturn(List.of(product));
+		when(market1.sellsProduct(product)).thenReturn(false);
+		when(market2.sellsProduct(product)).thenReturn(true);
+		when(market3.sellsProduct(product)).thenReturn(true);
 
 		final MarketplaceManager manager = new MarketplaceManager(null, null);
 		manager.updateMarketData(Map.of(way1, market1, way2, market2, way3, market3));
 
-		final Optional<Waypoint> closestImport = manager.getClosestImport(ship, product);
+		final Optional<Waypoint> closestImport = manager.getClosestTradingWaypoint(ship, product);
 		assertTrue(closestImport.isPresent());
 		assertEquals(way2, closestImport.get());
 	}

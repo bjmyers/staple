@@ -6,6 +6,7 @@ import java.time.Instant;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.spacetraders.dto.DataWrapper;
+import org.psu.spacetraders.dto.DockResponse;
 import org.psu.spacetraders.dto.NavigationRequest;
 import org.psu.spacetraders.dto.NavigationResponse;
 import org.psu.spacetraders.dto.Ship;
@@ -60,8 +61,8 @@ public class NavigationHelper {
 	 *             modified by this method
 	 */
 	public void dock(final Ship ship) {
-		final ShipNavigation newNav = throttler.throttle(() -> navigationClient.dock(ship.getSymbol())).getData();
-		ship.setNav(newNav);
+		final DockResponse dockResponse = throttler.throttle(() -> navigationClient.dock(ship.getSymbol())).getData();
+		ship.setNav(dockResponse.getNav());
 	}
 
 	/**
@@ -69,8 +70,8 @@ public class NavigationHelper {
 	 *             modified by this method
 	 */
 	public void orbit(final Ship ship) {
-		final ShipNavigation newNav = throttler.throttle(() -> navigationClient.orbit(ship.getSymbol())).getData();
-		ship.setNav(newNav);
+		final DockResponse dockResponse = throttler.throttle(() -> navigationClient.orbit(ship.getSymbol())).getData();
+		ship.setNav(dockResponse.getNav());
 	}
 
 	private ShipNavigation orbitAndNavigate(final String shipId, final String waypointSymbol) {

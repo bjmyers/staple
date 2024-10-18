@@ -2,9 +2,9 @@ package org.psu.spacetraders.api;
 
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.psu.spacetraders.dto.DataWrapper;
+import org.psu.spacetraders.dto.DockResponse;
 import org.psu.spacetraders.dto.NavigationRequest;
 import org.psu.spacetraders.dto.NavigationResponse;
-import org.psu.spacetraders.dto.ShipNavigation;
 
 import jakarta.enterprise.context.Dependent;
 import jakarta.ws.rs.POST;
@@ -21,20 +21,20 @@ public interface NavigationClient {
 	/**
 	 * Commands a ship to orbit its current waypoint
 	 * @param shipId The identifier of the ship
-	 * @return a wrapped {@link ShipNavigation}
+	 * @return a wrapped {@link DockResponse}
 	 */
 	@POST
 	@Path("/v2/my/ships/{shipId}/orbit")
-	public DataWrapper<ShipNavigation> orbit(@PathParam("shipId") String shipId);
+	public DataWrapper<DockResponse> orbit(@PathParam("shipId") String shipId);
 
 	/**
 	 * Commands a ship to dock at its current waypoint
 	 * @param shipId The identifier of the ship
-	 * @return a wrapped {@link ShipNavigation}
+	 * @return a wrapped {@link DockResponse}
 	 */
 	@POST
 	@Path("/v2/my/ships/{shipId}/dock")
-	public DataWrapper<ShipNavigation> dock(@PathParam("shipId") String shipId);
+	public DataWrapper<DockResponse> dock(@PathParam("shipId") String shipId);
 
 	/**
 	 * Commands a ship to start navigation

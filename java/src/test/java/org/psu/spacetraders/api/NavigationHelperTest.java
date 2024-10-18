@@ -15,6 +15,7 @@ import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.psu.spacetraders.dto.DataWrapper;
+import org.psu.spacetraders.dto.DockResponse;
 import org.psu.spacetraders.dto.NavigationRequest;
 import org.psu.spacetraders.dto.NavigationResponse;
 import org.psu.spacetraders.dto.Ship;
@@ -102,8 +103,10 @@ public class NavigationHelperTest {
 		when(ship.getSymbol()).thenReturn(shipId);
 
 		final ShipNavigation shipNav = mock(ShipNavigation.class);
+		final DockResponse dockResponse = mock(DockResponse.class);
+		when(dockResponse.getNav()).thenReturn(shipNav);
 		final NavigationClient navClient = mock(NavigationClient.class);
-		when(navClient.dock(shipId)).thenReturn(new DataWrapper<ShipNavigation>(shipNav, null));
+		when(navClient.dock(shipId)).thenReturn(new DataWrapper<DockResponse>(dockResponse, null));
 
 		final NavigationHelper navHelper = new NavigationHelper(1, navClient, TestRequestThrottler.get());
 
@@ -122,8 +125,10 @@ public class NavigationHelperTest {
 		when(ship.getSymbol()).thenReturn(shipId);
 
 		final ShipNavigation shipNav = mock(ShipNavigation.class);
+		final DockResponse dockResponse = mock(DockResponse.class);
+		when(dockResponse.getNav()).thenReturn(shipNav);
 		final NavigationClient navClient = mock(NavigationClient.class);
-		when(navClient.orbit(shipId)).thenReturn(new DataWrapper<ShipNavigation>(shipNav, null));
+		when(navClient.orbit(shipId)).thenReturn(new DataWrapper<DockResponse>(dockResponse, null));
 
 		final NavigationHelper navHelper = new NavigationHelper(1, navClient, TestRequestThrottler.get());
 

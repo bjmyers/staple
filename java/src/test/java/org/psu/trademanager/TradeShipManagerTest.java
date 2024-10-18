@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -215,34 +214,17 @@ public class TradeShipManagerTest {
 				routeManager);
 
 		final String productName = "product";
-		final String shipId = "Ship";
 		final Ship ship = mock(Ship.class);
 		final CargoItem cargoItem = new CargoItem(productName, 1);
 		when(ship.getCargo()).thenReturn(new Cargo(10, 0, List.of(cargoItem)));
-		when(ship.getSymbol()).thenReturn(shipId);
-		final ShipNavigation shipNav = mock(ShipNavigation.class);
-		when(shipNav.getWaypointSymbol()).thenReturn("Starting Symbol");
-		when(ship.getNav()).thenReturn(shipNav);
 
 		final Waypoint importWaypoint = mock(Waypoint.class);
 		final TradeRoute tradeRoute = mock(TradeRoute.class);
 		when(tradeRoute.getImportWaypoint()).thenReturn(importWaypoint);
 		when(tradeRoute.getGoods()).thenReturn(List.of(new Product(productName)));
 
-		final int credits = 5000;
-		when(accountManager.getCredits()).thenReturn(credits);
-
-		final TradeRequest tradeRequest = mock(TradeRequest.class);
 		final MarketInfo marketInfo = mock(MarketInfo.class);
-		when(marketInfo.sellsProduct(Product.FUEL)).thenReturn(true);
-		when(marketInfo.buildSellRequests(List.of(cargoItem))).thenReturn(List.of(tradeRequest));
 		when(marketManager.updateMarketInfo(importWaypoint)).thenReturn(marketInfo);
-		when(marketManager.getMarketInfo(importWaypoint)).thenReturn(marketInfo);
-
-		final Transaction transaction = mock(Transaction.class);
-		final TradeResponse tradeResponse = mock(TradeResponse.class);
-		when(tradeResponse.getTransaction()).thenReturn(transaction);
-		when(marketRequester.sell(ship, tradeRequest)).thenReturn(tradeResponse);
 
 		final TradeRoute newTradeRoute = mock(TradeRoute.class);
 		when(routeManager.getClosestRoute(ship)).thenReturn(Optional.of(newTradeRoute));
@@ -252,72 +234,10 @@ public class TradeShipManagerTest {
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
+		verify(marketRequester).dockAndSellItems(ship, marketInfo, List.of(cargoItem));
 		assertEquals(State.NOT_STARTED, outputJob.getState());
 		assertEquals(ship, outputJob.getShip());
 		assertEquals(newTradeRoute, outputJob.getRoute());
-		verify(marketRequester).refuel(ship);
-		verify(marketRequester).sell(ship, tradeRequest);
-	}
-
-	/**
-	 * Tests {@link TradeShipManager#manageTradeShip} with a job where the ship was
-	 * traveling to the import waypoint but the import waypoint doesn't sell fuel
-	 */
-	@Test
-	public void manageTradeShipTravelingToImportNoFuel() {
-
-		final NavigationHelper navHelper = mock(NavigationHelper.class);
-		final AccountManager accountManager = mock(AccountManager.class);
-		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
-		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
-		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(navHelper, accountManager, marketRequester, marketManager,
-				routeManager);
-
-		final String productName = "product";
-		final String shipId = "Ship";
-		final Ship ship = mock(Ship.class);
-		final CargoItem cargoItem = new CargoItem(productName, 1);
-		when(ship.getCargo()).thenReturn(new Cargo(10, 0, List.of(cargoItem)));
-		when(ship.getSymbol()).thenReturn(shipId);
-		final ShipNavigation shipNav = mock(ShipNavigation.class);
-		when(shipNav.getWaypointSymbol()).thenReturn("Starting Symbol");
-		when(ship.getNav()).thenReturn(shipNav);
-
-		final Waypoint importWaypoint = mock(Waypoint.class);
-		final TradeRoute tradeRoute = mock(TradeRoute.class);
-		when(tradeRoute.getImportWaypoint()).thenReturn(importWaypoint);
-		when(tradeRoute.getGoods()).thenReturn(List.of(new Product(productName)));
-
-		final int credits = 5000;
-		when(accountManager.getCredits()).thenReturn(credits);
-
-		final TradeRequest tradeRequest = mock(TradeRequest.class);
-		final MarketInfo marketInfo = mock(MarketInfo.class);
-		// No Fuel!
-		when(marketInfo.sellsProduct(Product.FUEL)).thenReturn(false);
-		when(marketInfo.buildSellRequests(List.of(cargoItem))).thenReturn(List.of(tradeRequest));
-		when(marketManager.updateMarketInfo(importWaypoint)).thenReturn(marketInfo);
-		when(marketManager.getMarketInfo(importWaypoint)).thenReturn(marketInfo);
-
-		final Transaction transaction = mock(Transaction.class);
-		final TradeResponse tradeResponse = mock(TradeResponse.class);
-		when(tradeResponse.getTransaction()).thenReturn(transaction);
-		when(marketRequester.sell(any(), same(tradeRequest))).thenReturn(tradeResponse);
-
-		final TradeRoute newTradeRoute = mock(TradeRoute.class);
-		when(routeManager.getClosestRoute(ship)).thenReturn(Optional.of(newTradeRoute));
-
-		final TradeShipJob job = new TradeShipJob(ship, tradeRoute);
-		job.setState(State.TRAVELING_TO_IMPORT);
-
-		final TradeShipJob outputJob = manager.manageTradeShip(job);
-
-		assertEquals(State.NOT_STARTED, outputJob.getState());
-		assertEquals(ship, outputJob.getShip());
-		assertEquals(newTradeRoute, outputJob.getRoute());
-		verify(marketRequester, times(0)).refuel(ship);
-		verify(marketRequester).sell(ship, tradeRequest);
 	}
 
 }

@@ -91,8 +91,8 @@ public class MarketplaceManager {
 	 * @param product The {@link Product} being sold
 	 * @return The closest {@link Waypoint} to the ship which sells the product
 	 */
-	public Optional<Waypoint> getClosestImport(final Ship ship, final Product product) {
-		return this.marketData.entrySet().stream().filter(entry -> entry.getValue().getImports().contains(product))
+	public Optional<Waypoint> getClosestTradingWaypoint(final Ship ship, final Product product) {
+		return this.marketData.entrySet().stream().filter(entry -> entry.getValue().sellsProduct(product))
 				.min((entry1, entry2) -> Double.compare(ship.distTo(entry1.getKey()), ship.distTo(entry2.getKey())))
 				.map(Entry::getKey);
 	}

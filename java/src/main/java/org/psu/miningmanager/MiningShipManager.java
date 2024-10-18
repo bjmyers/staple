@@ -1,18 +1,28 @@
 package org.psu.miningmanager;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.miningmanager.dto.ExtractResponse;
 import org.psu.miningmanager.dto.MiningShipJob;
 import org.psu.miningmanager.dto.MiningShipJob.State;
 import org.psu.miningmanager.dto.Survey;
 import org.psu.miningmanager.dto.SurveyResponse;
+import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationHelper;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.SurveyClient;
+import org.psu.spacetraders.dto.CargoItem;
+import org.psu.spacetraders.dto.MarketInfo;
+import org.psu.spacetraders.dto.Product;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.Waypoint;
+import org.psu.trademanager.MarketplaceManager;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -25,21 +35,30 @@ import lombok.extern.jbosslog.JBossLog;
 @ApplicationScoped
 public class MiningShipManager {
 
+	private Duration cooldownPad;
 	private SurveyClient surveyClient;
 	private RequestThrottler throttler;
 	private MiningSiteManager siteManager;
 	private NavigationHelper navHelper;
+	private MarketplaceManager marketplaceManager;
+	private MarketplaceRequester marketplaceRequester;
 
 	@Inject
-	public MiningShipManager(@RestClient final SurveyClient surveyClient, final RequestThrottler throttler,
-			final MiningSiteManager siteManager, final NavigationHelper navHelper) {
+	public MiningShipManager(@ConfigProperty(name = "app.cooldown-pad-ms") final int cooldownPad,
+			@RestClient final SurveyClient surveyClient, final RequestThrottler throttler,
+			final MiningSiteManager siteManager, final NavigationHelper navHelper,
+			final MarketplaceManager marketplaceManager, final MarketplaceRequester marketplaceRequester) {
+		this.cooldownPad = Duration.ofMillis(cooldownPad);
 		this.surveyClient = surveyClient;
 		this.throttler = throttler;
 		this.siteManager = siteManager;
 		this.navHelper = navHelper;
+		this.marketplaceManager = marketplaceManager;
+		this.marketplaceRequester = marketplaceRequester;
 	}
 
 	public MiningShipJob createJob(final Ship ship) {
+
 		final Waypoint destination = siteManager.getMiningSite(ship.getNav().getWaypointSymbol());
 		if (destination != null) {
 			// The ship is at or traveling to a mining site
@@ -63,7 +82,23 @@ public class MiningShipManager {
 			return job;
 		}
 		// The ship is not at a mining site or traveling to one.
-		//TODO: Figure out if we're traveling to a marketplace that can buy our cargo
+
+		// Figure out if we're traveling to a marketplace that can buy our cargo
+		final Optional<Entry<Waypoint, MarketInfo>> optionalDestinationMarketInfo = marketplaceManager
+				.getMarketInfoById(ship.getNav().getWaypointSymbol());
+		if (optionalDestinationMarketInfo.isPresent()) {
+			final Entry<Waypoint, MarketInfo> destinationMarketInfo = optionalDestinationMarketInfo.get();
+			if (ship.getCargo().inventory().stream().map(c -> new Product(c.symbol())).anyMatch(
+					p -> destinationMarketInfo.getValue().sellsProduct(p))) {
+				// The destination does indeed buy something that we have
+				// Extraction point doesn't matter, we've already extracted everything
+				final MiningShipJob job = new MiningShipJob(ship, null);
+				job.setState(State.TRAVELING_TO_MARKET);
+				job.setNextAction(ship.getNav().getRoute().getArrival());
+				job.setSellingWaypoint(destinationMarketInfo.getKey());
+				return job;
+			}
+		}
 
 		// We're not in the middle of a mining job, make a new one
 		final Waypoint extractionSite = siteManager.getClosestMiningSite(ship).get();
@@ -86,7 +121,7 @@ public class MiningShipManager {
 		case TRAVELING_TO_RESOURCE:
 			final SurveyResponse surveyResponse = throttler.throttle(() -> surveyClient.survey(shipId)).getData();
 			job.setSurveys(surveyResponse.getSurveys());
-			job.setNextAction(surveyResponse.getCooldown().getExpiration());
+			job.setNextAction(surveyResponse.getCooldown().getExpiration().plus(cooldownPad));
 			job.setState(State.SURVEYING);
 			log.infof("Finished Surveying, found %s sites, ship %s in cooldown until %s", job.getSurveys().size(),
 					shipId, job.getNextAction());
@@ -94,10 +129,9 @@ public class MiningShipManager {
 		case SURVEYING, EXTRACTING:
 			// If we're full, finish extracting
 			if (ship.getRemainingCargo() == 0) {
-				//TODO: Find the closest market
+				final Instant arrival = findAndNavigateToMarket(job);
 				job.setState(State.TRAVELING_TO_MARKET);
-				log.infof("Ship %s finished extracting, ready to extract again at %s",
-						shipId, job.getNextAction());
+				job.setNextAction(arrival);
 				return job;
 			}
 			//TODO: Find a better way of swapping between surveys
@@ -107,16 +141,52 @@ public class MiningShipManager {
 					.getData();
 			ship.setCargo(extractResponse.getCargo());
 
-			job.setNextAction(extractResponse.getCooldown().getExpiration());
+			job.setNextAction(extractResponse.getCooldown().getExpiration().plus(cooldownPad));
 			job.setState(State.EXTRACTING);
 			log.infof("Ship %s finished extraction, ready to extract again at %s",
 					shipId, job.getNextAction());
 			break;
 		case TRAVELING_TO_MARKET:
+			sellItems(job);
 			// Make a whole new job and return it
 			return createJob(job.getShip());
 		}
 		return job;
+	}
+
+	private Instant findAndNavigateToMarket(final MiningShipJob job) {
+		final Ship ship = job.getShip();
+
+		// Sorted so that the item with the highest count is first
+		final List<CargoItem> items = ship.getCargo().inventory().stream()
+				.sorted((c1, c2) -> Integer.compare(c2.units(), c1.units()))
+				.toList();
+
+		for (final CargoItem item : items) {
+			final Product product = new Product(item.symbol());
+			final Optional<Waypoint> optionalMarket = marketplaceManager.getClosestTradingWaypoint(ship, product);
+			if (optionalMarket.isEmpty()) {
+				// Nothing buys this product, skip it
+				continue;
+			}
+			final Waypoint buyingMarket = optionalMarket.get();
+			if (ship.canTravelTo(buyingMarket)) {
+				final Instant arrival = navHelper.navigate(ship, buyingMarket);
+				log.infof("Identified market %s to sell extracted goods, ship %s will arrive at %s",
+						buyingMarket.getSymbol(), ship.getSymbol(), arrival);
+				job.setSellingWaypoint(buyingMarket);
+				return arrival;
+			}
+		}
+		//TODO: Go to more efficient mode and travel to one of the markets this way
+		throw new IllegalStateException("No waypoints within range which purchase current cargo");
+	}
+
+	private void sellItems(final MiningShipJob job) {
+		final Ship ship = job.getShip();
+		final MarketInfo market = marketplaceManager.updateMarketInfo(job.getSellingWaypoint());
+
+		marketplaceRequester.dockAndSellItems(ship, market, ship.getCargo().inventory());
 	}
 
 }

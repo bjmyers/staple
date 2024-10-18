@@ -156,47 +156,16 @@ public class TradeShipManager {
 
 	private void sellGoods(final TradeShipJob job) {
 		final Ship ship = job.getShip();
-		final String shipId = ship.getSymbol();
 		final TradeRoute route = job.getRoute();
 
-		// Dock and sell goods
-		navigationHelper.dock(ship);
-
-		// TODO: Remove this when space traders fixes their bug, it takes a while for markets to realize
-		// a ship is docked at them
-		try {
-			Thread.sleep(Duration.ofSeconds(5));
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		// Force an update to we know the most up to date prices and trade limits
-		final MarketInfo importMarketInfo = marketplaceManager.updateMarketInfo(job.getRoute().getImportWaypoint());
-
-		// Sell products at this waypoint
 		final List<String> productsToSell = route.getGoods().stream().map(Product::getSymbol).toList();
 		final List<CargoItem> cargoToSell = ship.getCargo().inventory().stream()
 				.filter(c -> productsToSell.contains(c.symbol())).toList();
-		final List<TradeRequest> sellRequests = importMarketInfo.buildSellRequests(cargoToSell);
 
-		int sellTotal = 0;
-		for (final TradeRequest tradeRequest : sellRequests) {
-			final TradeResponse purchaseResponse = marketplaceRequester.sell(ship, tradeRequest);
+		// Force an update to we know the most up to date prices and trade limits
+		final MarketInfo importMarketInfo = marketplaceManager.updateMarketInfo(route.getImportWaypoint());
 
-			sellTotal += purchaseResponse.getTransaction().getTotalPrice();
-			log.infof("Sold %s unit(s) of %s for %s credits", tradeRequest.getUnits(),
-					tradeRequest.getSymbol(), purchaseResponse.getTransaction().getTotalPrice());
-		}
-		log.infof("Total Sell Price: %s", sellTotal);
-
-		if (marketplaceManager.getMarketInfo(route.getImportWaypoint()).sellsProduct(Product.FUEL)) {
-			marketplaceRequester.refuel(ship);
-			log.infof("Refuled ship %s", shipId);
-		}
-		else {
-			log.warnf("Unable to refuel ship %s at waypoint %s", shipId,
-					route.getImportWaypoint().getSymbol());
-		}
+		marketplaceRequester.dockAndSellItems(ship, importMarketInfo, cargoToSell);
 	}
 
 }
