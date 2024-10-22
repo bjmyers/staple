@@ -83,8 +83,8 @@ public class TradeShipManager {
 		}
 
 		// Nothing in the cargo bay, let's go and make normal trade routes
-		final TradeRoute closestRoute = routeManager.getClosestRoute(ship).get();
-		return new TradeShipJob(ship, closestRoute);
+		final TradeRoute bestRoute = routeManager.getBestRoute(ship);
+		return new TradeShipJob(ship, bestRoute);
 	}
 
 	/**
@@ -162,10 +162,7 @@ public class TradeShipManager {
 		final List<CargoItem> cargoToSell = ship.getCargo().inventory().stream()
 				.filter(c -> productsToSell.contains(c.symbol())).toList();
 
-		// Force an update to we know the most up to date prices and trade limits
-		final MarketInfo importMarketInfo = marketplaceManager.updateMarketInfo(route.getImportWaypoint());
-
-		marketplaceRequester.dockAndSellItems(ship, importMarketInfo, cargoToSell);
+		marketplaceRequester.dockAndSellItems(ship, route.getImportWaypoint(), cargoToSell);
 	}
 
 }

@@ -6,6 +6,7 @@ import org.psu.spacetraders.dto.Product;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.Waypoint;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
@@ -13,11 +14,12 @@ import lombok.Data;
  * waypoint which exports them, and another which imports them
  */
 @Data
+@AllArgsConstructor
 public class TradeRoute {
 
 	private final Waypoint exportWaypoint;
 	private final Waypoint importWaypoint;
-	private final List<Product> goods;
+	private List<Product> goods;
 
 	/**
 	 * Determines if a ship can perform the trade route (on a single tank of fuel)
