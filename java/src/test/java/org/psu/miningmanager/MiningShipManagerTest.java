@@ -446,7 +446,6 @@ public class MiningShipManagerTest {
 		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(extractionSite));
 
 		final MarketInfo marketInfo = mock(MarketInfo.class);
-
 		when(marketManager.getMarketInfoById(extractionSiteId)).thenReturn(Optional.empty());
 		when(marketManager.updateMarketInfo(extractionSite)).thenReturn(marketInfo);
 
@@ -459,7 +458,7 @@ public class MiningShipManagerTest {
 
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
 
-		verify(marketRequester).dockAndSellItems(ship, marketInfo, cargoItems);
+		verify(marketRequester).dockAndSellItems(ship, extractionSite, cargoItems);
 		assertEquals(State.NOT_STARTED, nextJob.getState());
 	}
 

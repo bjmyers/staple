@@ -53,7 +53,7 @@ public class TradeShipManagerTest {
 
 		final RouteManager routeManager = mock(RouteManager.class);
 		final TradeRoute route = mock(TradeRoute.class);
-		when(routeManager.getClosestRoute(ship)).thenReturn(Optional.of(route));
+		when(routeManager.getBestRoute(ship)).thenReturn(route);
 
 		final TradeShipManager manager = new TradeShipManager(null, null, null, null, routeManager);
 
@@ -227,14 +227,14 @@ public class TradeShipManagerTest {
 		when(marketManager.updateMarketInfo(importWaypoint)).thenReturn(marketInfo);
 
 		final TradeRoute newTradeRoute = mock(TradeRoute.class);
-		when(routeManager.getClosestRoute(ship)).thenReturn(Optional.of(newTradeRoute));
+		when(routeManager.getBestRoute(ship)).thenReturn(newTradeRoute);
 
 		final TradeShipJob job = new TradeShipJob(ship, tradeRoute);
 		job.setState(State.TRAVELING_TO_IMPORT);
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
-		verify(marketRequester).dockAndSellItems(ship, marketInfo, List.of(cargoItem));
+		verify(marketRequester).dockAndSellItems(ship, importWaypoint, List.of(cargoItem));
 		assertEquals(State.NOT_STARTED, outputJob.getState());
 		assertEquals(ship, outputJob.getShip());
 		assertEquals(newTradeRoute, outputJob.getRoute());

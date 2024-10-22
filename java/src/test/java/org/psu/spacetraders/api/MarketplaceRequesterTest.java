@@ -21,7 +21,9 @@ import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.TradeRequest;
 import org.psu.spacetraders.dto.TradeResponse;
 import org.psu.spacetraders.dto.Transaction;
+import org.psu.spacetraders.dto.Waypoint;
 import org.psu.testutils.TestRequestThrottler;
+import org.psu.trademanager.MarketplaceManager;
 
 /**
  * Tests for {@link MarketplaceRequester}
@@ -51,7 +53,7 @@ public class MarketplaceRequesterTest {
 		when(client.purchase(shipId, request)).thenReturn(new DataWrapper<TradeResponse>(response, null));
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, manager, null);
+		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, manager, null, null);
 
 		final TradeResponse actualResponse = requester.purchase(ship, request);
 		assertEquals(response, actualResponse);
@@ -82,7 +84,7 @@ public class MarketplaceRequesterTest {
 		when(client.sell(shipId, request)).thenReturn(new DataWrapper<TradeResponse>(response, null));
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, manager, null);
+		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, manager, null, null);
 
 		final TradeResponse actualResponse = requester.sell(ship, request);
 		assertEquals(response, actualResponse);
@@ -112,7 +114,7 @@ public class MarketplaceRequesterTest {
 		when(client.refuel(shipId)).thenReturn(new DataWrapper<RefuelResponse>(response, null));
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, manager, null);
+		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, manager, null, null);
 
 		final RefuelResponse actualResponse = requester.refuel(ship);
 		assertEquals(response, actualResponse);
@@ -129,8 +131,10 @@ public class MarketplaceRequesterTest {
 		final MarketplaceClient client = mock(MarketplaceClient.class);
 		final NavigationHelper navHelper = mock(NavigationHelper.class);
 		final AccountManager accountManager = mock(AccountManager.class);
+		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, accountManager, navHelper);
+		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, accountManager,
+				marketplaceManager, navHelper);
 
 		final List<CargoItem> cargoItems = List.of(new CargoItem("eggs", 1));
 		final String shipId = "shippy";
@@ -140,6 +144,9 @@ public class MarketplaceRequesterTest {
 		final MarketInfo marketInfo = mock(MarketInfo.class);
 		final TradeRequest tradeRequest = mock(TradeRequest.class);
 		when(marketInfo.buildSellRequests(cargoItems)).thenReturn(List.of(tradeRequest));
+
+		final Waypoint waypoint = mock(Waypoint.class);
+		when(marketplaceManager.updateMarketInfo(waypoint)).thenReturn(marketInfo);
 
 		final Transaction transaction = mock(Transaction.class);
 		when(transaction.getTotalPrice()).thenReturn(100);
@@ -152,7 +159,7 @@ public class MarketplaceRequesterTest {
 		final RefuelResponse response = mock(RefuelResponse.class);
 		when(client.refuel(shipId)).thenReturn(new DataWrapper<RefuelResponse>(response, null));
 
-		requester.dockAndSellItems(ship, marketInfo, cargoItems);
+		requester.dockAndSellItems(ship, waypoint, cargoItems);
 
 		verify(navHelper).dock(ship);
 		verify(client).sell(shipId, tradeRequest);
@@ -168,8 +175,10 @@ public class MarketplaceRequesterTest {
 		final MarketplaceClient client = mock(MarketplaceClient.class);
 		final NavigationHelper navHelper = mock(NavigationHelper.class);
 		final AccountManager accountManager = mock(AccountManager.class);
+		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, accountManager, navHelper);
+		final MarketplaceRequester requester = new MarketplaceRequester(client, throttler, accountManager,
+				marketplaceManager, navHelper);
 
 		final List<CargoItem> cargoItems = List.of(new CargoItem("eggs", 1));
 		final String shipId = "shippy";
@@ -180,6 +189,9 @@ public class MarketplaceRequesterTest {
 		final TradeRequest tradeRequest = mock(TradeRequest.class);
 		when(marketInfo.buildSellRequests(cargoItems)).thenReturn(List.of(tradeRequest));
 
+		final Waypoint waypoint = mock(Waypoint.class);
+		when(marketplaceManager.updateMarketInfo(waypoint)).thenReturn(marketInfo);
+
 		final Transaction transaction = mock(Transaction.class);
 		when(transaction.getTotalPrice()).thenReturn(100);
 		final TradeResponse tradeResponse = mock(TradeResponse.class);
@@ -189,7 +201,7 @@ public class MarketplaceRequesterTest {
 		// Doesn't sell fuel
 		when(marketInfo.sellsProduct(Product.FUEL)).thenReturn(false);
 
-		requester.dockAndSellItems(ship, marketInfo, cargoItems);
+		requester.dockAndSellItems(ship, waypoint, cargoItems);
 
 		verify(navHelper).dock(ship);
 		verify(client).sell(shipId, tradeRequest);

@@ -11,6 +11,8 @@ import org.psu.spacetraders.dto.RefuelResponse;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.TradeRequest;
 import org.psu.spacetraders.dto.TradeResponse;
+import org.psu.spacetraders.dto.Waypoint;
+import org.psu.trademanager.MarketplaceManager;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -27,14 +29,17 @@ public class MarketplaceRequester {
 	private MarketplaceClient marketplaceClient;
 	private RequestThrottler throttler;
 	private AccountManager accountManager;
+	private MarketplaceManager marketplaceManager;
 	private NavigationHelper navHelper;
 
 	@Inject
 	public MarketplaceRequester(@RestClient MarketplaceClient marketplaceClient, final RequestThrottler throttler,
-			final AccountManager accountManager, final NavigationHelper navHelper) {
+			final AccountManager accountManager, final MarketplaceManager marketplaceManager,
+			final NavigationHelper navHelper) {
 		this.marketplaceClient = marketplaceClient;
 		this.throttler = throttler;
 		this.accountManager = accountManager;
+		this.marketplaceManager = marketplaceManager;
 		this.navHelper = navHelper;
 	}
 
@@ -82,13 +87,15 @@ public class MarketplaceRequester {
 	}
 
 	/**
-	 * Docks the ship, sells the given items, and then refuels if the market sells fuel
+	 * Docks the ship, sells the given items, and then refuels if the market sells
+	 * fuel
 	 *
-	 * @param ship The ship
-	 * @param market The market, assumes that the ship has finished traveling to this market
+	 * @param ship        The ship
+	 * @param waypoint    The waypoint at which to sell the goods, assumes the ship
+	 *                    has finished traveling to it
 	 * @param itemsToSell The items to sell, they must be in the ship's cargo bay
 	 */
-	public void dockAndSellItems(final Ship ship, final MarketInfo market, final List<CargoItem> itemsToSell) {
+	public void dockAndSellItems(final Ship ship, final Waypoint waypoint, final List<CargoItem> itemsToSell) {
 		final String shipId = ship.getSymbol();
 
 		navHelper.dock(ship);
@@ -101,6 +108,8 @@ public class MarketplaceRequester {
 			e.printStackTrace();
 		}
 
+		// Force an update so we know most current prices
+		final MarketInfo market = marketplaceManager.updateMarketInfo(waypoint);
 		final List<TradeRequest> sellRequests = market.buildSellRequests(itemsToSell);
 
 		int totalCredits = 0;

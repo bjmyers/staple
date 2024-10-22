@@ -184,9 +184,8 @@ public class MiningShipManager {
 
 	private void sellItems(final MiningShipJob job) {
 		final Ship ship = job.getShip();
-		final MarketInfo market = marketplaceManager.updateMarketInfo(job.getSellingWaypoint());
 
-		marketplaceRequester.dockAndSellItems(ship, market, ship.getCargo().inventory());
+		marketplaceRequester.dockAndSellItems(ship, job.getSellingWaypoint(), ship.getCargo().inventory());
 	}
 
 }
