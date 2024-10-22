@@ -20,6 +20,24 @@ public class TradeRoute {
 	private final Waypoint exportWaypoint;
 	private final Waypoint importWaypoint;
 	private List<Product> goods;
+	/**
+	 * This will only be populated after purchasing items at the export waypoint,
+	 * and will never be populated for a route which starts in the middle
+	 */
+	private Integer purchasePrice;
+	/**
+	 * An unknown trade route is one where the prices are not known at either the
+	 * export or the import, or both
+	 */
+	private boolean isKnown;
+
+	public TradeRoute(final Waypoint exportWaypoint, final Waypoint importWaypoint, final List<Product> goods) {
+		this.exportWaypoint = exportWaypoint;
+		this.importWaypoint = importWaypoint;
+		this.goods = goods;
+		this.purchasePrice = null;
+		this.isKnown = false;
+	}
 
 	/**
 	 * Determines if a ship can perform the trade route (on a single tank of fuel)

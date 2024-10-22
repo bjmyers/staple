@@ -1,6 +1,7 @@
 package org.psu.trademanager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -150,6 +151,7 @@ public class RouteManagerTest {
 		assertEquals(way2, bestRoute.getExportWaypoint());
 		assertEquals(way3, bestRoute.getImportWaypoint());
 		assertEquals(List.of(prod2), bestRoute.getGoods());
+		assertFalse(bestRoute.isKnown());
 	}
 
 	/**
@@ -220,6 +222,7 @@ public class RouteManagerTest {
 		assertEquals(way1, bestRoute.getExportWaypoint());
 		assertEquals(way3, bestRoute.getImportWaypoint());
 		assertEquals(List.of(prod1), bestRoute.getGoods());
+		assertTrue(bestRoute.isKnown());
 	}
 
 	/**
@@ -297,6 +300,7 @@ public class RouteManagerTest {
 		assertEquals(way1, bestRoute.getExportWaypoint());
 		assertEquals(way3, bestRoute.getImportWaypoint());
 		assertEquals(List.of(prod1), bestRoute.getGoods());
+		assertTrue(bestRoute.isKnown());
 
 		// Now, return a large double, this means we will go with the shortest route
 		when(randomProvider.nextDouble()).thenReturn(1.0);
@@ -306,6 +310,7 @@ public class RouteManagerTest {
 		assertEquals(way2, nextBestRoute.getExportWaypoint());
 		assertEquals(way3, nextBestRoute.getImportWaypoint());
 		assertEquals(List.of(prod1, prod2), nextBestRoute.getGoods());
+		assertFalse(nextBestRoute.isKnown());
 	}
 
 }

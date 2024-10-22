@@ -99,7 +99,9 @@ public class RouteManager {
 		if (mostProfitableRoute.isEmpty()) {
 			// All routes are unknown, go with shortest route
 			log.info("Found no routes with known profits, picking shortest route");
-			return shortestUnknownRoute.get();
+			final TradeRoute shortestRoute = shortestUnknownRoute.get();
+			shortestRoute.setKnown(false);
+			return shortestRoute;
 		}
 		if (shortestUnknownRoute.isEmpty()) {
 			// All routes are known, go with the most profitable route
@@ -108,6 +110,7 @@ public class RouteManager {
 			log.infof("All routes have known profits, picking the route with potential profit of %s per %s",
 					routeProfit.profit(), routeProfit.itemToSell());
 			chosenRoute.setGoods(List.of(routeProfit.itemToSell()));
+			chosenRoute.setKnown(true);
 			return chosenRoute;
 		}
 		// For now, randomly pick the shortest or most profitable, balancing exploring and making money
@@ -117,10 +120,13 @@ public class RouteManager {
 			log.infof("Picking most profitable route, with potential profit of %s per %s",
 					routeProfit.profit(), routeProfit.itemToSell());
 			chosenRoute.setGoods(List.of(routeProfit.itemToSell()));
+			chosenRoute.setKnown(true);
 			return chosenRoute;
 		}
 		log.info("Picking shortest route");
-		return shortestUnknownRoute.get();
+		final TradeRoute shortestRoute = shortestUnknownRoute.get();
+		shortestRoute.setKnown(false);
+		return shortestRoute;
 	}
 
 	private RouteProfit getPotentialProfit(final TradeRoute route) {

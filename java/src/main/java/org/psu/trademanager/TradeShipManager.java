@@ -139,7 +139,7 @@ public class TradeShipManager {
 		final MarketInfo exportMarketInfo = marketplaceManager.updateMarketInfo(route.getExportWaypoint());
 		final int totalCredits = accountManager.getCredits();
 		final List<TradeRequest> purchaseRequests = exportMarketInfo.buildPurchaseRequest(route.getGoods(),
-				ship.getRemainingCargo(), totalCredits);
+				ship.getRemainingCargo(), totalCredits, route.isKnown());
 
 		int total = 0;
 		for (final TradeRequest tradeRequest : purchaseRequests) {
@@ -150,6 +150,7 @@ public class TradeShipManager {
 					tradeRequest.getSymbol(), purchaseResponse.getTransaction().getTotalPrice());
 		}
 		log.infof("Total Purchase Price: %s", total);
+		route.setPurchasePrice(total);
 
 		return purchaseRequests;
 	}
@@ -162,7 +163,11 @@ public class TradeShipManager {
 		final List<CargoItem> cargoToSell = ship.getCargo().inventory().stream()
 				.filter(c -> productsToSell.contains(c.symbol())).toList();
 
-		marketplaceRequester.dockAndSellItems(ship, route.getImportWaypoint(), cargoToSell);
+		final Integer sellPrice = marketplaceRequester.dockAndSellItems(ship, route.getImportWaypoint(), cargoToSell);
+		if (route.getPurchasePrice() != null) {
+			log.infof("Trade route for ship %s made a total profit of %s", ship.getSymbol(),
+					sellPrice - route.getPurchasePrice());
+		}
 	}
 
 }

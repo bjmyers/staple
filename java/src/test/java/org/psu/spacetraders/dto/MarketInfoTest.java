@@ -136,7 +136,7 @@ public class MarketInfoTest {
 		// and 0 units of product1
 
 		final List<TradeRequest> tradeRequests = marketInfo.buildPurchaseRequest(
-				List.of(product1, product2, product4), 4, 10000);
+				List.of(product1, product2, product4), 4, 10000, true);
 
 		assertEquals(2, tradeRequests.size());
 
@@ -184,7 +184,7 @@ public class MarketInfoTest {
 		// We can buy 5 tradeGood2's, spending 500 additional credits
 
 		final List<TradeRequest> tradeRequests = marketInfo.buildPurchaseRequest(
-				List.of(product1, product2, product3), 100, 3000);
+				List.of(product1, product2, product3), 100, 3000, true);
 
 		assertEquals(2, tradeRequests.size());
 
@@ -193,6 +193,58 @@ public class MarketInfoTest {
 
 		assertEquals(5, requestsByProductSymbol.get(productSymbol1).getUnits());
 		assertEquals(5, requestsByProductSymbol.get(productSymbol2).getUnits());
+	}
+
+	/**
+	 * Tests {@link MarketInfo#buildPurchaseRequest} with an unknown route
+	 */
+	@Test
+	public void buildPurchaseRequestUnknownRoute() {
+
+		final String productSymbol1 = "milk";
+		final String productSymbol2 = "eggs";
+		final String productSymbol3 = "cheese";
+		final String productSymbol4 = "bread";
+
+		final Product product1 = new Product(productSymbol1);
+		final Product product2 = new Product(productSymbol2);
+		final Product product4 = new Product(productSymbol4);
+
+		final TradeGood tradeGood1 = new TradeGood();
+		tradeGood1.setPurchasePrice(100);
+		tradeGood1.setSymbol(productSymbol1);
+		tradeGood1.setTradeVolume(10);
+
+		final TradeGood tradeGood2 = new TradeGood();
+		tradeGood2.setPurchasePrice(200);
+		tradeGood2.setSymbol(productSymbol2);
+		tradeGood2.setTradeVolume(5);
+
+		final TradeGood tradeGood3 = new TradeGood();
+		tradeGood3.setPurchasePrice(50);
+		tradeGood3.setSymbol(productSymbol3);
+		tradeGood3.setTradeVolume(15);
+
+		final TradeGood tradeGood4 = new TradeGood();
+		tradeGood4.setPurchasePrice(500);
+		tradeGood4.setSymbol(productSymbol4);
+		tradeGood4.setTradeVolume(1);
+
+		final MarketInfo marketInfo = new MarketInfo(null, null, null,
+				List.of(tradeGood1, tradeGood2, tradeGood3, tradeGood4));
+
+		// We want to buy one of each item because the route is unknown, but have a capacity of 3
+		final List<TradeRequest> tradeRequests = marketInfo.buildPurchaseRequest(
+				List.of(product1, product2, product4), 3, 10000, false);
+
+		assertEquals(3, tradeRequests.size());
+
+		final Map<String, TradeRequest> requestsByProductSymbol = tradeRequests.stream()
+				.collect(Collectors.toMap(TradeRequest::getSymbol, Function.identity()));
+
+		assertEquals(1, requestsByProductSymbol.get(productSymbol4).getUnits());
+		assertEquals(1, requestsByProductSymbol.get(productSymbol2).getUnits());
+		assertEquals(1, requestsByProductSymbol.get(productSymbol1).getUnits());
 	}
 
 	/**

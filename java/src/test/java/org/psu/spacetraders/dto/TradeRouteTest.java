@@ -2,6 +2,7 @@ package org.psu.spacetraders.dto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,24 @@ import org.psu.trademanager.dto.TradeRoute;
  * Tests for {@link TradeRoute}
  */
 public class TradeRouteTest {
+
+	/**
+	 * Tests the constructor
+	 */
+	@Test
+	public void constructor() {
+		final Waypoint importWaypoint = mock(Waypoint.class);
+		final Waypoint exportWaypoint = mock(Waypoint.class);
+		final List<Product> goods = List.of(mock(Product.class), mock(Product.class));
+
+		final TradeRoute route = new TradeRoute(exportWaypoint, importWaypoint, goods);
+
+		assertEquals(importWaypoint, route.getImportWaypoint());
+		assertEquals(exportWaypoint, route.getExportWaypoint());
+		assertEquals(goods, route.getGoods());
+		assertFalse(route.isKnown());
+		assertNull(route.getPurchasePrice());
+	}
 
 	/**
 	 * Tests {@link TradeRoute#isPossible} when the ship is too far from the starting waypoint
