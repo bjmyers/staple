@@ -226,6 +226,77 @@ public class RouteManagerTest {
 	}
 
 	/**
+	 * Tests getBestRoute when there is a mix of known and unknown routes, but the most profitable known route
+	 * would produce a negative profit. Expect the shortest unknown route to be chosen
+	 */
+	@Test
+	public void getBestRouteNotProfitable() {
+
+		final Product prod1 = new Product("milk");
+
+		// Market1 will get a -10 profit on this trade
+		final TradeGood tradeGood1 = new TradeGood(prod1.getSymbol(), 40, 40, 40);
+		final MarketInfo market1 = new MarketInfo();
+		market1.setExports(List.of(prod1));
+		market1.setImports(List.of());
+		market1.setExchange(List.of());
+		market1.setTradeGoods(List.of(tradeGood1));
+
+		// Market2 will be the shortest route, it needs to be unknown, so no trade goods for you
+		final MarketInfo market2 = new MarketInfo();
+		market2.setExports(List.of(prod1));
+		market2.setImports(List.of());
+		market2.setExchange(List.of());
+
+		final TradeGood tradeGood2 = new TradeGood(prod1.getSymbol(), 30, 30, 30);
+		final MarketInfo market3 = new MarketInfo();
+		market3.setExports(List.of());
+		market3.setImports(List.of(prod1));
+		market3.setExchange(List.of());
+		market3.setTradeGoods(List.of(tradeGood2));
+
+		// Way2 is closer to Way3 than Way1 is
+		final Waypoint way1 = new Waypoint();
+		way1.setSymbol("way1");
+		way1.setX(0);
+		way1.setY(0);
+		final Waypoint way2 = new Waypoint();
+		way2.setSymbol("way2");
+		way2.setX(10);
+		way2.setY(0);
+		final Waypoint way3 = new Waypoint();
+		way3.setSymbol("way3");
+		way3.setX(20);
+		way3.setY(0);
+
+		// Ship is at way2, so the route using way2 will be shorter
+		final RoutePoint routePoint = new RoutePoint("RP", 10, 0);
+		final ShipNavigation shipNav = mock(ShipNavigation.class, Answers.RETURNS_DEEP_STUBS);
+		when(shipNav.getRoute().getDestination()).thenReturn(routePoint);
+		final Ship ship = new Ship();
+		ship.setNav(shipNav);
+
+		final FuelStatus fuel = new FuelStatus(1000, 1000);
+		ship.setFuel(fuel);
+
+		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
+		when(marketplaceManager.getAllMarketInfo()).thenReturn(Map.of(way1, market1, way2, market2, way3, market3));
+		when(marketplaceManager.getMarketInfo(way1)).thenReturn(market1);
+		when(marketplaceManager.getMarketInfo(way2)).thenReturn(market2);
+		when(marketplaceManager.getMarketInfo(way3)).thenReturn(market3);
+
+		final RouteManager routeManager = new RouteManager(marketplaceManager, new RandomProvider());
+
+		final TradeRoute bestRoute = routeManager.getBestRoute(ship);
+
+		// Expect best route to be the one from way2 to way3, because the other route is not profitable
+		assertEquals(way2, bestRoute.getExportWaypoint());
+		assertEquals(way3, bestRoute.getImportWaypoint());
+		assertEquals(List.of(prod1), bestRoute.getGoods());
+		assertFalse(bestRoute.isKnown());
+	}
+
+	/**
 	 * Tests getBestRoute when it is given a choice between the shortest and the most profitable route
 	 */
 	@Test

@@ -92,31 +92,33 @@ public class RouteManager {
 				.filter(r -> !profitByRoute.containsKey(r))
 				.min(Comparator.comparing(r -> ship.distTo(r.getExportWaypoint()) + r.getDistance()));
 
-		final Optional<TradeRoute> mostProfitableRoute = profitByRoute.entrySet().stream()
-				.filter(e -> e.getValue() != null).max(Comparator.comparing(e -> e.getValue().profit()))
-				.map(Entry::getKey);
+		final Optional<Entry<TradeRoute, RouteProfit>> mostProfitableRoute = profitByRoute.entrySet().stream()
+				.filter(e -> e.getValue() != null).max(Comparator.comparing(e -> e.getValue().profit()));
 
-		if (mostProfitableRoute.isEmpty()) {
-			// All routes are unknown, go with shortest route
-			log.info("Found no routes with known profits, picking shortest route");
-			final TradeRoute shortestRoute = shortestUnknownRoute.get();
-			shortestRoute.setKnown(false);
-			return shortestRoute;
-		}
 		if (shortestUnknownRoute.isEmpty()) {
 			// All routes are known, go with the most profitable route
-			final TradeRoute chosenRoute = mostProfitableRoute.get();
-			final RouteProfit routeProfit = profitByRoute.get(chosenRoute);
+			final Entry<TradeRoute, RouteProfit> chosenRouteEntry = mostProfitableRoute.get();
+			final TradeRoute chosenRoute = chosenRouteEntry.getKey();
+			final RouteProfit routeProfit = chosenRouteEntry.getValue();
 			log.infof("All routes have known profits, picking the route with potential profit of %s per %s",
 					routeProfit.profit(), routeProfit.itemToSell());
 			chosenRoute.setGoods(List.of(routeProfit.itemToSell()));
 			chosenRoute.setKnown(true);
 			return chosenRoute;
 		}
+		if (mostProfitableRoute.isEmpty() || mostProfitableRoute.get().getValue().profit() < 0) {
+			// All routes are unknown or the most profitable route is not profitable, go
+			// with shortest route
+			log.info("Found no routes with known profits, picking shortest route");
+			final TradeRoute shortestRoute = shortestUnknownRoute.get();
+			shortestRoute.setKnown(false);
+			return shortestRoute;
+		}
 		// For now, randomly pick the shortest or most profitable, balancing exploring and making money
 		if (randomProvider.nextDouble() < 0.5) {
-			final TradeRoute chosenRoute = mostProfitableRoute.get();
-			final RouteProfit routeProfit = profitByRoute.get(chosenRoute);
+			final Entry<TradeRoute, RouteProfit> chosenRouteEntry = mostProfitableRoute.get();
+			final TradeRoute chosenRoute = chosenRouteEntry.getKey();
+			final RouteProfit routeProfit = chosenRouteEntry.getValue();
 			log.infof("Picking most profitable route, with potential profit of %s per %s",
 					routeProfit.profit(), routeProfit.itemToSell());
 			chosenRoute.setGoods(List.of(routeProfit.itemToSell()));
