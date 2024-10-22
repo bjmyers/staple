@@ -148,22 +148,28 @@ public class MarketplaceRequesterTest {
 		final Waypoint waypoint = mock(Waypoint.class);
 		when(marketplaceManager.updateMarketInfo(waypoint)).thenReturn(marketInfo);
 
+		final int sellPrice = 500;
 		final Transaction transaction = mock(Transaction.class);
-		when(transaction.getTotalPrice()).thenReturn(100);
+		when(transaction.getTotalPrice()).thenReturn(sellPrice);
 		final TradeResponse tradeResponse = mock(TradeResponse.class);
 		when(tradeResponse.getTransaction()).thenReturn(transaction);
 		when(client.sell(shipId, tradeRequest)).thenReturn(new DataWrapper<TradeResponse>(tradeResponse, null));
 
 		when(marketInfo.sellsProduct(Product.FUEL)).thenReturn(true);
 
+		final int refuelPrice = 100;
+		final Transaction refuelTransaction = mock(Transaction.class);
+		when(refuelTransaction.getTotalPrice()).thenReturn(refuelPrice);
 		final RefuelResponse response = mock(RefuelResponse.class);
+		when(response.getTransaction()).thenReturn(refuelTransaction);
 		when(client.refuel(shipId)).thenReturn(new DataWrapper<RefuelResponse>(response, null));
 
-		requester.dockAndSellItems(ship, waypoint, cargoItems);
+		final int profit = requester.dockAndSellItems(ship, waypoint, cargoItems);
 
 		verify(navHelper).dock(ship);
 		verify(client).sell(shipId, tradeRequest);
 		verify(client).refuel(shipId);
+		assertEquals(sellPrice - refuelPrice, profit);
 	}
 
 	/**
@@ -192,8 +198,9 @@ public class MarketplaceRequesterTest {
 		final Waypoint waypoint = mock(Waypoint.class);
 		when(marketplaceManager.updateMarketInfo(waypoint)).thenReturn(marketInfo);
 
+		final int sellPrice = 100;
 		final Transaction transaction = mock(Transaction.class);
-		when(transaction.getTotalPrice()).thenReturn(100);
+		when(transaction.getTotalPrice()).thenReturn(sellPrice);
 		final TradeResponse tradeResponse = mock(TradeResponse.class);
 		when(tradeResponse.getTransaction()).thenReturn(transaction);
 		when(client.sell(shipId, tradeRequest)).thenReturn(new DataWrapper<TradeResponse>(tradeResponse, null));
@@ -201,11 +208,12 @@ public class MarketplaceRequesterTest {
 		// Doesn't sell fuel
 		when(marketInfo.sellsProduct(Product.FUEL)).thenReturn(false);
 
-		requester.dockAndSellItems(ship, waypoint, cargoItems);
+		final int profit = requester.dockAndSellItems(ship, waypoint, cargoItems);
 
 		verify(navHelper).dock(ship);
 		verify(client).sell(shipId, tradeRequest);
 		verify(client, times(0)).refuel(shipId);
+		assertEquals(profit, sellPrice);
 	}
 
 }

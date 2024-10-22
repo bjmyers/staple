@@ -94,8 +94,9 @@ public class MarketplaceRequester {
 	 * @param waypoint    The waypoint at which to sell the goods, assumes the ship
 	 *                    has finished traveling to it
 	 * @param itemsToSell The items to sell, they must be in the ship's cargo bay
+	 * @return The profit from selling items (amount gained from selling minus cost of refueling)
 	 */
-	public void dockAndSellItems(final Ship ship, final Waypoint waypoint, final List<CargoItem> itemsToSell) {
+	public Integer dockAndSellItems(final Ship ship, final Waypoint waypoint, final List<CargoItem> itemsToSell) {
 		final String shipId = ship.getSymbol();
 
 		navHelper.dock(ship);
@@ -120,12 +121,14 @@ public class MarketplaceRequester {
 		log.infof("Sold goods from ship %s for a total of %s credits", shipId, totalCredits);
 
 		if (market.sellsProduct(Product.FUEL)) {
-			refuel(ship);
+			final RefuelResponse refuelResponse = refuel(ship);
+			totalCredits -= refuelResponse.getTransaction().getTotalPrice();
 			log.infof("Refueled ship %s", shipId);
 		}
 		else {
 			log.warnf("Unable to refuel ship %s at current waypoint", shipId);
 		}
+		return totalCredits;
 	}
 
 }

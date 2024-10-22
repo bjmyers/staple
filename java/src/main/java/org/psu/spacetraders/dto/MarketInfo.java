@@ -41,10 +41,12 @@ public class MarketInfo {
 	 * @param capacity      The total number of items to buy
 	 * @param totalCredits  the number of credits the user has, should not spend
 	 *                      more than half of their total
+	 * @param knownRoute    If the route is known, if not, just buy one of every
+	 *                      item
 	 * @return The {@link TradeRequest}s
 	 */
 	public List<TradeRequest> buildPurchaseRequest(final List<Product> productsToBuy, final int capacity,
-			final int totalCredits) {
+			final int totalCredits, final boolean knownRoute) {
 		final Set<String> productSymbolsToBuy = productsToBuy.stream().map(Product::getSymbol)
 				.collect(Collectors.toSet());
 		final List<TradeGood> sortedTradeGoods = this.tradeGoods.stream()
@@ -58,7 +60,8 @@ public class MarketInfo {
 
 		for (final TradeGood tradeGood : sortedTradeGoods) {
 			// Find how many items we can hold (in the ship or in the request)
-			final int requestCapacity = Math.min(remainingItemsToBuy, tradeGood.getTradeVolume());
+			// If the route is not known, just try to buy one item
+			final int requestCapacity = knownRoute ? Math.min(remainingItemsToBuy, tradeGood.getTradeVolume()) : 1;
 			// Limit the quantity to buy if it would be too expensive
 			final int quantityToBuy = Math.min(requestCapacity, remainingBudget / tradeGood.getPurchasePrice());
 			output.add(new TradeRequest(tradeGood.getSymbol(), quantityToBuy));

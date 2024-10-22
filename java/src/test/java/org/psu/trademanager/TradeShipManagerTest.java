@@ -171,6 +171,7 @@ public class TradeShipManagerTest {
 		final TradeRoute tradeRoute = mock(TradeRoute.class);
 		when(tradeRoute.getExportWaypoint()).thenReturn(exportWaypoint);
 		when(tradeRoute.getImportWaypoint()).thenReturn(importWaypoint);
+		when(tradeRoute.isKnown()).thenReturn(false);
 
 		final Instant arrivalTime = Instant.now().plus(Duration.ofMillis(10));
 		when(navHelper.navigate(ship, importWaypoint)).thenReturn(arrivalTime);
@@ -180,7 +181,8 @@ public class TradeShipManagerTest {
 
 		final TradeRequest tradeRequest = mock(TradeRequest.class);
 		final MarketInfo marketInfo = mock(MarketInfo.class);
-		when(marketInfo.buildPurchaseRequest(any(), anyInt(), eq(credits))).thenReturn(List.of(tradeRequest));
+		when(marketInfo.buildPurchaseRequest(any(), anyInt(), eq(credits), eq(false)))
+				.thenReturn(List.of(tradeRequest));
 
 		when(marketManager.updateMarketInfo(exportWaypoint)).thenReturn(marketInfo);
 
@@ -231,6 +233,8 @@ public class TradeShipManagerTest {
 
 		final TradeShipJob job = new TradeShipJob(ship, tradeRoute);
 		job.setState(State.TRAVELING_TO_IMPORT);
+
+		when(marketRequester.dockAndSellItems(ship, importWaypoint, List.of(cargoItem))).thenReturn(10);
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
