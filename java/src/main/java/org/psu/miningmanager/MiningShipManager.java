@@ -131,7 +131,7 @@ public class MiningShipManager {
 			if (ship.getRemainingCargo() == 0) {
 				final Instant arrival = findAndNavigateToMarket(job);
 				job.setState(State.TRAVELING_TO_MARKET);
-				job.setNextAction(arrival);
+				job.setNextAction(arrival.plus(cooldownPad));
 				return job;
 			}
 			//TODO: Find a better way of swapping between surveys

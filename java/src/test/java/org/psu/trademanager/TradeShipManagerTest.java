@@ -55,7 +55,7 @@ public class TradeShipManagerTest {
 		final TradeRoute route = mock(TradeRoute.class);
 		when(routeManager.getBestRoute(ship)).thenReturn(route);
 
-		final TradeShipManager manager = new TradeShipManager(null, null, null, null, routeManager);
+		final TradeShipManager manager = new TradeShipManager(0, null, null, null, null, routeManager);
 
 		final TradeShipJob job = manager.createJob(ship);
 
@@ -70,7 +70,7 @@ public class TradeShipManagerTest {
 	public void createJobSellAtDestination() {
 
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
-		final TradeShipManager manager = new TradeShipManager(null, null, null, marketManager, null);
+		final TradeShipManager manager = new TradeShipManager(0, null, null, null, marketManager, null);
 
 		final String product1 = "milk";
 		final int product1Quantity = 5;
@@ -121,8 +121,8 @@ public class TradeShipManagerTest {
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(navHelper, accountManager, marketRequester, marketManager,
-				routeManager);
+		final TradeShipManager manager = new TradeShipManager(0, navHelper, accountManager, marketRequester,
+				marketManager, routeManager);
 
 		final Ship ship = mock(Ship.class);
 		final ShipNavigation shipNav = mock(ShipNavigation.class);
@@ -157,8 +157,8 @@ public class TradeShipManagerTest {
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(navHelper, accountManager, marketRequester, marketManager,
-				routeManager);
+		final TradeShipManager manager = new TradeShipManager(0, navHelper, accountManager, marketRequester,
+				marketManager, routeManager);
 
 		final Ship ship = mock(Ship.class);
 		final ShipNavigation shipNav = mock(ShipNavigation.class);
@@ -212,8 +212,8 @@ public class TradeShipManagerTest {
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeShipManager manager = new TradeShipManager(navHelper, accountManager, marketRequester, marketManager,
-				routeManager);
+		final TradeShipManager manager = new TradeShipManager(0, navHelper, accountManager, marketRequester,
+				marketManager, routeManager);
 
 		final String productName = "product";
 		final Ship ship = mock(Ship.class);

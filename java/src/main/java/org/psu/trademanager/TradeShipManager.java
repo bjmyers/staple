@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.psu.spacetraders.api.AccountManager;
 import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationHelper;
@@ -32,6 +33,7 @@ import lombok.extern.jbosslog.JBossLog;
 @ApplicationScoped
 public class TradeShipManager {
 
+	private Duration navigationPad;
 	private NavigationHelper navigationHelper;
 	private AccountManager accountManager;
 	private MarketplaceRequester marketplaceRequester;
@@ -39,9 +41,11 @@ public class TradeShipManager {
 	private RouteManager routeManager;
 
 	@Inject
-	public TradeShipManager(final NavigationHelper navigationHelper,
+	public TradeShipManager(@ConfigProperty(name = "app.navigation-pad-ms") final int navigationPad,
+			final NavigationHelper navigationHelper,
 			final AccountManager accountManager, final MarketplaceRequester marketplaceRequester,
 			final MarketplaceManager marketplaceManager, final RouteManager routeManager) {
+		this.navigationPad = Duration.ofMillis(navigationPad);
 		this.navigationHelper = navigationHelper;
 		this.accountManager = accountManager;
 		this.marketplaceRequester = marketplaceRequester;
@@ -76,7 +80,7 @@ public class TradeShipManager {
 					final TradeRoute route = new TradeRoute(null, destinationMarketInfo.getKey(), productsToSell);
 					final TradeShipJob job = new TradeShipJob(ship, route);
 					job.setState(State.TRAVELING_TO_IMPORT);
-					job.setNextAction(ship.getNav().getRoute().getArrival());
+					job.setNextAction(ship.getNav().getRoute().getArrival().plus(navigationPad));
 					return job;
 				}
 			}
