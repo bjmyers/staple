@@ -136,9 +136,14 @@ public class MiningShipManager {
 				job.setNextAction(arrival);
 				return job;
 			}
-			//TODO: Find a better way of swapping between surveys
-			log.infof("Ship %s extracting resources", shipId);
 			final Survey survey = job.getSurveys().get(0);
+			if (survey.getExpiration().isBefore(Instant.now())) {
+				// Survey has expired. Need to re-up the survey
+				job.setState(State.TRAVELING_TO_RESOURCE);
+				job.setNextAction(Instant.now());
+				break;
+			}
+			log.infof("Ship %s extracting resources", shipId);
 			final ExtractResponse extractResponse = throttler.throttle(() -> surveyClient.extractSurvey(shipId, survey))
 					.getData();
 			ship.setCargo(extractResponse.getCargo());

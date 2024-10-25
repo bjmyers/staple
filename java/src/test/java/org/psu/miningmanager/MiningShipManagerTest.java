@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
@@ -329,6 +330,8 @@ public class MiningShipManagerTest {
 		when(ship.getRemainingCargo()).thenReturn(8);
 
 		final Survey survey = mock(Survey.class);
+		// Won't expire for a while
+		when(survey.getExpiration()).thenReturn(Instant.now().plus(Duration.ofDays(1)));
 
 		final String extractionSiteId = "waypoint";
 		final Waypoint extractionSite = mock(Waypoint.class);
@@ -358,6 +361,42 @@ public class MiningShipManagerTest {
 		// its between 45 and 55 seconds in the future
 		assertTrue(Duration.between(Instant.now(), nextJob.getNextAction()).compareTo(Duration.ofSeconds(45)) > 0);
 		assertTrue(Duration.between(Instant.now(), nextJob.getNextAction()).compareTo(Duration.ofSeconds(55)) < 0);
+	}
+
+	/**
+	 * Tests manageMiningShip when the ship has an expired survey
+	 */
+	@Test
+	public void manageMiningShipSurveyingExpiredSurvey() {
+
+		final SurveyClient surveyClient = mock(SurveyClient.class);
+		final RequestThrottler throttler = TestRequestThrottler.get();
+		final NavigationHelper navigationHelper = mock(NavigationHelper.class);
+
+		final String shipId = "shippy";
+		final Ship ship = mock(Ship.class);
+		when(ship.getSymbol()).thenReturn(shipId);
+		when(ship.getRemainingCargo()).thenReturn(8);
+
+		final Survey survey = mock(Survey.class);
+		// Expired a day ago, uh oh!
+		when(survey.getExpiration()).thenReturn(Instant.now().plus(Duration.ofDays(-1)));
+
+		final String extractionSiteId = "waypoint";
+		final Waypoint extractionSite = mock(Waypoint.class);
+		when(extractionSite.getSymbol()).thenReturn(extractionSiteId);
+
+		final MiningShipJob job = new MiningShipJob(ship, extractionSite);
+		job.setState(State.SURVEYING);
+		job.setSurveys(List.of(survey));
+
+		final MiningShipManager manager = new MiningShipManager(0, surveyClient, throttler, null, navigationHelper,
+				null, null);
+
+		final MiningShipJob nextJob = manager.manageMiningShip(job);
+
+		assertEquals(State.TRAVELING_TO_RESOURCE, nextJob.getState());
+		verifyNoInteractions(surveyClient);
 	}
 
 	/**
@@ -408,6 +447,8 @@ public class MiningShipManagerTest {
 		when(extractionSite.getSymbol()).thenReturn(extractionSiteId);
 
 		final Survey survey = mock(Survey.class);
+		// Won't expire for a while
+		when(survey.getExpiration()).thenReturn(Instant.now().plus(Duration.ofDays(1)));
 
 		final ExtractResponse extractResponse = mock(ExtractResponse.class);
 		when(extractResponse.getCargo()).thenReturn(cargo);
