@@ -1,6 +1,6 @@
 package org.psu.spacetraders.api;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -46,23 +46,26 @@ public class NavigationHelperTest {
 		when(ship.getSymbol()).thenReturn(shipId);
 		when(ship.getNav()).thenReturn(shipNav);
 
+		// 100 second flight time
+		final Instant depratureInstant = Instant.ofEpochSecond(0);
 		final Instant arrivalInstant = Instant.ofEpochSecond(100);
 		final NavigationResponse navResponse = mock(NavigationResponse.class);
 		final ShipNavigation shipNavResponse = mock(ShipNavigation.class, Answers.RETURNS_DEEP_STUBS);
 		when(navResponse.getNav()).thenReturn(shipNavResponse);
+		when(shipNavResponse.getRoute().getDepartureTime()).thenReturn(depratureInstant);
 		when(shipNavResponse.getRoute().getArrival()).thenReturn(arrivalInstant);
 
 		final NavigationClient navClient = mock(NavigationClient.class);
 		when(navClient.navigate(eq(shipId), eq(new NavigationRequest(waypointSymbol))))
 				.thenReturn(new DataWrapper<NavigationResponse>(navResponse, null));
 
-		final int navPad = 1000;
-		final Instant expectedArrival = arrivalInstant.plus(Duration.ofMillis(navPad));
-
-		final NavigationHelper navHelper = new NavigationHelper(navPad, navClient, TestRequestThrottler.get());
+		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get());
 
 		final Instant actualArrival = navHelper.navigate(ship, way);
-		assertEquals(expectedArrival, actualArrival);
+		// Arrival will be 100 seconds in the future, to account for test runtime lets just asset that
+		// its between 95 and 105 seconds in the future
+		assertTrue(Duration.between(Instant.now(), actualArrival).compareTo(Duration.ofSeconds(95)) > 0);
+		assertTrue(Duration.between(Instant.now(), actualArrival).compareTo(Duration.ofSeconds(105)) < 0);
 		verify(ship).setNav(shipNavResponse);
 	}
 
@@ -82,10 +85,8 @@ public class NavigationHelperTest {
 		final Ship ship = mock(Ship.class);
 		when(ship.getNav()).thenReturn(shipNav);
 
-		final int navPad = 1000;
-
 		final NavigationClient navClient = mock(NavigationClient.class);
-		final NavigationHelper navHelper = new NavigationHelper(navPad, navClient, TestRequestThrottler.get());
+		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get());
 
 		navHelper.navigate(ship, way);
 		verifyNoInteractions(navClient);
@@ -108,7 +109,7 @@ public class NavigationHelperTest {
 		final NavigationClient navClient = mock(NavigationClient.class);
 		when(navClient.dock(shipId)).thenReturn(new DataWrapper<DockResponse>(dockResponse, null));
 
-		final NavigationHelper navHelper = new NavigationHelper(1, navClient, TestRequestThrottler.get());
+		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get());
 
 		navHelper.dock(ship);
 		verify(ship).setNav(shipNav);
@@ -130,7 +131,7 @@ public class NavigationHelperTest {
 		final NavigationClient navClient = mock(NavigationClient.class);
 		when(navClient.orbit(shipId)).thenReturn(new DataWrapper<DockResponse>(dockResponse, null));
 
-		final NavigationHelper navHelper = new NavigationHelper(1, navClient, TestRequestThrottler.get());
+		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get());
 
 		navHelper.orbit(ship);
 		verify(ship).setNav(shipNav);

@@ -2,6 +2,7 @@ package org.psu.miningmanager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -167,14 +168,17 @@ public class MiningShipManagerTest {
 		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
 		when(miningSiteManager.getMiningSite(destination)).thenReturn(miningSite);
 
-		final MiningShipManager manager = new MiningShipManager(1, null, null, miningSiteManager, null, null, null);
+		final MiningShipManager manager = new MiningShipManager(1000, null, null, miningSiteManager, null, null, null);
 
 		final MiningShipJob job = manager.createJob(ship);
+
+		// Manager using a 1000 ms cooldown pad
+		final Instant expectedArrivalTime = arrivalTime.plus(Duration.ofSeconds(1));
 
 		assertEquals(ship, job.getShip());
 		assertEquals(miningSite, job.getExtractionPoint());
 		assertEquals(State.TRAVELING_TO_RESOURCE, job.getState());
-		assertEquals(arrivalTime, job.getNextAction());
+		assertEquals(expectedArrivalTime, job.getNextAction());
 	}
 
 	/**
@@ -286,8 +290,8 @@ public class MiningShipManagerTest {
 		final SurveyResponse surveyResponse = mock(SurveyResponse.class);
 		final Survey survey = mock(Survey.class);
 		when(surveyResponse.getSurveys()).thenReturn(List.of(survey));
-		final Instant cooldownTime = Instant.ofEpochSecond(10);
-		final Cooldown cooldown = new Cooldown(cooldownTime);
+		final int cooldownSeconds = 50;
+		final Cooldown cooldown = new Cooldown(cooldownSeconds);
 		when(surveyResponse.getCooldown()).thenReturn(cooldown);
 
 		when(surveyClient.survey(shipId)).thenReturn(new DataWrapper<SurveyResponse>(surveyResponse, null));
@@ -302,7 +306,11 @@ public class MiningShipManagerTest {
 
 		assertEquals(State.SURVEYING, nextJob.getState());
 		assertEquals(List.of(survey), job.getSurveys());
-		assertEquals(cooldownTime, nextJob.getNextAction());
+
+		// Cooldown will be 50 seconds in the future, to account for test runtime lets just asset that
+		// its between 45 and 55 seconds in the future
+		assertTrue(Duration.between(Instant.now(), nextJob.getNextAction()).compareTo(Duration.ofSeconds(45)) > 0);
+		assertTrue(Duration.between(Instant.now(), nextJob.getNextAction()).compareTo(Duration.ofSeconds(55)) < 0);
 	}
 
 	/**
@@ -326,11 +334,11 @@ public class MiningShipManagerTest {
 		final Waypoint extractionSite = mock(Waypoint.class);
 		when(extractionSite.getSymbol()).thenReturn(extractionSiteId);
 
-		final Instant extractCooldown = Instant.ofEpochSecond(100);
 		final Cargo cargo = new Cargo(10, 2, List.of());
 		final ExtractResponse extractResponse = mock(ExtractResponse.class);
 		when(extractResponse.getCargo()).thenReturn(cargo);
-		when(extractResponse.getCooldown()).thenReturn(new Cooldown(extractCooldown));
+		final int cooldownSeconds = 50;
+		when(extractResponse.getCooldown()).thenReturn(new Cooldown(cooldownSeconds));
 		when(surveyClient.extractSurvey(shipId, survey))
 				.thenReturn(new DataWrapper<ExtractResponse>(extractResponse, null));
 
@@ -344,8 +352,12 @@ public class MiningShipManagerTest {
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
 
 		assertEquals(State.EXTRACTING, nextJob.getState());
-		assertEquals(extractCooldown, nextJob.getNextAction());
 		verify(ship).setCargo(cargo);
+
+		// Cooldown will be 50 seconds in the future, to account for test runtime lets just asset that
+		// its between 45 and 55 seconds in the future
+		assertTrue(Duration.between(Instant.now(), nextJob.getNextAction()).compareTo(Duration.ofSeconds(45)) > 0);
+		assertTrue(Duration.between(Instant.now(), nextJob.getNextAction()).compareTo(Duration.ofSeconds(55)) < 0);
 	}
 
 	/**
@@ -397,10 +409,10 @@ public class MiningShipManagerTest {
 
 		final Survey survey = mock(Survey.class);
 
-		final Instant extractCooldown = Instant.ofEpochSecond(100);
 		final ExtractResponse extractResponse = mock(ExtractResponse.class);
 		when(extractResponse.getCargo()).thenReturn(cargo);
-		when(extractResponse.getCooldown()).thenReturn(new Cooldown(extractCooldown));
+		final int cooldownSeconds = 50;
+		when(extractResponse.getCooldown()).thenReturn(new Cooldown(cooldownSeconds));
 		when(surveyClient.extractSurvey(shipId, survey))
 				.thenReturn(new DataWrapper<ExtractResponse>(extractResponse, null));
 

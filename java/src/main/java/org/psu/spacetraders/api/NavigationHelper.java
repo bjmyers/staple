@@ -3,7 +3,6 @@ package org.psu.spacetraders.api;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.DockResponse;
@@ -24,14 +23,11 @@ import lombok.extern.jbosslog.JBossLog;
 @ApplicationScoped
 public class NavigationHelper {
 
-	private Duration navigationPad;
 	private NavigationClient navigationClient;
 	private RequestThrottler throttler;
 
 	@Inject
-	public NavigationHelper(@ConfigProperty(name = "app.navigation-pad-ms") final int navigationPad,
-			@RestClient final NavigationClient navigationClient, final RequestThrottler throttler) {
-		this.navigationPad = Duration.ofMillis(navigationPad);
+	public NavigationHelper(@RestClient final NavigationClient navigationClient, final RequestThrottler throttler) {
 		this.navigationClient = navigationClient;
 		this.throttler = throttler;
 	}
@@ -50,7 +46,10 @@ public class NavigationHelper {
 		if (!ship.getNav().getWaypointSymbol().equals(waypointSymbol)) {
 			final ShipNavigation newNav = orbitAndNavigate(ship.getSymbol(), waypointSymbol);
 			ship.setNav(newNav);
-			return newNav.getRoute().getArrival().plus(navigationPad);
+			final Duration flightDuration = Duration.between(newNav.getRoute().getDepartureTime(),
+					newNav.getRoute().getArrival());
+			// The time in the local clock when we will arrive
+			return Instant.now().plus(flightDuration);
 		}
 		// Navigation is done!
 		return Instant.now();

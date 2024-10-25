@@ -41,7 +41,7 @@ public class TradeShipManager {
 	private RouteManager routeManager;
 
 	@Inject
-	public TradeShipManager(@ConfigProperty(name = "app.navigation-pad-ms") final int navigationPad,
+	public TradeShipManager(@ConfigProperty(name = "app.cooldown-pad-ms") final int navigationPad,
 			final NavigationHelper navigationHelper,
 			final AccountManager accountManager, final MarketplaceRequester marketplaceRequester,
 			final MarketplaceManager marketplaceManager, final RouteManager routeManager) {

@@ -66,7 +66,7 @@ public class MiningShipManager {
 				// The ship will arrive in the future
 				final MiningShipJob job = new MiningShipJob(ship, destination);
 				job.setState(State.TRAVELING_TO_RESOURCE);
-				job.setNextAction(ship.getNav().getRoute().getArrival());
+				job.setNextAction(ship.getNav().getRoute().getArrival().plus(cooldownPad));
 				return job;
 			}
 			// The ship is already at a mining site
@@ -121,7 +121,9 @@ public class MiningShipManager {
 		case TRAVELING_TO_RESOURCE:
 			final SurveyResponse surveyResponse = throttler.throttle(() -> surveyClient.survey(shipId)).getData();
 			job.setSurveys(surveyResponse.getSurveys());
-			job.setNextAction(surveyResponse.getCooldown().getExpiration().plus(cooldownPad));
+			final Instant surveyCooldownComplete = Instant.now()
+					.plus(Duration.ofSeconds(surveyResponse.getCooldown().getTotalSeconds()));
+			job.setNextAction(surveyCooldownComplete);
 			job.setState(State.SURVEYING);
 			log.infof("Finished Surveying, found %s sites, ship %s in cooldown until %s", job.getSurveys().size(),
 					shipId, job.getNextAction());
@@ -131,7 +133,7 @@ public class MiningShipManager {
 			if (ship.getRemainingCargo() == 0) {
 				final Instant arrival = findAndNavigateToMarket(job);
 				job.setState(State.TRAVELING_TO_MARKET);
-				job.setNextAction(arrival.plus(cooldownPad));
+				job.setNextAction(arrival);
 				return job;
 			}
 			//TODO: Find a better way of swapping between surveys
@@ -141,7 +143,9 @@ public class MiningShipManager {
 					.getData();
 			ship.setCargo(extractResponse.getCargo());
 
-			job.setNextAction(extractResponse.getCooldown().getExpiration().plus(cooldownPad));
+			final Instant extractCooldownComplete = Instant.now()
+					.plus(Duration.ofSeconds(extractResponse.getCooldown().getTotalSeconds()));
+			job.setNextAction(extractCooldownComplete);
 			job.setState(State.EXTRACTING);
 			log.infof("Ship %s finished extraction, ready to extract again at %s",
 					shipId, job.getNextAction());
