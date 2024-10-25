@@ -1,7 +1,5 @@
 package org.psu.miningmanager.dto;
 
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
@@ -14,6 +12,6 @@ import lombok.RequiredArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Cooldown {
 
-	private Instant expiration;
+	private int totalSeconds;
 
 }
