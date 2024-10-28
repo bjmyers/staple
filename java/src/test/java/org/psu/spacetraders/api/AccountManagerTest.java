@@ -2,11 +2,13 @@ package org.psu.spacetraders.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.psu.spacetraders.dto.Agent;
 import org.psu.spacetraders.dto.DataWrapper;
+import org.psu.websocket.CreditReporter;
 
 /**
  * Tests for {@link AccountManager}
@@ -20,7 +22,8 @@ public class AccountManagerTest {
 	public void updateAgent() {
 
 		final AgentClient client = mock(AgentClient.class);
-		final AccountManager manager = new AccountManager(client);
+		final CreditReporter creditReporter = mock(CreditReporter.class);
+		final AccountManager manager = new AccountManager(client, creditReporter);
 
 		final int credits = 250;
 		final Agent agent = mock(Agent.class);
@@ -28,6 +31,7 @@ public class AccountManagerTest {
 
 		manager.updateAgent(agent);
 		assertEquals(credits, manager.getCredits());
+		verify(creditReporter).updateCreditTotal(credits);
 	}
 
 	/**
@@ -37,7 +41,8 @@ public class AccountManagerTest {
 	public void getCredits() {
 
 		final AgentClient client = mock(AgentClient.class);
-		final AccountManager manager = new AccountManager(client);
+		final CreditReporter creditReporter = mock(CreditReporter.class);
+		final AccountManager manager = new AccountManager(client, creditReporter);
 
 		final int credits = 250;
 		final Agent agent = mock(Agent.class);

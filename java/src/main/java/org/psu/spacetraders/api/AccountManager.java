@@ -2,6 +2,7 @@ package org.psu.spacetraders.api;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.spacetraders.dto.Agent;
+import org.psu.websocket.CreditReporter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -15,12 +16,14 @@ import lombok.extern.jbosslog.JBossLog;
 public class AccountManager {
 
 	private AgentClient agentClient;
+	private CreditReporter creditReporter;
 
 	private Agent agent;
 
 	@Inject
-	public AccountManager(@RestClient AgentClient agentClient) {
+	public AccountManager(@RestClient AgentClient agentClient, final CreditReporter creditReporter) {
 		this.agentClient = agentClient;
+		this.creditReporter = creditReporter;
 		this.agent = null;
 	}
 
@@ -30,6 +33,7 @@ public class AccountManager {
 	 */
 	public void updateAgent(final Agent agent) {
 		this.agent = agent;
+		creditReporter.updateCreditTotal(this.agent.getCredits());
 		log.infof("Updated Credit Total: %s", this.agent.getCredits());
 	}
 
