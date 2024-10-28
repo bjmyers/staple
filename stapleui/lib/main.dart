@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stapleui/credit_display_widget.dart';
 
 void main() {
   runApp(const MainApp());
@@ -19,7 +20,12 @@ class MainApp extends StatelessWidget {
         body: Column(
           children: [
             Text('Space Traders Automated PLanning Engine', style: titleStyle),
-            const Text('Total Credits: '),
+            const Row(
+              children: [
+                Text('Total Credits: '),
+                CreditDisplayWidget(),
+              ],
+            ),
           ],
         ),
       ),
