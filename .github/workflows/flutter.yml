@@ -1,0 +1,22 @@
+name: Flutter Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: stapleui/pubspec.yaml
+      - run: flutter --version #TODO: Remove this
+      - run: flutter build windows
