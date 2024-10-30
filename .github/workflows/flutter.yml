@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-defaults:
-  run:
-    working-directory: ./stapleui
-
 jobs:
   build:
     runs-on: windows-latest
@@ -23,6 +19,8 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version-file: pubspec.yaml
+          flutter-version-file: stapleui/pubspec.yaml
       - run: flutter --version #TODO: Remove this
-      - run: flutter build windows
+      - name: Flutter Build Windows
+        working-directory: ./stapleui
+        run: flutter build windows
