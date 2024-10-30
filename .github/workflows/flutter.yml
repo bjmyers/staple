@@ -6,13 +6,13 @@ on:
   pull_request:
     branches: [ "main" ]
 
+defaults:
+  run:
+    working-directory: ./stapleui
+
 jobs:
   build:
     runs-on: windows-latest
-
-    defaults:
-      run:
-        working-directory: ./stapleui
 
     steps:
       - name: Clone repository
