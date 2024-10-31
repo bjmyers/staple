@@ -20,7 +20,12 @@ jobs:
         with:
           channel: stable
           flutter-version-file: stapleui/pubspec.yaml
-      - run: flutter --version #TODO: Remove this
       - name: Flutter Build Windows
         working-directory: ./stapleui
         run: flutter build windows
+      - name: Upload UI Executable
+        working-directory: ./stapleui
+        uses: actions/upload-artifact@v4
+        with:
+          name: StapleUI.exe
+          path: ${{ github.workspace }}\build\windows\x64\runner\Release\stapleui.exe
