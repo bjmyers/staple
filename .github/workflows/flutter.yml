@@ -24,8 +24,8 @@ jobs:
         working-directory: ./stapleui
         run: flutter build windows
       - name: Upload UI Executable
-        working-directory: ./stapleui
         uses: actions/upload-artifact@v4
+        working-directory: ./stapleui
         with:
           name: StapleUI.exe
           path: ${{ github.workspace }}\build\windows\x64\runner\Release\stapleui.exe
