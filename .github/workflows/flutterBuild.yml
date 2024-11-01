@@ -20,11 +20,6 @@ jobs:
         with:
           channel: stable
           flutter-version-file: stapleui/pubspec.yaml
-      - name: Flutter Build Windows
+      - name: Flutter Test
         working-directory: ./stapleui
-        run: flutter build windows
-      - name: Upload UI Executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: StapleUI
-          path: ${{ github.workspace }}\stapleui\build\windows\x64\runner\Release
+        run: flutter test test

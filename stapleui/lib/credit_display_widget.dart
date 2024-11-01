@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:web_socket_channel/io.dart';
 
 class CreditDisplayWidget extends StatefulWidget {
 
-  const CreditDisplayWidget({super.key});
+  final WebSocketChannel channel;
+
+  const CreditDisplayWidget({super.key, required this.channel});
 
   @override
   State<StatefulWidget> createState() => CreditDisplay();
@@ -13,12 +14,13 @@ class CreditDisplayWidget extends StatefulWidget {
 
 class CreditDisplay extends State<CreditDisplayWidget> {
 
-  final WebSocketChannel channel = IOWebSocketChannel.connect('ws://localhost:8080/credit-update');
+  late WebSocketChannel channel;
   int currentCredits = 0;
 
   @override
   void initState() {
     super.initState();
+    channel = widget.channel;
     // Listen for messages from the WebSocket server
     channel.stream.listen((message) {
       setState(() {
