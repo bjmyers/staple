@@ -3,6 +3,9 @@ package org.psu.websocket;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.psu.websocket.dto.CreditMessage;
+import org.psu.websocket.dto.CreditMessageEncoder;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnOpen;
@@ -13,7 +16,7 @@ import jakarta.websocket.server.ServerEndpoint;
  * Reports updates in the user's credit total
  */
 @ApplicationScoped
-@ServerEndpoint("/credit-update")
+@ServerEndpoint(value = "/staple-update", encoders = {CreditMessageEncoder.class})
 public class CreditReporter {
 
 	private final Set<Session> sessions = new HashSet<>();
@@ -38,7 +41,8 @@ public class CreditReporter {
     }
 
     private void sendUpdateToClient(Session session) {
-        session.getAsyncRemote().sendText(String.valueOf(creditTotal));
+    	final CreditMessage creditMessage = new CreditMessage(this.creditTotal);
+        session.getAsyncRemote().sendObject(creditMessage);
     }
 
 }
