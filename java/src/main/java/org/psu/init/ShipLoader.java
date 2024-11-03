@@ -25,6 +25,7 @@ import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.MarketplaceManager;
 import org.psu.trademanager.TradeShipManager;
+import org.psu.websocket.WebsocketReporter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -47,6 +48,7 @@ public class ShipLoader {
 	private final MarketplaceManager marketplaceManager;
 	private final MiningSiteManager miningSiteManager;
 	private final ShipJobQueue jobQueue;
+	private final WebsocketReporter websocketReporter;
 
 	@Inject
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
@@ -55,7 +57,7 @@ public class ShipLoader {
 			final MiningShipManager miningShipManager,
 			final TradeShipManager tradeShipManager, final MarketplaceManager marketplaceManager,
 			final MiningSiteManager miningSiteManager,
-			final ShipJobQueue jobQueue) {
+			final ShipJobQueue jobQueue, final WebsocketReporter websocketReporter) {
 		this.limit = limit;
 		this.shipsClient = shipsClient;
 		this.throttler = throttler;
@@ -66,6 +68,7 @@ public class ShipLoader {
 		this.marketplaceManager = marketplaceManager;
 		this.miningSiteManager = miningSiteManager;
 		this.jobQueue = jobQueue;
+		this.websocketReporter = websocketReporter;
 	}
 
 	/**
@@ -139,6 +142,7 @@ public class ShipLoader {
 			log.infof("Gathered ship page %s", i);
 			ships.addAll(nextPage.getData());
 		}
+		websocketReporter.updateShips(ships);
 
 		return ships;
     }

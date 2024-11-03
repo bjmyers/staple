@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.Test;
 import org.psu.spacetraders.dto.Agent;
 import org.psu.spacetraders.dto.DataWrapper;
-import org.psu.websocket.CreditReporter;
+import org.psu.websocket.WebsocketReporter;
 
 /**
  * Tests for {@link AccountManager}
@@ -22,7 +22,7 @@ public class AccountManagerTest {
 	public void updateAgent() {
 
 		final AgentClient client = mock(AgentClient.class);
-		final CreditReporter creditReporter = mock(CreditReporter.class);
+		final WebsocketReporter creditReporter = mock(WebsocketReporter.class);
 		final AccountManager manager = new AccountManager(client, creditReporter);
 
 		final int credits = 250;
@@ -41,7 +41,7 @@ public class AccountManagerTest {
 	public void getCredits() {
 
 		final AgentClient client = mock(AgentClient.class);
-		final CreditReporter creditReporter = mock(CreditReporter.class);
+		final WebsocketReporter creditReporter = mock(WebsocketReporter.class);
 		final AccountManager manager = new AccountManager(client, creditReporter);
 
 		final int credits = 250;

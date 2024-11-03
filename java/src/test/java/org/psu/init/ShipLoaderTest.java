@@ -29,6 +29,7 @@ import org.psu.testutils.TestRequestThrottler;
 import org.psu.trademanager.MarketplaceManager;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
+import org.psu.websocket.WebsocketReporter;
 
 /**
  * Tests for {@link ShipLoader}
@@ -59,15 +60,18 @@ public class ShipLoaderTest {
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final ShipJobQueue jobQueue = mock(ShipJobQueue.class);
 		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
+		final WebsocketReporter websocketReporter = mock(WebsocketReporter.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, null, shipRoleManager,
-				null, null, marketplaceManager, miningSiteManager, jobQueue);
+				null, null, marketplaceManager, miningSiteManager, jobQueue, websocketReporter);
 
 		final List<Ship> ships = shipLoader.gatherShips();
 
 		assertEquals(2, ships.size());
 		assertTrue(ships.contains(ship1));
 		assertTrue(ships.contains(ship2));
+
+		verify(websocketReporter).updateShips(ships);
 	}
 
 	/**
@@ -117,10 +121,11 @@ public class ShipLoaderTest {
 		final ShipJobQueue jobQueue = mock(ShipJobQueue.class);
 
 		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
+		final WebsocketReporter websocketReporter = mock(WebsocketReporter.class);
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, systemBuilder, shipRoleManager,
-				miningShipManager, tradeShipManager, marketplaceManager, miningSiteManager, jobQueue);
+				miningShipManager, tradeShipManager, marketplaceManager, miningSiteManager, jobQueue, websocketReporter);
 
 		shipLoader.run();
 
@@ -149,10 +154,11 @@ public class ShipLoaderTest {
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final ShipJobQueue jobQueue = mock(ShipJobQueue.class);
 		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
+		final WebsocketReporter websocketReporter = mock(WebsocketReporter.class);
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, systemBuilder, shipRoleManager,
-				null, null, marketplaceManager, miningSiteManager, jobQueue);
+				null, null, marketplaceManager, miningSiteManager, jobQueue, websocketReporter);
 
 		assertThrows(IllegalStateException.class, () -> shipLoader.run());
 	}
