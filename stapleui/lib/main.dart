@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:stapleui/credit_display_widget.dart';
+import 'package:provider/provider.dart';
+import 'package:stapleui/credit/credit_display_widget.dart';
+import 'package:stapleui/credit/credit_state.dart';
+import 'package:stapleui/websocket_listener.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
-  runApp(const MainApp());
+  final WebSocketChannel channel = IOWebSocketChannel.connect('ws://localhost:8080/staple-update');
+  runApp(
+    MultiProvider(providers: [
+      ChangeNotifierProvider(create: (_) => CreditState()),
+      Provider(create: (_) => WebsocketListener(channel: channel)),
+    ],
+    child: const MainApp()),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -16,17 +26,19 @@ class MainApp extends StatelessWidget {
     final titleStyle = theme.textTheme.displayMedium!.copyWith(
       color: theme.colorScheme.primary,
     );
-    final WebSocketChannel channel = IOWebSocketChannel.connect('ws://localhost:8080/credit-update');
+
+    final websocketListener = Provider.of<WebsocketListener>(context, listen: false);
+    websocketListener.listen(context);
 
     return MaterialApp(
       home: Scaffold(
         body: Column(
           children: [
             Text('Space Traders Automated PLanning Engine', style: titleStyle),
-            Row(
+            const Row(
               children: [
-                const Text('Total Credits: '),
-                CreditDisplayWidget(channel: channel),
+                Text('Total Credits: '),
+                CreditDisplayWidget(),
               ],
             ),
           ],

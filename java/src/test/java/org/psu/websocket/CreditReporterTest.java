@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
+import org.psu.websocket.dto.CreditMessage;
 
 import jakarta.websocket.RemoteEndpoint.Async;
 import jakarta.websocket.Session;
@@ -32,7 +33,9 @@ public class CreditReporterTest {
 
 		reporter.onOpen(session1);
 
-		verify(async1).sendText(Integer.toString(creditTotal));
+		final CreditMessage expectedMessage = new CreditMessage(creditTotal);
+
+		verify(async1).sendObject(expectedMessage);
 	}
 
 	/**
@@ -59,8 +62,10 @@ public class CreditReporterTest {
 		// Update the total after we've established two connections
 		reporter.updateCreditTotal(creditTotal);
 
-		verify(async1).sendText(Integer.toString(creditTotal));
-		verify(async2).sendText(Integer.toString(creditTotal));
+		final CreditMessage expectedMessage = new CreditMessage(creditTotal);
+
+		verify(async1).sendObject(expectedMessage);
+		verify(async2).sendObject(expectedMessage);
 	}
 
 	/**
@@ -89,8 +94,10 @@ public class CreditReporterTest {
 		// Update the total, we only have session1 as an active session
 		reporter.updateCreditTotal(creditTotal);
 
-		verify(async1).sendText(Integer.toString(creditTotal));
-		verify(async2, never()).sendText(Integer.toString(creditTotal));
+		final CreditMessage expectedMessage = new CreditMessage(creditTotal);
+
+		verify(async1).sendObject(expectedMessage);
+		verify(async2, never()).sendObject(expectedMessage);
 	}
 
 }
