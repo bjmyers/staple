@@ -22,6 +22,7 @@ import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.testutils.TestRequestThrottler;
+import org.psu.websocket.WebsocketReporter;
 
 /**
  * Tests for {@Link NavigationHelper}
@@ -58,8 +59,9 @@ public class NavigationHelperTest {
 		final NavigationClient navClient = mock(NavigationClient.class);
 		when(navClient.navigate(eq(shipId), eq(new NavigationRequest(waypointSymbol))))
 				.thenReturn(new DataWrapper<NavigationResponse>(navResponse, null));
+		final WebsocketReporter reporter = mock(WebsocketReporter.class);
 
-		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get());
+		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get(), reporter);
 
 		final Instant actualArrival = navHelper.navigate(ship, way);
 		// Arrival will be 100 seconds in the future, to account for test runtime lets just asset that
@@ -86,7 +88,8 @@ public class NavigationHelperTest {
 		when(ship.getNav()).thenReturn(shipNav);
 
 		final NavigationClient navClient = mock(NavigationClient.class);
-		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get());
+		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get(), reporter);
 
 		navHelper.navigate(ship, way);
 		verifyNoInteractions(navClient);
@@ -109,7 +112,9 @@ public class NavigationHelperTest {
 		final NavigationClient navClient = mock(NavigationClient.class);
 		when(navClient.dock(shipId)).thenReturn(new DataWrapper<DockResponse>(dockResponse, null));
 
-		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get());
+		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+
+		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get(), reporter);
 
 		navHelper.dock(ship);
 		verify(ship).setNav(shipNav);
@@ -131,7 +136,9 @@ public class NavigationHelperTest {
 		final NavigationClient navClient = mock(NavigationClient.class);
 		when(navClient.orbit(shipId)).thenReturn(new DataWrapper<DockResponse>(dockResponse, null));
 
-		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get());
+		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+
+		final NavigationHelper navHelper = new NavigationHelper(navClient, TestRequestThrottler.get(), reporter);
 
 		navHelper.orbit(ship);
 		verify(ship).setNav(shipNav);

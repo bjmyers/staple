@@ -13,6 +13,7 @@ import org.psu.spacetraders.dto.TradeRequest;
 import org.psu.spacetraders.dto.TradeResponse;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.MarketplaceManager;
+import org.psu.websocket.WebsocketReporter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -31,16 +32,18 @@ public class MarketplaceRequester {
 	private AccountManager accountManager;
 	private MarketplaceManager marketplaceManager;
 	private NavigationHelper navHelper;
+	private WebsocketReporter websocketReporter;
 
 	@Inject
 	public MarketplaceRequester(@RestClient MarketplaceClient marketplaceClient, final RequestThrottler throttler,
 			final AccountManager accountManager, final MarketplaceManager marketplaceManager,
-			final NavigationHelper navHelper) {
+			final NavigationHelper navHelper, final WebsocketReporter websocketReporter) {
 		this.marketplaceClient = marketplaceClient;
 		this.throttler = throttler;
 		this.accountManager = accountManager;
 		this.marketplaceManager = marketplaceManager;
 		this.navHelper = navHelper;
+		this.websocketReporter = websocketReporter;
 	}
 
 	/**
@@ -118,7 +121,9 @@ public class MarketplaceRequester {
 			final TradeResponse tradeResp = sell(ship, sellRequest);
 			totalCredits += tradeResp.getTransaction().getTotalPrice();
 		}
-		log.infof("Sold goods from ship %s for a total of %s credits", shipId, totalCredits);
+		final String message = String.format("Sold goods from ship %s for a total of %s credits", shipId, totalCredits);
+		websocketReporter.fireShipEvent(shipId, message);
+		log.info(message);
 
 		if (market.sellsProduct(Product.FUEL)) {
 			final RefuelResponse refuelResponse = refuel(ship);

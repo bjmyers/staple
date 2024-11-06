@@ -16,6 +16,7 @@ import org.psu.shiporchestrator.ShipRole;
 import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.websocket.dto.CreditMessage;
+import org.psu.websocket.dto.ShipEventMessage;
 import org.psu.websocket.dto.ShipMessage;
 import org.psu.websocket.dto.ShipMessage.ShipMessageData;
 
@@ -147,6 +148,34 @@ public class WebsocketReporterTest {
 
 		verify(async1).sendObject(expectedMessage);
 		verify(async2, never()).sendObject(expectedMessage);
+	}
+
+	/**
+	 * Tests fireShipEvent
+	 */
+	@Test
+	public void fireShipEvent() {
+
+		final Async async1 = mock(Async.class);
+		final Session session1 = mock(Session.class);
+		when(session1.getAsyncRemote()).thenReturn(async1);
+
+		final Async async2 = mock(Async.class);
+		final Session session2 = mock(Session.class);
+		when(session2.getAsyncRemote()).thenReturn(async2);
+
+		websocketReporter.onOpen(session1);
+		websocketReporter.onOpen(session2);
+
+		final String shipId = "shippy";
+		final String message = "was a very good ship";
+
+		websocketReporter.fireShipEvent(shipId, message);
+
+		final ShipEventMessage expectedMessage = new ShipEventMessage(shipId, message);
+
+		verify(async1).sendObject(expectedMessage);
+		verify(async2).sendObject(expectedMessage);
 	}
 
 }

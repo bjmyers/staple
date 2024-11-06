@@ -9,6 +9,8 @@ import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.websocket.dto.CreditMessage;
 import org.psu.websocket.dto.CreditMessageEncoder;
+import org.psu.websocket.dto.ShipEventMessage;
+import org.psu.websocket.dto.ShipEventMessageEncoder;
 import org.psu.websocket.dto.ShipMessage;
 import org.psu.websocket.dto.ShipMessage.ShipMessageData;
 import org.psu.websocket.dto.ShipMessageEncoder;
@@ -24,7 +26,8 @@ import jakarta.websocket.server.ServerEndpoint;
  * Reports updates in the user's credit total
  */
 @ApplicationScoped
-@ServerEndpoint(value = "/staple-update", encoders = { CreditMessageEncoder.class, ShipMessageEncoder.class })
+@ServerEndpoint(value = "/staple-update", encoders = { CreditMessageEncoder.class, ShipMessageEncoder.class,
+		ShipEventMessageEncoder.class })
 public class WebsocketReporter {
 
 	@Inject
@@ -44,6 +47,13 @@ public class WebsocketReporter {
     @OnClose
     public void onClose(Session session) {
     	this.sessions.remove(session);
+    }
+
+    public void fireShipEvent(final String shipId, final String message) {
+    	final ShipEventMessage eventMessage = new ShipEventMessage(shipId, message);
+    	for (Session session : this.sessions) {
+    		session.getAsyncRemote().sendObject(eventMessage);
+    	}
     }
 
     public void updateCreditTotal(int newValue) {
