@@ -20,6 +20,7 @@ import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.dto.TradeRoute;
 import org.psu.trademanager.dto.TradeShipJob;
 import org.psu.trademanager.dto.TradeShipJob.State;
+import org.psu.websocket.WebsocketReporter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -39,18 +40,21 @@ public class TradeShipManager {
 	private MarketplaceRequester marketplaceRequester;
 	private MarketplaceManager marketplaceManager;
 	private RouteManager routeManager;
+	private WebsocketReporter websocketReporter;
 
 	@Inject
 	public TradeShipManager(@ConfigProperty(name = "app.cooldown-pad-ms") final int navigationPad,
 			final NavigationHelper navigationHelper,
 			final AccountManager accountManager, final MarketplaceRequester marketplaceRequester,
-			final MarketplaceManager marketplaceManager, final RouteManager routeManager) {
+			final MarketplaceManager marketplaceManager, final RouteManager routeManager,
+			final WebsocketReporter websocketReporter) {
 		this.navigationPad = Duration.ofMillis(navigationPad);
 		this.navigationHelper = navigationHelper;
 		this.accountManager = accountManager;
 		this.marketplaceRequester = marketplaceRequester;
 		this.marketplaceManager = marketplaceManager;
 		this.routeManager = routeManager;
+		this.websocketReporter = websocketReporter;
 	}
 
 	public TradeShipJob createJob(final Ship ship) {
@@ -150,8 +154,10 @@ public class TradeShipManager {
 			final TradeResponse purchaseResponse = marketplaceRequester.purchase(ship, tradeRequest);
 
 			total += purchaseResponse.getTransaction().getTotalPrice();
-			log.infof("Purchased %s unit(s) of %s for %s credits", tradeRequest.getUnits(),
+			final String message = String.format("Purchased %s unit(s) of %s for %s credits", tradeRequest.getUnits(),
 					tradeRequest.getSymbol(), purchaseResponse.getTransaction().getTotalPrice());
+			websocketReporter.fireShipEvent(ship.getSymbol(), message);
+			log.info(message);
 		}
 		log.infof("Total Purchase Price: %s", total);
 		route.setPurchasePrice(total);
@@ -169,8 +175,10 @@ public class TradeShipManager {
 
 		final Integer sellPrice = marketplaceRequester.dockAndSellItems(ship, route.getImportWaypoint(), cargoToSell);
 		if (route.getPurchasePrice() != null) {
-			log.infof("Trade route for ship %s made a total profit of %s", ship.getSymbol(),
+			final String message = String.format("Trade route for ship %s made a total profit of %s", ship.getSymbol(),
 					sellPrice - route.getPurchasePrice());
+			websocketReporter.fireShipEvent(ship.getSymbol(), message);
+			log.info(message);
 		}
 	}
 

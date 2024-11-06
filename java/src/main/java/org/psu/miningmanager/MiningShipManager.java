@@ -23,6 +23,7 @@ import org.psu.spacetraders.dto.Product;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.MarketplaceManager;
+import org.psu.websocket.WebsocketReporter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -42,12 +43,14 @@ public class MiningShipManager {
 	private NavigationHelper navHelper;
 	private MarketplaceManager marketplaceManager;
 	private MarketplaceRequester marketplaceRequester;
+	private WebsocketReporter websocketReporter;
 
 	@Inject
 	public MiningShipManager(@ConfigProperty(name = "app.cooldown-pad-ms") final int cooldownPad,
 			@RestClient final SurveyClient surveyClient, final RequestThrottler throttler,
 			final MiningSiteManager siteManager, final NavigationHelper navHelper,
-			final MarketplaceManager marketplaceManager, final MarketplaceRequester marketplaceRequester) {
+			final MarketplaceManager marketplaceManager, final MarketplaceRequester marketplaceRequester,
+			final WebsocketReporter websocketReporter) {
 		this.cooldownPad = Duration.ofMillis(cooldownPad);
 		this.surveyClient = surveyClient;
 		this.throttler = throttler;
@@ -55,6 +58,7 @@ public class MiningShipManager {
 		this.navHelper = navHelper;
 		this.marketplaceManager = marketplaceManager;
 		this.marketplaceRequester = marketplaceRequester;
+		this.websocketReporter = websocketReporter;
 	}
 
 	public MiningShipJob createJob(final Ship ship) {
@@ -125,8 +129,12 @@ public class MiningShipManager {
 					.plus(Duration.ofSeconds(surveyResponse.getCooldown().getTotalSeconds()));
 			job.setNextAction(surveyCooldownComplete);
 			job.setState(State.SURVEYING);
-			log.infof("Finished Surveying, found %s sites, ship %s in cooldown until %s", job.getSurveys().size(),
-					shipId, job.getNextAction());
+
+			final String surveyMessage = String.format(
+					"Finished Surveying, found %s sites, ship %s in cooldown until %s", job.getSurveys().size(), shipId,
+					job.getNextAction());
+			websocketReporter.fireShipEvent(ship.getSymbol(), surveyMessage);
+			log.infof(surveyMessage);
 			break;
 		case SURVEYING, EXTRACTING:
 			// If we're full, finish extracting
@@ -143,7 +151,9 @@ public class MiningShipManager {
 				job.setNextAction(Instant.now());
 				break;
 			}
-			log.infof("Ship %s extracting resources", shipId);
+			final String message = String.format("Ship %s extracting resources", shipId);
+			websocketReporter.fireShipEvent(ship.getSymbol(), message);
+			log.infof(message);
 			final ExtractResponse extractResponse = throttler.throttle(() -> surveyClient.extractSurvey(shipId, survey))
 					.getData();
 			ship.setCargo(extractResponse.getCargo());
@@ -152,8 +162,10 @@ public class MiningShipManager {
 					.plus(Duration.ofSeconds(extractResponse.getCooldown().getTotalSeconds()));
 			job.setNextAction(extractCooldownComplete);
 			job.setState(State.EXTRACTING);
-			log.infof("Ship %s finished extraction, ready to extract again at %s",
+			final String extractMessage = String.format("Ship %s finished extraction, ready to extract again at %s",
 					shipId, job.getNextAction());
+			websocketReporter.fireShipEvent(ship.getSymbol(), extractMessage);
+			log.infof(extractMessage);
 			break;
 		case TRAVELING_TO_MARKET:
 			sellItems(job);
@@ -181,8 +193,11 @@ public class MiningShipManager {
 			final Waypoint buyingMarket = optionalMarket.get();
 			if (ship.canTravelTo(buyingMarket)) {
 				final Instant arrival = navHelper.navigate(ship, buyingMarket);
-				log.infof("Identified market %s to sell extracted goods, ship %s will arrive at %s",
+				final String message = String.format(
+						"Identified market %s to sell extracted goods, ship %s will arrive at %s",
 						buyingMarket.getSymbol(), ship.getSymbol(), arrival);
+				websocketReporter.fireShipEvent(ship.getSymbol(), message);
+				log.infof(message);
 				job.setSellingWaypoint(buyingMarket);
 				return arrival;
 			}

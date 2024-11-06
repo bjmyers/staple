@@ -11,6 +11,7 @@ import org.psu.spacetraders.dto.NavigationResponse;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
+import org.psu.websocket.WebsocketReporter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -25,11 +26,14 @@ public class NavigationHelper {
 
 	private NavigationClient navigationClient;
 	private RequestThrottler throttler;
+	private WebsocketReporter websocketReporter;
 
 	@Inject
-	public NavigationHelper(@RestClient final NavigationClient navigationClient, final RequestThrottler throttler) {
+	public NavigationHelper(@RestClient final NavigationClient navigationClient, final RequestThrottler throttler,
+			final WebsocketReporter websocketReporter) {
 		this.navigationClient = navigationClient;
 		this.throttler = throttler;
+		this.websocketReporter = websocketReporter;
 	}
 
 	/**
@@ -82,7 +86,10 @@ public class NavigationHelper {
 
 		final Instant arrivalTime = navResponse.getData().getNav().getRoute().getArrival();
 		final Duration tripTime = Duration.between(Instant.now(), arrivalTime);
-		log.infof("Navigation of ship %s to %s will take %s", shipId, waypointSymbol, tripTime);
+
+		final String message = String.format("Navigation of ship %s to %s will take %s", shipId, waypointSymbol, tripTime);
+		websocketReporter.fireShipEvent(shipId, message);
+		log.info(message);
 
 		return navResponse.getData().getNav();
 	}
