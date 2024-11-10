@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stapleui/credit/credit_display_widget.dart';
 import 'package:stapleui/credit/credit_state.dart';
+import 'package:stapleui/ship/event_display_widget.dart';
+import 'package:stapleui/ship/event_state.dart';
 import 'package:stapleui/ship/ship_display_widget.dart';
 import 'package:stapleui/ship/ship_state.dart';
 import 'package:stapleui/websocket_listener.dart';
@@ -14,6 +16,7 @@ void main() {
     MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => CreditState()),
       ChangeNotifierProvider(create: (_) => ShipState()),
+      ChangeNotifierProvider(create: (_) => ShipEventState()),
       Provider(create: (_) => WebsocketListener(channel: channel)),
     ],
     child: const MainApp()),
@@ -44,18 +47,21 @@ class MainApp extends StatelessWidget {
                 CreditDisplayWidget(),
               ],
             ),
-            Row(
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Expanded(
-                  flex: 1,
+                Expanded(
                   child: ShipDisplayWidget()
                 ),
                 Expanded(
-                  flex: 2,
-                  child: Container(
-                    color: Colors.blue[100],
-                  ),
+                  child: ShipEventDisplayWidget()
                 ),
+                //Expanded(
+                //  flex: 2,
+                //  child: Container(
+                //    color: Colors.blue[100],
+                //  ),
+                //),
               ],
             ),
           ],

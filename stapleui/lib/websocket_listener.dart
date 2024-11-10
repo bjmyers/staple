@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stapleui/credit/credit_state.dart';
 import 'package:stapleui/credit/credit_message.dart';
+import 'package:stapleui/ship/event_message.dart';
+import 'package:stapleui/ship/event_state.dart';
 import 'package:stapleui/ship/ship_message.dart';
 import 'package:stapleui/ship/ship_state.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -19,6 +21,7 @@ class WebsocketListener {
       final String type = json["type"];
       final CreditState creditState = Provider.of<CreditState>(context, listen: false);
       final ShipState shipState = Provider.of<ShipState>(context, listen: false);
+      final ShipEventState shipEventState = Provider.of<ShipEventState>(context, listen: false);
 
       switch (type) {
         case "Credit":
@@ -28,6 +31,10 @@ class WebsocketListener {
         case "Ships":
           final shipMessage = ShipMessage.fromJson(json);
           shipState.updateShipData(shipMessage.ships);
+          break;
+        case "ShipEvent":
+          final shipEventMessage = ShipEventMessage.fromJson(json);
+          shipEventState.addMessage(shipEventMessage);
           break;
         default:
           break;
