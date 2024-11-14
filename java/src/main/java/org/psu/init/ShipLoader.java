@@ -11,6 +11,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.miningmanager.MiningShipManager;
 import org.psu.miningmanager.MiningSiteManager;
+import org.psu.navigation.RefuelPathCalculator;
 import org.psu.shiporchestrator.ShipJob;
 import org.psu.shiporchestrator.ShipJobQueue;
 import org.psu.shiporchestrator.ShipRoleManager;
@@ -20,6 +21,7 @@ import org.psu.spacetraders.api.SpaceTradersUtils;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.DataWrapper.WrapperMetadata;
 import org.psu.spacetraders.dto.MarketInfo;
+import org.psu.spacetraders.dto.Product;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
@@ -47,6 +49,7 @@ public class ShipLoader {
 	private final TradeShipManager tradeShipManager;
 	private final MarketplaceManager marketplaceManager;
 	private final MiningSiteManager miningSiteManager;
+	private final RefuelPathCalculator refuelPathCalculator;
 	private final ShipJobQueue jobQueue;
 	private final WebsocketReporter websocketReporter;
 
@@ -54,10 +57,10 @@ public class ShipLoader {
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
 			@RestClient final ShipsClient shipsClient, final RequestThrottler throttler,
 			final SystemBuilder systemBuilder, final ShipRoleManager shipRoleManager,
-			final MiningShipManager miningShipManager,
-			final TradeShipManager tradeShipManager, final MarketplaceManager marketplaceManager,
-			final MiningSiteManager miningSiteManager,
-			final ShipJobQueue jobQueue, final WebsocketReporter websocketReporter) {
+			final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager,
+			final MarketplaceManager marketplaceManager, final MiningSiteManager miningSiteManager,
+			final ShipJobQueue jobQueue, final RefuelPathCalculator refuelPathCalculator,
+			final WebsocketReporter websocketReporter) {
 		this.limit = limit;
 		this.shipsClient = shipsClient;
 		this.throttler = throttler;
@@ -68,6 +71,7 @@ public class ShipLoader {
 		this.marketplaceManager = marketplaceManager;
 		this.miningSiteManager = miningSiteManager;
 		this.jobQueue = jobQueue;
+		this.refuelPathCalculator = refuelPathCalculator;
 		this.websocketReporter = websocketReporter;
 	}
 
@@ -105,6 +109,10 @@ public class ShipLoader {
     	final Map<Waypoint, MarketInfo> marketInfo = systemBuilder.gatherMarketInfo(systemWaypoints);
     	marketplaceManager.updateMarketData(marketInfo);
     	log.infof("Found Market Info for %s marketplaces", marketInfo.size());
+
+    	final List<Waypoint> waypointsWhichTradeFuel = marketInfo.entrySet().stream()
+    			.filter(e -> e.getValue().sellsProduct(Product.FUEL)).map(Entry::getKey).toList();
+    	refuelPathCalculator.loadRefuelWaypoints(waypointsWhichTradeFuel);
 
 		final List<ShipJob> jobs = new ArrayList<>();
 		for (final Ship ship : ships) {
