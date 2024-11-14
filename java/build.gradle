@@ -24,6 +24,7 @@ dependencies {
     
     // Third-Party
     implementation 'com.google.guava:guava'
+    implementation 'org.jgrapht:jgrapht-core:1.5.2'
 
     compileOnly 'org.projectlombok:lombok:1.18.34'
 	annotationProcessor 'org.projectlombok:lombok:1.18.34'

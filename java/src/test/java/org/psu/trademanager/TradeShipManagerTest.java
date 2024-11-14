@@ -31,6 +31,7 @@ import org.psu.spacetraders.dto.TradeRequest;
 import org.psu.spacetraders.dto.TradeResponse;
 import org.psu.spacetraders.dto.Transaction;
 import org.psu.spacetraders.dto.Waypoint;
+import org.psu.trademanager.RouteManager.RouteResponse;
 import org.psu.trademanager.dto.TradeRoute;
 import org.psu.trademanager.dto.TradeShipJob;
 import org.psu.trademanager.dto.TradeShipJob.State;
@@ -52,10 +53,12 @@ public class TradeShipManagerTest {
 		final Ship ship = mock(Ship.class);
 		when(ship.getCargo()).thenReturn(cargo);
 
-		final RouteManager routeManager = mock(RouteManager.class);
-		final TradeRoute route = mock(TradeRoute.class);
-		when(routeManager.getBestRoute(ship)).thenReturn(route);
-		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+		final RouteManager routeManager = mock();
+		final TradeRoute route = mock();
+		final Waypoint way = mock();
+		final RouteResponse routeResponse = new RouteResponse(route, List.of(way));
+		when(routeManager.getBestRoute(ship)).thenReturn(routeResponse);
+		final WebsocketReporter reporter = mock();
 
 		final TradeShipManager manager = new TradeShipManager(0, null, null, null, null, routeManager, reporter);
 
@@ -63,6 +66,8 @@ public class TradeShipManagerTest {
 
 		assertEquals(ship, job.getShip());
 		assertEquals(route, job.getRoute());
+		assertEquals(List.of(way), job.getWaypoints());
+		assertEquals(State.NOT_STARTED, job.getState());
 	}
 
 	/**
@@ -102,10 +107,11 @@ public class TradeShipManagerTest {
 		when(ship.getNav().getRoute().getArrival()).thenReturn(arrivalTime);
 
 		final TradeShipJob job = manager.createJob(ship);
-		assertEquals(State.TRAVELING_TO_IMPORT, job.getState());
+		assertEquals(State.TRAVELING, job.getState());
 		assertEquals(ship, job.getShip());
 		assertEquals(way, job.getRoute().getImportWaypoint());
 		assertEquals(arrivalTime, job.getNextAction());
+		assertEquals(List.of(way), job.getWaypoints());
 
 		final List<Product> products = job.getRoute().getGoods();
 		assertEquals(2, products.size());
@@ -141,17 +147,17 @@ public class TradeShipManagerTest {
 		final Instant arrivalTime = Instant.now().plus(Duration.ofMillis(10));
 		when(navHelper.navigate(ship, exportWaypoint)).thenReturn(arrivalTime);
 
-		final TradeShipJob job = new TradeShipJob(ship, tradeRoute);
+		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, List.of(exportWaypoint));
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
-		assertEquals(State.TRAVELING_TO_EXPORT, outputJob.getState());
+		assertEquals(State.TRAVELING, outputJob.getState());
 		assertEquals(arrivalTime, outputJob.getNextAction());
 	}
 
 	/**
-	 * Tests {@link TradeShipManager#manageTradeShip} with a job where the ship was
-	 * traveling to the export waypoint
+	 * Tests {@link TradeShipManager#manageTradeShip} with a job where the ship has
+	 * traveled to the export waypoint
 	 */
 	@Test
 	public void manageTradeShipTravelingToExport() {
@@ -165,13 +171,15 @@ public class TradeShipManagerTest {
 		final TradeShipManager manager = new TradeShipManager(0, navHelper, accountManager, marketRequester,
 				marketManager, routeManager, reporter);
 
+		final String exportWaypointSymbol = "export";
 		final Ship ship = mock(Ship.class);
 		final ShipNavigation shipNav = mock(ShipNavigation.class);
-		when(shipNav.getWaypointSymbol()).thenReturn("Starting Symbol");
+		when(shipNav.getWaypointSymbol()).thenReturn(exportWaypointSymbol);
 		when(ship.getNav()).thenReturn(shipNav);
 
 		final Waypoint exportWaypoint = mock(Waypoint.class);
 		final Waypoint importWaypoint = mock(Waypoint.class);
+		when(exportWaypoint.getSymbol()).thenReturn(exportWaypointSymbol);
 		when(importWaypoint.getSymbol()).thenReturn("import waypoint");
 		final TradeRoute tradeRoute = mock(TradeRoute.class);
 		when(tradeRoute.getExportWaypoint()).thenReturn(exportWaypoint);
@@ -196,18 +204,18 @@ public class TradeShipManagerTest {
 		when(tradeResponse.getTransaction()).thenReturn(transaction);
 		when(marketRequester.purchase(any(), same(tradeRequest))).thenReturn(tradeResponse);
 
-		final TradeShipJob job = new TradeShipJob(ship, tradeRoute);
-		job.setState(State.TRAVELING_TO_EXPORT);
+		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, List.of(importWaypoint));
+		job.setState(State.TRAVELING);
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
-		assertEquals(State.TRAVELING_TO_IMPORT, outputJob.getState());
+		assertEquals(State.TRAVELING, outputJob.getState());
 		assertEquals(arrivalTime, outputJob.getNextAction());
 	}
 
 	/**
-	 * Tests {@link TradeShipManager#manageTradeShip} with a job where the ship was
-	 * traveling to the import waypoint
+	 * Tests {@link TradeShipManager#manageTradeShip} with a job where the ship has
+	 * traveled to the import waypoint
 	 */
 	@Test
 	public void manageTradeShipTravelingToImport() {
@@ -221,12 +229,17 @@ public class TradeShipManagerTest {
 		final TradeShipManager manager = new TradeShipManager(0, navHelper, accountManager, marketRequester,
 				marketManager, routeManager, reporter);
 
+		final String importWaypointSymbol = "import";
 		final String productName = "product";
 		final Ship ship = mock(Ship.class);
+		final ShipNavigation shipNav = mock(ShipNavigation.class);
+		when(shipNav.getWaypointSymbol()).thenReturn(importWaypointSymbol);
+		when(ship.getNav()).thenReturn(shipNav);
 		final CargoItem cargoItem = new CargoItem(productName, 1);
 		when(ship.getCargo()).thenReturn(new Cargo(10, 0, List.of(cargoItem)));
 
 		final Waypoint importWaypoint = mock(Waypoint.class);
+		when(importWaypoint.getSymbol()).thenReturn(importWaypointSymbol);
 		final TradeRoute tradeRoute = mock(TradeRoute.class);
 		when(tradeRoute.getImportWaypoint()).thenReturn(importWaypoint);
 		when(tradeRoute.getGoods()).thenReturn(List.of(new Product(productName)));
@@ -234,11 +247,13 @@ public class TradeShipManagerTest {
 		final MarketInfo marketInfo = mock(MarketInfo.class);
 		when(marketManager.updateMarketInfo(importWaypoint)).thenReturn(marketInfo);
 
-		final TradeRoute newTradeRoute = mock(TradeRoute.class);
-		when(routeManager.getBestRoute(ship)).thenReturn(newTradeRoute);
+		final TradeRoute newTradeRoute = mock();
+		final Waypoint way = mock();
+		final RouteResponse routeResponse = new RouteResponse(newTradeRoute, List.of(way));
+		when(routeManager.getBestRoute(ship)).thenReturn(routeResponse);
 
-		final TradeShipJob job = new TradeShipJob(ship, tradeRoute);
-		job.setState(State.TRAVELING_TO_IMPORT);
+		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, List.of());
+		job.setState(State.TRAVELING);
 
 		when(marketRequester.dockAndSellItems(ship, importWaypoint, List.of(cargoItem))).thenReturn(10);
 

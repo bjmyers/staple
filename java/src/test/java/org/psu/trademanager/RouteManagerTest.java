@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,16 +13,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Answers;
 import org.psu.init.RandomProvider;
+import org.psu.navigation.NavigationPath;
+import org.psu.navigation.RefuelPathCalculator;
 import org.psu.spacetraders.dto.FuelStatus;
 import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Product;
 import org.psu.spacetraders.dto.Ship;
-import org.psu.spacetraders.dto.ShipNavigation;
-import org.psu.spacetraders.dto.ShipRoute.RoutePoint;
 import org.psu.spacetraders.dto.TradeGood;
 import org.psu.spacetraders.dto.Waypoint;
+import org.psu.trademanager.RouteManager.RouteResponse;
 import org.psu.trademanager.dto.TradeRoute;
 
 /**
@@ -57,7 +59,7 @@ public class RouteManagerTest {
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		when(marketplaceManager.getAllMarketInfo()).thenReturn(marketInfo);
 
-		final RouteManager routeManager = new RouteManager(marketplaceManager, new RandomProvider());
+		final RouteManager routeManager = new RouteManager(marketplaceManager, null, new RandomProvider());
 
 		routeManager.buildTradeRoutes();
 		final List<TradeRoute> routes = routeManager.getTradeRoutes();
@@ -76,16 +78,60 @@ public class RouteManagerTest {
 	@Test
 	public void getBestRouteAllImpossible() {
 
+		final Product prod1 = new Product("milk");
+		final Product prod2 = new Product("eggs");
+
+		// All markets have null trade goods
+		final MarketInfo market1 = new MarketInfo();
+		market1.setExports(List.of(prod1));
+		market1.setImports(List.of());
+		market1.setExchange(List.of());
+
+		final MarketInfo market2 = new MarketInfo();
+		market2.setExports(List.of(prod2));
+		market2.setImports(List.of());
+		market2.setExchange(List.of());
+
+		final MarketInfo market3 = new MarketInfo();
+		market3.setExports(List.of());
+		market3.setImports(List.of(prod1, prod2));
+		market3.setExchange(List.of());
+
+		final Waypoint way1 = new Waypoint();
+		way1.setSymbol("way1");
+		final Waypoint way2 = new Waypoint();
+		way2.setSymbol("way2");
+		final Waypoint way3 = new Waypoint();
+		way3.setSymbol("way3");
+
+		final RefuelPathCalculator pathCalculator = mock();
+
+		// Path from 1 to 3 is impossible
+		when(pathCalculator.determineShortestRoute(eq(way1), eq(way3), anyInt(), anyInt())).thenReturn(null);
+		final NavigationPath path23 = new NavigationPath(8, List.of(way3));
+		when(pathCalculator.determineShortestRoute(eq(way2), eq(way3), anyInt(), anyInt())).thenReturn(path23);
+
+		final Ship ship = mock();
+		when(ship.getFuel()).thenReturn(new FuelStatus(0, 0));
+
+		// Ship cannot travel to 2
+		when(pathCalculator.determineShortestRoute(ship, way2)).thenReturn(null);
+		final NavigationPath pathS1 = new NavigationPath(1, List.of(way1));
+		when(pathCalculator.determineShortestRoute(ship, way1)).thenReturn(pathS1);
+
+		// Thus, the 1-3 and 2-3 trade routes are both impossible
+
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
-		// No markets, no routes
-		when(marketplaceManager.getAllMarketInfo()).thenReturn(Map.of());
+		when(marketplaceManager.getAllMarketInfo()).thenReturn(Map.of(way1, market1, way2, market2, way3, market3));
+		when(marketplaceManager.getMarketInfo(way1)).thenReturn(market1);
+		when(marketplaceManager.getMarketInfo(way2)).thenReturn(market2);
+		when(marketplaceManager.getMarketInfo(way3)).thenReturn(market3);
 
-		final RouteManager routeManager = new RouteManager(marketplaceManager, new RandomProvider());
+		final RouteManager routeManager = new RouteManager(marketplaceManager, pathCalculator, new RandomProvider());
 
-		final Ship ship = mock(Ship.class);
-		final TradeRoute route = routeManager.getBestRoute(ship);
+		final RouteResponse bestRoute = routeManager.getBestRoute(ship);
 
-		assertNull(route);
+		assertNull(bestRoute);
 	}
 
 	/**
@@ -113,29 +159,29 @@ public class RouteManagerTest {
 		market3.setImports(List.of(prod1, prod2));
 		market3.setExchange(List.of());
 
-		// Way2 is closer to Way3 than Way1 is
 		final Waypoint way1 = new Waypoint();
 		way1.setSymbol("way1");
-		way1.setX(0);
-		way1.setY(0);
 		final Waypoint way2 = new Waypoint();
 		way2.setSymbol("way2");
-		way2.setX(10);
-		way2.setY(0);
 		final Waypoint way3 = new Waypoint();
 		way3.setSymbol("way3");
-		way3.setX(20);
-		way3.setY(0);
+
+		final RefuelPathCalculator pathCalculator = mock();
+
+		// Way2 is closer to Way3 than Way1 is
+		final NavigationPath path13 = new NavigationPath(10, List.of(way3));
+		when(pathCalculator.determineShortestRoute(eq(way1), eq(way3), anyInt(), anyInt())).thenReturn(path13);
+		final NavigationPath path23 = new NavigationPath(8, List.of(way3));
+		when(pathCalculator.determineShortestRoute(eq(way2), eq(way3), anyInt(), anyInt())).thenReturn(path23);
+
+		final Ship ship = mock();
+		when(ship.getFuel()).thenReturn(new FuelStatus(0, 0));
 
 		// Ship is at way2
-		final RoutePoint routePoint = new RoutePoint("RP", 10, 0);
-		final ShipNavigation shipNav = mock(ShipNavigation.class, Answers.RETURNS_DEEP_STUBS);
-		when(shipNav.getRoute().getDestination()).thenReturn(routePoint);
-		final Ship ship = new Ship();
-		ship.setNav(shipNav);
-
-		final FuelStatus fuel = new FuelStatus(1000, 1000);
-		ship.setFuel(fuel);
+		final NavigationPath pathS2 = new NavigationPath(0, List.of(way2));
+		when(pathCalculator.determineShortestRoute(ship, way2)).thenReturn(pathS2);
+		final NavigationPath pathS1 = new NavigationPath(1, List.of(way1));
+		when(pathCalculator.determineShortestRoute(ship, way1)).thenReturn(pathS1);
 
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		when(marketplaceManager.getAllMarketInfo()).thenReturn(Map.of(way1, market1, way2, market2, way3, market3));
@@ -143,15 +189,16 @@ public class RouteManagerTest {
 		when(marketplaceManager.getMarketInfo(way2)).thenReturn(market2);
 		when(marketplaceManager.getMarketInfo(way3)).thenReturn(market3);
 
-		final RouteManager routeManager = new RouteManager(marketplaceManager, new RandomProvider());
+		final RouteManager routeManager = new RouteManager(marketplaceManager, pathCalculator, new RandomProvider());
 
-		final TradeRoute bestRoute = routeManager.getBestRoute(ship);
+		final RouteResponse bestRoute = routeManager.getBestRoute(ship);
 
 		// Expect best route to be the one from way2 to way3
-		assertEquals(way2, bestRoute.getExportWaypoint());
-		assertEquals(way3, bestRoute.getImportWaypoint());
-		assertEquals(List.of(prod2), bestRoute.getGoods());
-		assertFalse(bestRoute.isKnown());
+		assertEquals(way2, bestRoute.route().getExportWaypoint());
+		assertEquals(way3, bestRoute.route().getImportWaypoint());
+		assertEquals(List.of(prod2), bestRoute.route().getGoods());
+		assertFalse(bestRoute.route().isKnown());
+		assertEquals(List.of(way2, way3), bestRoute.waypoints());
 	}
 
 	/**
@@ -184,29 +231,29 @@ public class RouteManagerTest {
 		market3.setExchange(List.of());
 		market3.setTradeGoods(List.of(tradeGood3));
 
-		// Way2 is closer to Way3 than Way1 is
 		final Waypoint way1 = new Waypoint();
 		way1.setSymbol("way1");
-		way1.setX(0);
-		way1.setY(0);
 		final Waypoint way2 = new Waypoint();
 		way2.setSymbol("way2");
-		way2.setX(10);
-		way2.setY(0);
 		final Waypoint way3 = new Waypoint();
 		way3.setSymbol("way3");
-		way3.setX(20);
-		way3.setY(0);
+
+		final RefuelPathCalculator pathCalculator = mock();
+
+		// Way2 is closer to Way3 than Way1 is
+		final NavigationPath path13 = new NavigationPath(10, List.of(way3));
+		when(pathCalculator.determineShortestRoute(eq(way1), eq(way3), anyInt(), anyInt())).thenReturn(path13);
+		final NavigationPath path23 = new NavigationPath(8, List.of(way3));
+		when(pathCalculator.determineShortestRoute(eq(way2), eq(way3), anyInt(), anyInt())).thenReturn(path23);
+
+		final Ship ship = mock();
+		when(ship.getFuel()).thenReturn(new FuelStatus(0, 0));
 
 		// Ship is at way2
-		final RoutePoint routePoint = new RoutePoint("RP", 10, 0);
-		final ShipNavigation shipNav = mock(ShipNavigation.class, Answers.RETURNS_DEEP_STUBS);
-		when(shipNav.getRoute().getDestination()).thenReturn(routePoint);
-		final Ship ship = new Ship();
-		ship.setNav(shipNav);
-
-		final FuelStatus fuel = new FuelStatus(1000, 1000);
-		ship.setFuel(fuel);
+		final NavigationPath pathS2 = new NavigationPath(0, List.of(way2));
+		when(pathCalculator.determineShortestRoute(ship, way2)).thenReturn(pathS2);
+		final NavigationPath pathS1 = new NavigationPath(1, List.of(way1));
+		when(pathCalculator.determineShortestRoute(ship, way1)).thenReturn(pathS1);
 
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		when(marketplaceManager.getAllMarketInfo()).thenReturn(Map.of(way1, market1, way2, market2, way3, market3));
@@ -214,15 +261,16 @@ public class RouteManagerTest {
 		when(marketplaceManager.getMarketInfo(way2)).thenReturn(market2);
 		when(marketplaceManager.getMarketInfo(way3)).thenReturn(market3);
 
-		final RouteManager routeManager = new RouteManager(marketplaceManager, new RandomProvider());
+		final RouteManager routeManager = new RouteManager(marketplaceManager, pathCalculator, new RandomProvider());
 
-		final TradeRoute bestRoute = routeManager.getBestRoute(ship);
+		final RouteResponse bestRoute = routeManager.getBestRoute(ship);
 
 		// Expect best route to be the one from way1 to way3, which has better profit margins
-		assertEquals(way1, bestRoute.getExportWaypoint());
-		assertEquals(way3, bestRoute.getImportWaypoint());
-		assertEquals(List.of(prod1), bestRoute.getGoods());
-		assertTrue(bestRoute.isKnown());
+		assertEquals(way1, bestRoute.route().getExportWaypoint());
+		assertEquals(way3, bestRoute.route().getImportWaypoint());
+		assertEquals(List.of(prod1), bestRoute.route().getGoods());
+		assertTrue(bestRoute.route().isKnown());
+		assertEquals(List.of(way1, way3), bestRoute.waypoints());
 	}
 
 	/**
@@ -258,26 +306,27 @@ public class RouteManagerTest {
 		// Way2 is closer to Way3 than Way1 is
 		final Waypoint way1 = new Waypoint();
 		way1.setSymbol("way1");
-		way1.setX(0);
-		way1.setY(0);
 		final Waypoint way2 = new Waypoint();
 		way2.setSymbol("way2");
-		way2.setX(10);
-		way2.setY(0);
 		final Waypoint way3 = new Waypoint();
 		way3.setSymbol("way3");
-		way3.setX(20);
-		way3.setY(0);
+
+		final RefuelPathCalculator pathCalculator = mock();
+
+		// Way2 is closer to Way3 than Way1 is
+		final NavigationPath path13 = new NavigationPath(10, List.of(way3));
+		when(pathCalculator.determineShortestRoute(eq(way1), eq(way3), anyInt(), anyInt())).thenReturn(path13);
+		final NavigationPath path23 = new NavigationPath(8, List.of(way3));
+		when(pathCalculator.determineShortestRoute(eq(way2), eq(way3), anyInt(), anyInt())).thenReturn(path23);
+
+		final Ship ship = mock();
+		when(ship.getFuel()).thenReturn(new FuelStatus(0, 0));
 
 		// Ship is at way2, so the route using way2 will be shorter
-		final RoutePoint routePoint = new RoutePoint("RP", 10, 0);
-		final ShipNavigation shipNav = mock(ShipNavigation.class, Answers.RETURNS_DEEP_STUBS);
-		when(shipNav.getRoute().getDestination()).thenReturn(routePoint);
-		final Ship ship = new Ship();
-		ship.setNav(shipNav);
-
-		final FuelStatus fuel = new FuelStatus(1000, 1000);
-		ship.setFuel(fuel);
+		final NavigationPath pathS2 = new NavigationPath(0, List.of(way2));
+		when(pathCalculator.determineShortestRoute(ship, way2)).thenReturn(pathS2);
+		final NavigationPath pathS1 = new NavigationPath(1, List.of(way1));
+		when(pathCalculator.determineShortestRoute(ship, way1)).thenReturn(pathS1);
 
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		when(marketplaceManager.getAllMarketInfo()).thenReturn(Map.of(way1, market1, way2, market2, way3, market3));
@@ -285,15 +334,16 @@ public class RouteManagerTest {
 		when(marketplaceManager.getMarketInfo(way2)).thenReturn(market2);
 		when(marketplaceManager.getMarketInfo(way3)).thenReturn(market3);
 
-		final RouteManager routeManager = new RouteManager(marketplaceManager, new RandomProvider());
+		final RouteManager routeManager = new RouteManager(marketplaceManager, pathCalculator, new RandomProvider());
 
-		final TradeRoute bestRoute = routeManager.getBestRoute(ship);
+		final RouteResponse bestRoute = routeManager.getBestRoute(ship);
 
 		// Expect best route to be the one from way2 to way3, because the other route is not profitable
-		assertEquals(way2, bestRoute.getExportWaypoint());
-		assertEquals(way3, bestRoute.getImportWaypoint());
-		assertEquals(List.of(prod1), bestRoute.getGoods());
-		assertFalse(bestRoute.isKnown());
+		assertEquals(way2, bestRoute.route().getExportWaypoint());
+		assertEquals(way3, bestRoute.route().getImportWaypoint());
+		assertEquals(List.of(prod1), bestRoute.route().getGoods());
+		assertFalse(bestRoute.route().isKnown());
+		assertEquals(List.of(way2, way3), bestRoute.waypoints());
 	}
 
 	/**
@@ -332,26 +382,27 @@ public class RouteManagerTest {
 		// Way2 is closer to Way3 than Way1 is
 		final Waypoint way1 = new Waypoint();
 		way1.setSymbol("way1");
-		way1.setX(0);
-		way1.setY(0);
 		final Waypoint way2 = new Waypoint();
 		way2.setSymbol("way2");
-		way2.setX(10);
-		way2.setY(0);
 		final Waypoint way3 = new Waypoint();
 		way3.setSymbol("way3");
-		way3.setX(20);
-		way3.setY(0);
+
+		final RefuelPathCalculator pathCalculator = mock();
+
+		// Way2 is closer to Way3 than Way1 is
+		final NavigationPath path13 = new NavigationPath(10, List.of(way3));
+		when(pathCalculator.determineShortestRoute(eq(way1), eq(way3), anyInt(), anyInt())).thenReturn(path13);
+		final NavigationPath path23 = new NavigationPath(8, List.of(way3));
+		when(pathCalculator.determineShortestRoute(eq(way2), eq(way3), anyInt(), anyInt())).thenReturn(path23);
+
+		final Ship ship = mock();
+		when(ship.getFuel()).thenReturn(new FuelStatus(0, 0));
 
 		// Ship is at way2, so the route using way2 will be shorter
-		final RoutePoint routePoint = new RoutePoint("RP", 10, 0);
-		final ShipNavigation shipNav = mock(ShipNavigation.class, Answers.RETURNS_DEEP_STUBS);
-		when(shipNav.getRoute().getDestination()).thenReturn(routePoint);
-		final Ship ship = new Ship();
-		ship.setNav(shipNav);
-
-		final FuelStatus fuel = new FuelStatus(1000, 1000);
-		ship.setFuel(fuel);
+		final NavigationPath pathS2 = new NavigationPath(0, List.of(way2));
+		when(pathCalculator.determineShortestRoute(ship, way2)).thenReturn(pathS2);
+		final NavigationPath pathS1 = new NavigationPath(1, List.of(way1));
+		when(pathCalculator.determineShortestRoute(ship, way1)).thenReturn(pathS1);
 
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		when(marketplaceManager.getAllMarketInfo()).thenReturn(Map.of(way1, market1, way2, market2, way3, market3));
@@ -363,25 +414,27 @@ public class RouteManagerTest {
 		// Start by returning a very small double, this means we will go with the most profitable route
 		when(randomProvider.nextDouble()).thenReturn(0.0);
 
-		final RouteManager routeManager = new RouteManager(marketplaceManager, randomProvider);
+		final RouteManager routeManager = new RouteManager(marketplaceManager, pathCalculator, randomProvider);
 
-		final TradeRoute bestRoute = routeManager.getBestRoute(ship);
+		final RouteResponse bestRoute = routeManager.getBestRoute(ship);
 
 		// Expect best route to be the one from way1 to way3, which has better profit margins
-		assertEquals(way1, bestRoute.getExportWaypoint());
-		assertEquals(way3, bestRoute.getImportWaypoint());
-		assertEquals(List.of(prod1), bestRoute.getGoods());
-		assertTrue(bestRoute.isKnown());
+		assertEquals(way1, bestRoute.route().getExportWaypoint());
+		assertEquals(way3, bestRoute.route().getImportWaypoint());
+		assertEquals(List.of(prod1), bestRoute.route().getGoods());
+		assertTrue(bestRoute.route().isKnown());
+		assertEquals(List.of(way1, way3), bestRoute.waypoints());
 
 		// Now, return a large double, this means we will go with the shortest route
 		when(randomProvider.nextDouble()).thenReturn(1.0);
 
-		final TradeRoute nextBestRoute = routeManager.getBestRoute(ship);
+		final RouteResponse nextBestRoute = routeManager.getBestRoute(ship);
 
-		assertEquals(way2, nextBestRoute.getExportWaypoint());
-		assertEquals(way3, nextBestRoute.getImportWaypoint());
-		assertEquals(List.of(prod1, prod2), nextBestRoute.getGoods());
-		assertFalse(nextBestRoute.isKnown());
+		assertEquals(way2, nextBestRoute.route().getExportWaypoint());
+		assertEquals(way3, nextBestRoute.route().getImportWaypoint());
+		assertEquals(List.of(prod1, prod2), nextBestRoute.route().getGoods());
+		assertFalse(nextBestRoute.route().isKnown());
+		assertEquals(List.of(way2, way3), nextBestRoute.waypoints());
 	}
 
 }

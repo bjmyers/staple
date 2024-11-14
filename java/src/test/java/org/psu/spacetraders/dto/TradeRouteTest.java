@@ -2,6 +2,7 @@ package org.psu.spacetraders.dto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -111,6 +112,44 @@ public class TradeRouteTest {
 		final TradeRoute route = new TradeRoute(exportWaypoint, importWaypoint, List.of());
 
 		assertEquals(5.0, route.getDistance(), 1e-9);
+	}
+
+	/**
+	 * Tests the equals and hashCode methods
+	 */
+	@SuppressWarnings("unlikely-arg-type")
+	@Test
+	public void equalsAndHashCode() {
+
+		final Waypoint way1 = new Waypoint();
+		way1.setSymbol("way1");
+		final Waypoint way2 = new Waypoint();
+		way2.setSymbol("way2");
+		final Waypoint way3 = new Waypoint();
+		way3.setSymbol("way3");
+
+		final Product product = new Product("milk");
+
+		final TradeRoute route1 = new TradeRoute(way1, way2, List.of(product));
+
+		// Different export waypoint
+		final TradeRoute route2 = new TradeRoute(way3, way2, List.of(product));
+		assertFalse(route1.equals(route2));
+		assertNotEquals(route1.hashCode(), route2.hashCode());
+
+		// Different import waypoint
+		final TradeRoute route3 = new TradeRoute(way1, way3, List.of(product));
+		assertFalse(route1.equals(route3));
+		assertNotEquals(route1.hashCode(), route3.hashCode());
+
+		// Different products, should be equal
+		final TradeRoute route4 = new TradeRoute(way1, way2, List.of());
+		assertTrue(route1.equals(route4));
+		assertEquals(route1.hashCode(), route4.hashCode());
+
+		final Integer notARoute = 1;
+		assertFalse(route1.equals(notARoute));
+		assertNotEquals(route1.hashCode(), notARoute.hashCode());
 	}
 
 }
