@@ -1,7 +1,10 @@
 package org.psu.navigation;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.stream.Collectors;
 
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
@@ -111,11 +114,13 @@ public class RefuelPathCalculator {
 			return null;
 		}
 
-		final List<Waypoint> waypointList = shortestPath.getVertexList();
+		final Queue<Waypoint> waypoints = shortestPath.getVertexList().stream()
+				.collect(Collectors.toCollection(LinkedList::new));
 		final double totalLength = shortestPath.getWeight();
 
 		// Be sure to strip out the origin
-		return new NavigationPath(totalLength, waypointList.subList(1, waypointList.size()));
+		waypoints.remove();
+		return new NavigationPath(totalLength, waypoints);
 
 	}
 

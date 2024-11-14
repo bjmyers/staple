@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 import org.psu.init.RandomProvider;
@@ -189,7 +190,7 @@ public class RouteManager {
 		return NavigationPath.combine(pathToExport, routePath);
 	}
 
-	public record RouteResponse(TradeRoute route, List<Waypoint> waypoints) {};
+	public record RouteResponse(TradeRoute route, Queue<Waypoint> waypoints) {};
 
 	private record RouteProfit(Integer profit, Product itemToSell) {};
 

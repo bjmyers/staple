@@ -13,8 +13,10 @@ import static org.mockito.Mockito.when;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
@@ -56,7 +58,9 @@ public class TradeShipManagerTest {
 		final RouteManager routeManager = mock();
 		final TradeRoute route = mock();
 		final Waypoint way = mock();
-		final RouteResponse routeResponse = new RouteResponse(route, List.of(way));
+		final Queue<Waypoint> ways = new LinkedList<>();
+		ways.add(way);
+		final RouteResponse routeResponse = new RouteResponse(route, ways);
 		when(routeManager.getBestRoute(ship)).thenReturn(routeResponse);
 		final WebsocketReporter reporter = mock();
 
@@ -147,7 +151,10 @@ public class TradeShipManagerTest {
 		final Instant arrivalTime = Instant.now().plus(Duration.ofMillis(10));
 		when(navHelper.navigate(ship, exportWaypoint)).thenReturn(arrivalTime);
 
-		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, List.of(exportWaypoint));
+		final Queue<Waypoint> exports = new LinkedList<>();
+		exports.add(exportWaypoint);
+
+		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, exports);
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
@@ -204,7 +211,10 @@ public class TradeShipManagerTest {
 		when(tradeResponse.getTransaction()).thenReturn(transaction);
 		when(marketRequester.purchase(any(), same(tradeRequest))).thenReturn(tradeResponse);
 
-		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, List.of(importWaypoint));
+		final Queue<Waypoint> imports = new LinkedList<>();
+		imports.add(importWaypoint);
+
+		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, imports);
 		job.setState(State.TRAVELING);
 
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
@@ -249,10 +259,12 @@ public class TradeShipManagerTest {
 
 		final TradeRoute newTradeRoute = mock();
 		final Waypoint way = mock();
-		final RouteResponse routeResponse = new RouteResponse(newTradeRoute, List.of(way));
+		final Queue<Waypoint> ways = new LinkedList<>();
+		ways.add(way);
+		final RouteResponse routeResponse = new RouteResponse(newTradeRoute, ways);
 		when(routeManager.getBestRoute(ship)).thenReturn(routeResponse);
 
-		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, List.of());
+		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, new LinkedList<>());
 		job.setState(State.TRAVELING);
 
 		when(marketRequester.dockAndSellItems(ship, importWaypoint, List.of(cargoItem))).thenReturn(10);
