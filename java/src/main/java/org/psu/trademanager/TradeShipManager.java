@@ -2,9 +2,11 @@ package org.psu.trademanager;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Queue;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.psu.spacetraders.api.AccountManager;
@@ -83,7 +85,9 @@ public class TradeShipManager {
 					final List<Product> productsToSell = itemsToSell.stream().map(c -> new Product(c.symbol()))
 							.toList();
 					final TradeRoute route = new TradeRoute(null, destinationMarketInfo.getKey(), productsToSell);
-					final TradeShipJob job = new TradeShipJob(ship, route, List.of(destinationMarketInfo.getKey()));
+					final Queue<Waypoint> destinationWaypoint = new LinkedList<>();
+					destinationWaypoint.add(destinationMarketInfo.getKey());
+					final TradeShipJob job = new TradeShipJob(ship, route, destinationWaypoint);
 					job.setState(State.TRAVELING);
 					job.setNextAction(ship.getNav().getRoute().getArrival().plus(navigationPad));
 					return job;
@@ -109,12 +113,12 @@ public class TradeShipManager {
 		switch (job.getState()) {
 		case NOT_STARTED:
 
-			final Waypoint destination = job.getWaypoints().get(0);
+			final Waypoint destination = job.getWaypoints().peek();
 
 			log.infof("Ship %s traveling to waypoint %s", ship.getSymbol(), destination.getSymbol());
 			final Instant exportArrival = navigationHelper.navigate(ship, job.getRoute().getExportWaypoint());
 			job.setNextAction(exportArrival);
-			job.setWaypoints(job.getWaypoints().subList(1, job.getWaypoints().size()));
+			job.getWaypoints().remove();
 			job.setState(State.TRAVELING);
 			break;
 		case TRAVELING:
@@ -132,14 +136,14 @@ public class TradeShipManager {
 			}
 
 			// So long as we're not at the import waypoint, there is at least one more waypoint to travel to
-			final Waypoint travelDestination = job.getWaypoints().get(0);
+			final Waypoint travelDestination = job.getWaypoints().peek();
 
 			// The only waypoints in a route should be the ones which sell fuel
 			marketplaceRequester.refuel(ship);
 			log.infof("Ship %s traveling to waypoint %s", ship.getSymbol(), travelDestination.getSymbol());
 			final Instant travelArrival = navigationHelper.navigate(ship, travelDestination);
 			job.setNextAction(travelArrival);
-			job.setWaypoints(job.getWaypoints().subList(1, job.getWaypoints().size()));
+			job.getWaypoints().remove();
 			break;
 		}
 

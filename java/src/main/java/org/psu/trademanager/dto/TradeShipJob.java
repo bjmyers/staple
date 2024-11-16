@@ -1,7 +1,7 @@
 package org.psu.trademanager.dto;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Queue;
 
 import org.psu.shiporchestrator.ShipJob;
 import org.psu.spacetraders.dto.Ship;
@@ -24,11 +24,11 @@ public class TradeShipJob implements ShipJob {
 	/**
 	 * The path to take for this trade route. Can be null if the route is being started in the middle
 	 */
-	private List<Waypoint> waypoints;
+	private Queue<Waypoint> waypoints;
 	private Instant nextAction;
 	private State state;
 
-	public TradeShipJob(final Ship ship, final TradeRoute route, final List<Waypoint> waypoints) {
+	public TradeShipJob(final Ship ship, final TradeRoute route, final Queue<Waypoint> waypoints) {
 		this.ship = ship;
 		this.route = route;
 		this.waypoints = waypoints;
