@@ -27,6 +27,7 @@ import org.psu.spacetraders.dto.Cargo;
 import org.psu.spacetraders.dto.CargoItem;
 import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Product;
+import org.psu.spacetraders.dto.RefuelResponse;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.TradeRequest;
@@ -207,9 +208,16 @@ public class TradeShipManagerTest {
 		when(marketManager.updateMarketInfo(exportWaypoint)).thenReturn(marketInfo);
 
 		final Transaction transaction = mock(Transaction.class);
+		when(transaction.getTotalPrice()).thenReturn(100);
 		final TradeResponse tradeResponse = mock(TradeResponse.class);
 		when(tradeResponse.getTransaction()).thenReturn(transaction);
 		when(marketRequester.purchase(any(), same(tradeRequest))).thenReturn(tradeResponse);
+
+		final Transaction refuelTransaction = mock();
+		when(refuelTransaction.getTotalPrice()).thenReturn(10);
+		final RefuelResponse refuelResponse = mock();
+		when(refuelResponse.getTransaction()).thenReturn(refuelTransaction);
+		when(marketRequester.refuel(ship)).thenReturn(refuelResponse);
 
 		final Queue<Waypoint> imports = new LinkedList<>();
 		imports.add(importWaypoint);
@@ -221,6 +229,8 @@ public class TradeShipManagerTest {
 
 		assertEquals(State.TRAVELING, outputJob.getState());
 		assertEquals(arrivalTime, outputJob.getNextAction());
+		// 100 credits for the purchase, 10 for refueling
+		assertEquals(-110, outputJob.getProfit());
 	}
 
 	/**
