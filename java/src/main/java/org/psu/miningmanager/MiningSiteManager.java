@@ -1,10 +1,15 @@
 package org.psu.miningmanager;
 
+import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
+import org.psu.navigation.NavigationPath;
+import org.psu.navigation.RefuelPathCalculator;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.Waypoint;
 
@@ -17,10 +22,12 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class MiningSiteManager {
 
+	private RefuelPathCalculator pathCalculator;
 	private Map<String, Waypoint> miningSitesById;
 
 	@Inject
-	public MiningSiteManager() {
+	public MiningSiteManager(final RefuelPathCalculator pathCalculator) {
+		this.pathCalculator = pathCalculator;
 		this.miningSitesById = new HashMap<>();
 	}
 
@@ -47,11 +54,12 @@ public class MiningSiteManager {
 	/**
 	 * @param ship a ship
 	 * @return The mining site closest to the ship's current position, empty if
-	 *         there are no mining sites loaded
+	 *         there are no mining sites loaded or none are reachable by the ship
 	 */
-	public Optional<Waypoint> getClosestMiningSite(final Ship ship) {
-		return this.miningSitesById.values().stream()
-				.min((way1, way2) -> Double.compare(ship.distTo(way1), ship.distTo(way2)));
+	public Optional<Deque<Waypoint>> getClosestMiningSite(final Ship ship) {
+		return this.miningSitesById.values().stream().map(w -> this.pathCalculator.determineShortestRoute(ship, w))
+				.filter(Objects::nonNull).min(Comparator.comparing(path -> path.getLength()))
+				.map(NavigationPath::getWaypoints);
 	}
 
 }

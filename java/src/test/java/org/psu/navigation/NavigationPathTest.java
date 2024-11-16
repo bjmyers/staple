@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
+import java.util.Deque;
 import java.util.LinkedList;
-import java.util.Queue;
 
 import org.junit.jupiter.api.Test;
 import org.psu.spacetraders.dto.Waypoint;
@@ -24,14 +24,14 @@ public class NavigationPathTest {
 		final double len1 = 5.67;
 		final Waypoint way1 = mock();
 		final Waypoint way2 = mock();
-		final Queue<Waypoint> ways = new LinkedList<>();
+		final Deque<Waypoint> ways = new LinkedList<>();
 		ways.add(way1);
 		ways.add(way2);
 		final NavigationPath path1 = new NavigationPath(len1, ways);
 
 		final double len2 = 1.23;
 		final Waypoint way3 = mock();
-		final Queue<Waypoint> ways2 = new LinkedList<>();
+		final Deque<Waypoint> ways2 = new LinkedList<>();
 		ways2.add(way3);
 		final NavigationPath path2 = new NavigationPath(len2, ways2);
 

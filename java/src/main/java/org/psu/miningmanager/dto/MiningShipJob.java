@@ -1,7 +1,10 @@
 package org.psu.miningmanager.dto;
 
 import java.time.Instant;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import org.psu.shiporchestrator.ShipJob;
 import org.psu.spacetraders.dto.Ship;
@@ -20,6 +23,7 @@ import lombok.Setter;
 public class MiningShipJob implements ShipJob {
 
 	private Ship ship;
+	private Queue<Waypoint> extractionPath;
 	private Waypoint extractionPoint;
 	private Instant nextAction;
 	/**
@@ -27,17 +31,20 @@ public class MiningShipJob implements ShipJob {
 	 */
 	private List<Survey> surveys;
 	/**
-	 * This will only be populated after resources have been extracted
+	 * The selling path and point will only be populated after resources have been extracted
 	 */
-	private Waypoint sellingWaypoint;
+	private Queue<Waypoint> sellingPath;
+	private Waypoint sellingPoint;
 	private State state;
 
-	public MiningShipJob(final Ship ship, final Waypoint extractionPoint) {
+	public MiningShipJob(final Ship ship, final Deque<Waypoint> extractionPath) {
 		this.ship = ship;
-		this.extractionPoint = extractionPoint;
+		this.extractionPath = extractionPath;
+		this.extractionPoint = extractionPath.peekLast();
 		this.nextAction = Instant.now();
 		this.surveys = null;
-		this.sellingWaypoint = null;
+		this.sellingPath = new LinkedList<>();
+		this.sellingPoint = null;
 		this.state = State.NOT_STARTED;
 	}
 
