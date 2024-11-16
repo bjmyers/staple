@@ -3,7 +3,6 @@ package org.psu.spacetraders.dto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,7 +32,6 @@ public class TradeRouteTest {
 		assertEquals(exportWaypoint, route.getExportWaypoint());
 		assertEquals(goods, route.getGoods());
 		assertFalse(route.isKnown());
-		assertNull(route.getPurchasePrice());
 	}
 
 	/**

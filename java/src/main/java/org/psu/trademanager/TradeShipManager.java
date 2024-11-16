@@ -15,6 +15,7 @@ import org.psu.spacetraders.api.NavigationHelper;
 import org.psu.spacetraders.dto.CargoItem;
 import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Product;
+import org.psu.spacetraders.dto.RefuelResponse;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.TradeRequest;
 import org.psu.spacetraders.dto.TradeResponse;
@@ -139,7 +140,8 @@ public class TradeShipManager {
 			final Waypoint travelDestination = job.getWaypoints().peek();
 
 			// The only waypoints in a route should be the ones which sell fuel
-			marketplaceRequester.refuel(ship);
+			final RefuelResponse refuelResponse = marketplaceRequester.refuel(ship);
+			job.modifyProfit(-1 * refuelResponse.getTransaction().getTotalPrice());
 			log.infof("Ship %s traveling to waypoint %s", ship.getSymbol(), travelDestination.getSymbol());
 			final Instant travelArrival = navigationHelper.navigate(ship, travelDestination);
 			job.setNextAction(travelArrival);
@@ -182,7 +184,7 @@ public class TradeShipManager {
 			log.info(message);
 		}
 		log.infof("Total Purchase Price: %s", total);
-		route.setPurchasePrice(total);
+		job.modifyProfit(-1 * total);
 
 		return purchaseRequests;
 	}
@@ -196,12 +198,11 @@ public class TradeShipManager {
 				.filter(c -> productsToSell.contains(c.symbol())).toList();
 
 		final Integer sellPrice = marketplaceRequester.dockAndSellItems(ship, route.getImportWaypoint(), cargoToSell);
-		if (route.getPurchasePrice() != null) {
-			final String message = String.format("Trade route for ship %s made a total profit of %s", ship.getSymbol(),
-					sellPrice - route.getPurchasePrice());
-			websocketReporter.fireShipEvent(ship.getSymbol(), message);
-			log.info(message);
-		}
+		job.modifyProfit(sellPrice);
+		final String message = String.format("Trade route for ship %s made a total profit of %s", ship.getSymbol(),
+				job.getProfit());
+		websocketReporter.fireShipEvent(ship.getSymbol(), message);
+		log.info(message);
 	}
 
 }

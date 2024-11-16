@@ -26,6 +26,7 @@ public class TradeShipJob implements ShipJob {
 	 */
 	private Queue<Waypoint> waypoints;
 	private Instant nextAction;
+	private int profit;
 	private State state;
 
 	public TradeShipJob(final Ship ship, final TradeRoute route, final Queue<Waypoint> waypoints) {
@@ -33,7 +34,15 @@ public class TradeShipJob implements ShipJob {
 		this.route = route;
 		this.waypoints = waypoints;
 		this.nextAction = Instant.now();
+		this.profit = 0;
 		this.state = State.NOT_STARTED;
+	}
+
+	/**
+	 * @param income The amount of credits gained. If a cost is incurred this should be negative.
+	 */
+	public void modifyProfit(final int income) {
+		this.profit += income;
 	}
 
 	public static enum State {
