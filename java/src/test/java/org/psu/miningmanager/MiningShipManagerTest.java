@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
@@ -32,8 +33,10 @@ import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Product;
 import org.psu.spacetraders.dto.Ship;
+import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.testutils.TestRequestThrottler;
+import org.psu.testutils.TestUtils;
 import org.psu.trademanager.MarketplaceManager;
 import org.psu.websocket.WebsocketReporter;
 
@@ -56,7 +59,7 @@ public class MiningShipManagerTest {
 		final Waypoint way = mock(Waypoint.class);
 		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
 		when(miningSiteManager.getMiningSite(destination)).thenReturn(null);
-		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(way));
+		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(TestUtils.makeQueue(way)));
 
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		when(marketManager.getMarketInfoById(destination)).thenReturn(Optional.empty());
@@ -136,7 +139,7 @@ public class MiningShipManagerTest {
 		final Waypoint way = mock(Waypoint.class);
 		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
 		when(miningSiteManager.getMiningSite(destination)).thenReturn(null);
-		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(way));
+		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(TestUtils.makeQueue(way)));
 
 		final MarketInfo market = mock(MarketInfo.class);
 		// Does not sell anything in the ship's cargo
@@ -276,7 +279,7 @@ public class MiningShipManagerTest {
 		final Instant arrivalTime = Instant.ofEpochSecond(10);
 		when(navigationHelper.navigate(ship, extractionSite)).thenReturn(arrivalTime);
 
-		final MiningShipJob job = new MiningShipJob(ship, extractionSite);
+		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(extractionSite));
 
 		final MiningShipManager manager = new MiningShipManager(1, surveyClient, throttler, null, navigationHelper,
 				null, null, reporter);
@@ -288,23 +291,70 @@ public class MiningShipManagerTest {
 	}
 
 	/**
-	 * Tests manageMiningShip when the ship has finished traveling to the resource
+	 * Tests manageMiningShip when the ship is partway through its route to the extraction site
 	 */
 	@Test
 	public void manageMiningShipTravelingToResource() {
+
+		final SurveyClient surveyClient = mock();
+		final RequestThrottler throttler = TestRequestThrottler.get();
+		final NavigationHelper navigationHelper = mock();
+		final MarketplaceRequester marketRequester = mock();
+		final WebsocketReporter reporter = mock();
+
+		final String extractionSiteId = "waypoint";
+		final Waypoint extractionSite = mock(Waypoint.class);
+		when(extractionSite.getSymbol()).thenReturn(extractionSiteId);
+
+		final String intermediateSiteId = "waypoint";
+		final Waypoint intermediateSite = mock(Waypoint.class);
+		when(intermediateSite.getSymbol()).thenReturn(intermediateSiteId);
+
+		final String shipId = "shippy";
+		final ShipNavigation shipNav = mock();
+		when(shipNav.getWaypointSymbol()).thenReturn("some other waypoint");
+		final Ship ship = mock();
+		when(ship.getSymbol()).thenReturn(shipId);
+		when(ship.getNav()).thenReturn(shipNav);
+
+		final Instant arrivalTime = Instant.ofEpochSecond(10);
+		when(navigationHelper.navigate(ship, intermediateSite)).thenReturn(arrivalTime);
+
+		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(intermediateSite, extractionSite));
+		job.setState(State.TRAVELING_TO_RESOURCE);
+
+		final MiningShipManager manager = new MiningShipManager(0, surveyClient, throttler, null, navigationHelper,
+				null, marketRequester, reporter);
+
+		final MiningShipJob nextJob = manager.manageMiningShip(job);
+
+		assertEquals(State.TRAVELING_TO_RESOURCE, nextJob.getState());
+		assertEquals(arrivalTime, nextJob.getNextAction());
+		verify(navigationHelper).navigate(ship, intermediateSite);
+		verify(marketRequester).refuel(ship);
+	}
+
+	/**
+	 * Tests manageMiningShip when the ship has finished traveling to the resource
+	 */
+	@Test
+	public void manageMiningShipAtResource() {
 
 		final SurveyClient surveyClient = mock(SurveyClient.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationHelper navigationHelper = mock(NavigationHelper.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
 
-		final String shipId = "shippy";
-		final Ship ship = mock(Ship.class);
-		when(ship.getSymbol()).thenReturn(shipId);
-
 		final String extractionSiteId = "waypoint";
 		final Waypoint extractionSite = mock(Waypoint.class);
 		when(extractionSite.getSymbol()).thenReturn(extractionSiteId);
+
+		final String shipId = "shippy";
+		final ShipNavigation shipNav = mock();
+		when(shipNav.getWaypointSymbol()).thenReturn(extractionSiteId);
+		final Ship ship = mock();
+		when(ship.getSymbol()).thenReturn(shipId);
+		when(ship.getNav()).thenReturn(shipNav);
 
 		final SurveyResponse surveyResponse = mock(SurveyResponse.class);
 		final Survey survey = mock(Survey.class);
@@ -315,7 +365,7 @@ public class MiningShipManagerTest {
 
 		when(surveyClient.survey(shipId)).thenReturn(new DataWrapper<SurveyResponse>(surveyResponse, null));
 
-		final MiningShipJob job = new MiningShipJob(ship, extractionSite);
+		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(extractionSite));
 		job.setState(State.TRAVELING_TO_RESOURCE);
 
 		final MiningShipManager manager = new MiningShipManager(0, surveyClient, throttler, null, navigationHelper,
@@ -364,7 +414,7 @@ public class MiningShipManagerTest {
 		when(surveyClient.extractSurvey(shipId, survey))
 				.thenReturn(new DataWrapper<ExtractResponse>(extractResponse, null));
 
-		final MiningShipJob job = new MiningShipJob(ship, extractionSite);
+		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(extractionSite));
 		job.setState(State.SURVEYING);
 		job.setSurveys(List.of(survey));
 
@@ -406,7 +456,7 @@ public class MiningShipManagerTest {
 		final Waypoint extractionSite = mock(Waypoint.class);
 		when(extractionSite.getSymbol()).thenReturn(extractionSiteId);
 
-		final MiningShipJob job = new MiningShipJob(ship, extractionSite);
+		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(extractionSite));
 		job.setState(State.SURVEYING);
 		job.setSurveys(List.of(survey));
 
@@ -436,9 +486,7 @@ public class MiningShipManagerTest {
 		final Product product1 = new Product("eggs");
 		final CargoItem cargoItem2 = new CargoItem("milk", 10);
 		final Product product2 = new Product("milk");
-		final CargoItem cargoItem3 = new CargoItem("cheese", 5);
-		final Product product3 = new Product("cheese");
-		final Cargo cargo = new Cargo(10, 2, List.of(cargoItem1, cargoItem2, cargoItem3));
+		final Cargo cargo = new Cargo(10, 2, List.of(cargoItem1, cargoItem2));
 
 		final String shipId = "shippy";
 		final Ship ship = mock(Ship.class);
@@ -447,21 +495,18 @@ public class MiningShipManagerTest {
 		// No remaining cargo, will finish extracting
 		when(ship.getRemainingCargo()).thenReturn(0);
 
-		// Too far away
-		final Waypoint tooFarWaypoint = mock(Waypoint.class);
-		when(marketplaceManager.getClosestTradingWaypoint(ship, product1)).thenReturn(Optional.of(tooFarWaypoint));
-		when(ship.canTravelTo(tooFarWaypoint)).thenReturn(false);
+		// Nobody buys product1
+		when(marketplaceManager.getClosestTradingWaypointPath(ship, product1)).thenReturn(Optional.empty());
 
-		// Nobody buys product2
-		when(marketplaceManager.getClosestTradingWaypoint(ship, product2)).thenReturn(Optional.empty());
+		final Waypoint intermediateWaypoint = mock();
 
-		// Just right
 		final Waypoint sellingWaypoint = mock(Waypoint.class);
-		when(marketplaceManager.getClosestTradingWaypoint(ship, product3)).thenReturn(Optional.of(sellingWaypoint));
+		when(marketplaceManager.getClosestTradingWaypointPath(ship, product2))
+				.thenReturn(Optional.of(TestUtils.makeQueue(intermediateWaypoint, sellingWaypoint)));
 		when(ship.canTravelTo(sellingWaypoint)).thenReturn(true);
 
 		final Instant arrivalTime = Instant.ofEpochSecond(100);
-		when(navigationHelper.navigate(ship, sellingWaypoint)).thenReturn(arrivalTime);
+		when(navigationHelper.navigate(ship, intermediateWaypoint)).thenReturn(arrivalTime);
 
 		final String extractionSiteId = "waypoint";
 		final Waypoint extractionSite = mock(Waypoint.class);
@@ -478,7 +523,7 @@ public class MiningShipManagerTest {
 		when(surveyClient.extractSurvey(shipId, survey))
 				.thenReturn(new DataWrapper<ExtractResponse>(extractResponse, null));
 
-		final MiningShipJob job = new MiningShipJob(ship, extractionSite);
+		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(extractionSite));
 		job.setState(State.EXTRACTING);
 		job.setSurveys(List.of(survey));
 
@@ -488,15 +533,67 @@ public class MiningShipManagerTest {
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
 
 		assertEquals(State.TRAVELING_TO_MARKET, nextJob.getState());
-		assertEquals(sellingWaypoint, nextJob.getSellingWaypoint());
+		assertEquals(sellingWaypoint, nextJob.getSellingPoint());
 		assertEquals(arrivalTime, nextJob.getNextAction());
+
+		// Already started travel to the intermediate waypoint, should just be the selling waypoint left
+		final Queue<Waypoint> sellingPath = nextJob.getSellingPath();
+		assertEquals(sellingWaypoint, sellingPath.poll());
+		assertNull(sellingPath.poll());
+	}
+
+	/**
+	 * Tests manageMiningShip when the ship is in the middle of traveling to market
+	 */
+	@Test
+	public void manageMiningShipTravelingToMarket() {
+
+		final SurveyClient surveyClient = mock(SurveyClient.class);
+		final RequestThrottler throttler = TestRequestThrottler.get();
+		final NavigationHelper navigationHelper = mock(NavigationHelper.class);
+		final MiningSiteManager miningSiteManager = mock(MiningSiteManager.class);
+		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
+		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
+		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+
+		final Waypoint extractionSite = mock(Waypoint.class);
+
+		final Waypoint intermediateWaypoint = mock();
+		final Waypoint sellingWaypoint = mock();
+
+		final String shipId = "shippy";
+		final Ship ship = mock(Ship.class, Answers.RETURNS_DEEP_STUBS);
+		when(ship.getSymbol()).thenReturn(shipId);
+		when(ship.getNav().getWaypointSymbol()).thenReturn("some other waypoint");
+
+		final Instant arrivalTime = Instant.ofEpochSecond(100);
+		when(navigationHelper.navigate(ship, intermediateWaypoint)).thenReturn(arrivalTime);
+
+		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(extractionSite));
+		job.setState(State.TRAVELING_TO_MARKET);
+		job.setSellingPoint(extractionSite);
+		job.setSellingPath(TestUtils.makeQueue(intermediateWaypoint, sellingWaypoint));
+
+		final MiningShipManager manager = new MiningShipManager(1, surveyClient, throttler, miningSiteManager,
+				navigationHelper, marketManager, marketRequester, reporter);
+
+		final MiningShipJob nextJob = manager.manageMiningShip(job);
+
+		assertEquals(State.TRAVELING_TO_MARKET, nextJob.getState());
+		assertEquals(arrivalTime, nextJob.getNextAction());
+		verify(navigationHelper).navigate(ship, intermediateWaypoint);
+		verify(marketRequester).refuel(ship);
+
+		final Queue<Waypoint> sellingPath = nextJob.getSellingPath();
+		assertEquals(sellingWaypoint, sellingPath.poll());
+		assertNull(sellingPath.poll());
 	}
 
 	/**
 	 * Tests manageMiningShip when the ship has finished traveling to market
 	 */
 	@Test
-	public void manageMiningShipTravelingToMarket() {
+	public void manageMiningShipAtMarket() {
 
 		final SurveyClient surveyClient = mock(SurveyClient.class);
 		final RequestThrottler throttler = TestRequestThrottler.get();
@@ -518,15 +615,15 @@ public class MiningShipManagerTest {
 		when(ship.getCargo().inventory()).thenReturn(cargoItems);
 
 		when(miningSiteManager.getMiningSite(extractionSiteId)).thenReturn(null);
-		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(extractionSite));
+		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(TestUtils.makeQueue(extractionSite)));
 
 		final MarketInfo marketInfo = mock(MarketInfo.class);
 		when(marketManager.getMarketInfoById(extractionSiteId)).thenReturn(Optional.empty());
 		when(marketManager.updateMarketInfo(extractionSite)).thenReturn(marketInfo);
 
-		final MiningShipJob job = new MiningShipJob(ship, extractionSite);
+		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(extractionSite));
 		job.setState(State.TRAVELING_TO_MARKET);
-		job.setSellingWaypoint(extractionSite);
+		job.setSellingPoint(extractionSite);
 
 		final MiningShipManager manager = new MiningShipManager(1, surveyClient, throttler, miningSiteManager,
 				navigationHelper, marketManager, marketRequester, reporter);

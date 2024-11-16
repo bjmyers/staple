@@ -1,9 +1,9 @@
 package org.psu.navigation;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 import org.jgrapht.GraphPath;
@@ -114,7 +114,7 @@ public class RefuelPathCalculator {
 			return null;
 		}
 
-		final Queue<Waypoint> waypoints = shortestPath.getVertexList().stream()
+		final Deque<Waypoint> waypoints = shortestPath.getVertexList().stream()
 				.collect(Collectors.toCollection(LinkedList::new));
 		final double totalLength = shortestPath.getWeight();
 

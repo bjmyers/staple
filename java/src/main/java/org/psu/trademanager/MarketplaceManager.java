@@ -1,11 +1,16 @@
 package org.psu.trademanager;
 
+import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.psu.navigation.NavigationPath;
+import org.psu.navigation.RefuelPathCalculator;
 import org.psu.spacetraders.api.MarketplaceClient;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.dto.MarketInfo;
@@ -24,13 +29,16 @@ public class MarketplaceManager {
 
 	private RequestThrottler throttler;
 	private MarketplaceClient marketClient;
+	private RefuelPathCalculator pathCalculator;
 
 	private Map<Waypoint, MarketInfo> marketData;
 
 	@Inject
-	public MarketplaceManager(final RequestThrottler throttler, @RestClient final MarketplaceClient marketClient) {
+	public MarketplaceManager(final RequestThrottler throttler, @RestClient final MarketplaceClient marketClient,
+			final RefuelPathCalculator pathCalculator) {
 		this.throttler = throttler;
 		this.marketClient = marketClient;
+		this.pathCalculator = pathCalculator;
 
 		this.marketData = new HashMap<>();
 	}
@@ -89,12 +97,13 @@ public class MarketplaceManager {
 	/**
 	 * @param ship    The {@link Ship} which has the product
 	 * @param product The {@link Product} being sold
-	 * @return The closest {@link Waypoint} to the ship which sells the product
+	 * @return The path to the closest {@link Waypoint} to the ship which sells the
+	 *         product
 	 */
-	public Optional<Waypoint> getClosestTradingWaypoint(final Ship ship, final Product product) {
+	public Optional<Deque<Waypoint>> getClosestTradingWaypointPath(final Ship ship, final Product product) {
 		return this.marketData.entrySet().stream().filter(entry -> entry.getValue().sellsProduct(product))
-				.min((entry1, entry2) -> Double.compare(ship.distTo(entry1.getKey()), ship.distTo(entry2.getKey())))
-				.map(Entry::getKey);
+				.map(entry -> this.pathCalculator.determineShortestRoute(ship, entry.getKey())).filter(Objects::nonNull)
+				.min(Comparator.comparing(path -> path.getLength())).map(NavigationPath::getWaypoints);
 	}
 
 }
