@@ -9,15 +9,15 @@
                     "symbol": "X1-A1-A1",
                     "type": "PLANET",
                     "systemSymbol": "X1-A1",
-                    "x": 0,
-                    "y": 0
+                    "x": 23,
+                    "y": -1
                 },
                 "destination": {
                     "symbol": "X1-A1-A1",
                     "type": "PLANET",
                     "systemSymbol": "X1-A1",
-                    "x": 0,
-                    "y": 0
+                    "x": 23,
+                    "y": -3
                 },
                 "arrival": "2023-11-16T19:16:33.729Z",
                 "departureTime": "2023-11-16T19:15:54.729Z"

@@ -14,6 +14,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.extern.jbosslog.JBossLog;
 
+/**
+ * Responsible for loading ships when in local mode
+ */
 @JBossLog
 @ApplicationScoped
 public class LocalShipManager {
