@@ -8,9 +8,9 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.navigation.NavigationPath;
 import org.psu.navigation.RefuelPathCalculator;
+import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.MarketplaceClient;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.dto.MarketInfo;
@@ -34,10 +34,10 @@ public class MarketplaceManager {
 	private Map<Waypoint, MarketInfo> marketData;
 
 	@Inject
-	public MarketplaceManager(final RequestThrottler throttler, @RestClient final MarketplaceClient marketClient,
+	public MarketplaceManager(final RequestThrottler throttler, final ClientProducer clientProducer,
 			final RefuelPathCalculator pathCalculator) {
 		this.throttler = throttler;
-		this.marketClient = marketClient;
+		this.marketClient = clientProducer.produceMarketplaceClient();
 		this.pathCalculator = pathCalculator;
 
 		this.marketData = new HashMap<>();

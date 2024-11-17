@@ -8,13 +8,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.miningmanager.MiningShipManager;
 import org.psu.miningmanager.MiningSiteManager;
 import org.psu.navigation.RefuelPathCalculator;
 import org.psu.shiporchestrator.ShipJob;
 import org.psu.shiporchestrator.ShipJobQueue;
 import org.psu.shiporchestrator.ShipRoleManager;
+import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipsClient;
 import org.psu.spacetraders.api.SpaceTradersUtils;
@@ -55,14 +55,14 @@ public class ShipLoader {
 
 	@Inject
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
-			@RestClient final ShipsClient shipsClient, final RequestThrottler throttler,
+			final ClientProducer clientProducer, final RequestThrottler throttler,
 			final SystemBuilder systemBuilder, final ShipRoleManager shipRoleManager,
 			final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager,
 			final MarketplaceManager marketplaceManager, final MiningSiteManager miningSiteManager,
 			final ShipJobQueue jobQueue, final RefuelPathCalculator refuelPathCalculator,
 			final WebsocketReporter websocketReporter) {
 		this.limit = limit;
-		this.shipsClient = shipsClient;
+		this.shipsClient = clientProducer.produceShipsClient();
 		this.throttler = throttler;
 		this.systemBuilder = systemBuilder;
 		this.shipRoleManager = shipRoleManager;

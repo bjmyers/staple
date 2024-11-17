@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.MarketplaceClient;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.SpaceTradersUtils;
@@ -33,13 +33,11 @@ public class SystemBuilder {
 
 	@Inject
 	public SystemBuilder(@ConfigProperty(name = "app.max-items-per-page") final int limit,
-			final RequestThrottler requestThrottler, @RestClient MarketplaceClient marketClient,
-			@RestClient WaypointsClient waypointsClient) {
+			final RequestThrottler requestThrottler, final ClientProducer clientProducer) {
 		this.limit = limit;
 		this.throttler = requestThrottler;
-		this.marketClient = marketClient;
-		this.waypointsClient = waypointsClient;
-
+		this.marketClient = clientProducer.produceMarketplaceClient();
+		this.waypointsClient = clientProducer.produceWaypointsClient();
 	}
 
     /**

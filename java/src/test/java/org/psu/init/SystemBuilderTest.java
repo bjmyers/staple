@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.MarketplaceClient;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.WaypointsClient;
@@ -45,9 +46,11 @@ public class SystemBuilderTest {
 		final WaypointsClient waypointsClient = mock(WaypointsClient.class);
 		when(waypointsClient.getWaypoints(systemId, limit, 1)).thenReturn(waypointResponse1);
 		when(waypointsClient.getWaypoints(systemId, limit, 2)).thenReturn(waypointResponse2);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceWaypointsClient()).thenReturn(waypointsClient);
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final SystemBuilder builder = new SystemBuilder(limit, throttler, null, waypointsClient);
+		final SystemBuilder builder = new SystemBuilder(limit, throttler, clientProducer);
 
 		final List<Waypoint> waypoints = builder.gatherWaypoints(systemId);
 
@@ -93,9 +96,11 @@ public class SystemBuilderTest {
 		when(client.getMarketInfo(systemId, way1Id)).thenReturn(new DataWrapper<MarketInfo>(market1, null));
 		final MarketInfo market2 = mock(MarketInfo.class);
 		when(client.getMarketInfo(systemId, way2Id)).thenReturn(new DataWrapper<MarketInfo>(market2, null));
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceMarketplaceClient()).thenReturn(client);
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final SystemBuilder builder = new SystemBuilder(0, throttler, client, null);
+		final SystemBuilder builder = new SystemBuilder(0, throttler, clientProducer);
 
 		final Map<Waypoint, MarketInfo> result = builder.gatherMarketInfo(List.of(way1, way2, way3));
 

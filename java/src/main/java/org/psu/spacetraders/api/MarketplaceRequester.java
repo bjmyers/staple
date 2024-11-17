@@ -3,7 +3,6 @@ package org.psu.spacetraders.api;
 import java.time.Duration;
 import java.util.List;
 
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.spacetraders.dto.CargoItem;
 import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Product;
@@ -35,10 +34,10 @@ public class MarketplaceRequester {
 	private WebsocketReporter websocketReporter;
 
 	@Inject
-	public MarketplaceRequester(@RestClient MarketplaceClient marketplaceClient, final RequestThrottler throttler,
+	public MarketplaceRequester(final ClientProducer clientProducer, final RequestThrottler throttler,
 			final AccountManager accountManager, final MarketplaceManager marketplaceManager,
 			final NavigationHelper navHelper, final WebsocketReporter websocketReporter) {
-		this.marketplaceClient = marketplaceClient;
+		this.marketplaceClient = clientProducer.produceMarketplaceClient();
 		this.throttler = throttler;
 		this.accountManager = accountManager;
 		this.marketplaceManager = marketplaceManager;

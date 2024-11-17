@@ -23,7 +23,9 @@ public class AccountManagerTest {
 
 		final AgentClient client = mock(AgentClient.class);
 		final WebsocketReporter creditReporter = mock(WebsocketReporter.class);
-		final AccountManager manager = new AccountManager(client, creditReporter);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceAgentClient()).thenReturn(client);
+		final AccountManager manager = new AccountManager(clientProducer, creditReporter);
 
 		final int credits = 250;
 		final Agent agent = mock(Agent.class);
@@ -42,7 +44,9 @@ public class AccountManagerTest {
 
 		final AgentClient client = mock(AgentClient.class);
 		final WebsocketReporter creditReporter = mock(WebsocketReporter.class);
-		final AccountManager manager = new AccountManager(client, creditReporter);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceAgentClient()).thenReturn(client);
+		final AccountManager manager = new AccountManager(clientProducer, creditReporter);
 
 		final int credits = 250;
 		final Agent agent = mock(Agent.class);

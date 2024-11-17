@@ -1,6 +1,5 @@
 package org.psu.spacetraders.api;
 
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.spacetraders.dto.Agent;
 import org.psu.websocket.WebsocketReporter;
 
@@ -21,8 +20,8 @@ public class AccountManager {
 	private Agent agent;
 
 	@Inject
-	public AccountManager(@RestClient AgentClient agentClient, final WebsocketReporter creditReporter) {
-		this.agentClient = agentClient;
+	public AccountManager(final ClientProducer clientProducer, final WebsocketReporter creditReporter) {
+		this.agentClient = clientProducer.produceAgentClient();
 		this.creditReporter = creditReporter;
 		this.agent = null;
 	}

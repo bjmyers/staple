@@ -10,12 +10,12 @@ import java.util.Optional;
 import java.util.Queue;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.miningmanager.dto.ExtractResponse;
 import org.psu.miningmanager.dto.MiningShipJob;
 import org.psu.miningmanager.dto.MiningShipJob.State;
 import org.psu.miningmanager.dto.Survey;
 import org.psu.miningmanager.dto.SurveyResponse;
+import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationHelper;
 import org.psu.spacetraders.api.RequestThrottler;
@@ -50,12 +50,12 @@ public class MiningShipManager {
 
 	@Inject
 	public MiningShipManager(@ConfigProperty(name = "app.cooldown-pad-ms") final int cooldownPad,
-			@RestClient final SurveyClient surveyClient, final RequestThrottler throttler,
+			final ClientProducer clientProducer, final RequestThrottler throttler,
 			final MiningSiteManager siteManager, final NavigationHelper navHelper,
 			final MarketplaceManager marketplaceManager, final MarketplaceRequester marketplaceRequester,
 			final WebsocketReporter websocketReporter) {
 		this.cooldownPad = Duration.ofMillis(cooldownPad);
-		this.surveyClient = surveyClient;
+		this.surveyClient = clientProducer.produceSurveyClient();
 		this.throttler = throttler;
 		this.siteManager = siteManager;
 		this.navHelper = navHelper;
