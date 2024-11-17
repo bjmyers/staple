@@ -18,6 +18,7 @@ import org.psu.navigation.RefuelPathCalculator;
 import org.psu.shiporchestrator.ShipJobQueue;
 import org.psu.shiporchestrator.ShipRole;
 import org.psu.shiporchestrator.ShipRoleManager;
+import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipsClient;
 import org.psu.spacetraders.dto.DataWrapper;
@@ -58,6 +59,8 @@ public class ShipLoaderTest {
 		when(shipsClient.getShips(limit, 1)).thenReturn(shipResponse1);
 		when(shipsClient.getShips(limit, 2)).thenReturn(shipResponse2);
 		final ShipRoleManager shipRoleManager = mock(ShipRoleManager.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceShipsClient()).thenReturn(shipsClient);
 
 		final MarketplaceManager marketplaceManager = mock();
 		final ShipJobQueue jobQueue = mock();
@@ -65,7 +68,7 @@ public class ShipLoaderTest {
 		final RefuelPathCalculator pathCalculator = mock();
 		final WebsocketReporter websocketReporter = mock();
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, null, shipRoleManager,
+		final ShipLoader shipLoader = new ShipLoader(limit, clientProducer, throttler, null, shipRoleManager,
 				null, null, marketplaceManager, miningSiteManager, jobQueue, pathCalculator, websocketReporter);
 
 		final List<Ship> ships = shipLoader.gatherShips();
@@ -85,6 +88,8 @@ public class ShipLoaderTest {
 		final int limit = 20;
 		final ShipsClient shipsClient = mock(ShipsClient.class);
 		final SystemBuilder systemBuilder = mock(SystemBuilder.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceShipsClient()).thenReturn(shipsClient);
 
 		final String systemId = "I'm a system";
 		final ShipNavigation shipNav = mock(ShipNavigation.class);
@@ -129,7 +134,7 @@ public class ShipLoaderTest {
 		final WebsocketReporter websocketReporter = mock();
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, systemBuilder, shipRoleManager,
+		final ShipLoader shipLoader = new ShipLoader(limit, clientProducer, throttler, systemBuilder, shipRoleManager,
 				miningShipManager, tradeShipManager, marketplaceManager, miningSiteManager, jobQueue, pathCalculator,
 				websocketReporter);
 
@@ -151,6 +156,8 @@ public class ShipLoaderTest {
 		final int limit = 20;
 		final ShipsClient shipsClient = mock(ShipsClient.class);
 		final SystemBuilder systemBuilder = mock(SystemBuilder.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceShipsClient()).thenReturn(shipsClient);
 
 		final WrapperMetadata metaData = new WrapperMetadata(1, 0, limit);
 		// No Ships!
@@ -165,7 +172,7 @@ public class ShipLoaderTest {
 		final WebsocketReporter websocketReporter = mock();
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final ShipLoader shipLoader = new ShipLoader(limit, shipsClient, throttler, systemBuilder, shipRoleManager,
+		final ShipLoader shipLoader = new ShipLoader(limit, clientProducer, throttler, systemBuilder, shipRoleManager,
 				null, null, marketplaceManager, miningSiteManager, jobQueue, pathCalculator, websocketReporter);
 
 		assertThrows(IllegalStateException.class, () -> shipLoader.run());

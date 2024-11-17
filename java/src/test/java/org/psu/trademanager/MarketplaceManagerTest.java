@@ -18,6 +18,7 @@ import java.util.Queue;
 import org.junit.jupiter.api.Test;
 import org.psu.navigation.NavigationPath;
 import org.psu.navigation.RefuelPathCalculator;
+import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.MarketplaceClient;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.dto.DataWrapper;
@@ -42,7 +43,9 @@ public class MarketplaceManagerTest {
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final MarketplaceClient marketClient = mock();
 		final RefuelPathCalculator pathCalculator = mock();
-		final MarketplaceManager manager = new MarketplaceManager(throttler, marketClient, pathCalculator);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceMarketplaceClient()).thenReturn(marketClient);
+		final MarketplaceManager manager = new MarketplaceManager(throttler, clientProducer, pathCalculator);
 
 		final Waypoint way1 = mock(Waypoint.class);
 		final Waypoint way2 = mock(Waypoint.class);
@@ -91,7 +94,7 @@ public class MarketplaceManagerTest {
 		when(way2.getSymbol()).thenReturn(way2Id);
 		final MarketInfo market2 = mock(MarketInfo.class);
 
-		final MarketplaceManager manager = new MarketplaceManager(null, null, null);
+		final MarketplaceManager manager = new MarketplaceManager(null, mock(ClientProducer.class), null);
 		manager.updateMarketData(Map.of(way1, market1, way2, market2));
 
 		final Entry<Waypoint, MarketInfo> expected1 = new SimpleEntry<Waypoint, MarketInfo>(way1, market1);
@@ -135,7 +138,7 @@ public class MarketplaceManagerTest {
 				.thenReturn(new NavigationPath(3.0, TestUtils.makeQueue(way3)));
 		when(pathCalculator.determineShortestRoute(ship, way4)).thenReturn(null);
 
-		final MarketplaceManager manager = new MarketplaceManager(null, null, pathCalculator);
+		final MarketplaceManager manager = new MarketplaceManager(null, mock(ClientProducer.class), pathCalculator);
 		manager.updateMarketData(Map.of(way1, market1, way2, market2, way3, market3, way4, market4));
 
 		final Optional<Deque<Waypoint>> closestImportPath = manager.getClosestTradingWaypointPath(ship, product);

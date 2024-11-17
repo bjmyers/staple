@@ -3,7 +3,6 @@ package org.psu.spacetraders.api;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.psu.spacetraders.dto.DataWrapper;
 import org.psu.spacetraders.dto.DockResponse;
 import org.psu.spacetraders.dto.NavigationRequest;
@@ -29,9 +28,9 @@ public class NavigationHelper {
 	private WebsocketReporter websocketReporter;
 
 	@Inject
-	public NavigationHelper(@RestClient final NavigationClient navigationClient, final RequestThrottler throttler,
+	public NavigationHelper(final ClientProducer clientProducer, final RequestThrottler throttler,
 			final WebsocketReporter websocketReporter) {
-		this.navigationClient = navigationClient;
+		this.navigationClient = clientProducer.produceNavigationClient();
 		this.throttler = throttler;
 		this.websocketReporter = websocketReporter;
 	}

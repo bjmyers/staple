@@ -23,6 +23,7 @@ import org.psu.miningmanager.dto.MiningShipJob;
 import org.psu.miningmanager.dto.MiningShipJob.State;
 import org.psu.miningmanager.dto.Survey;
 import org.psu.miningmanager.dto.SurveyResponse;
+import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationHelper;
 import org.psu.spacetraders.api.RequestThrottler;
@@ -66,8 +67,8 @@ public class MiningShipManagerTest {
 
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
 
-		final MiningShipManager manager = new MiningShipManager(1, null, null, miningSiteManager, null, marketManager,
-				null, reporter);
+		final MiningShipManager manager = new MiningShipManager(1, mock(ClientProducer.class), null, miningSiteManager,
+				null, marketManager, null, reporter);
 
 		final MiningShipJob job = manager.createJob(ship);
 
@@ -107,8 +108,8 @@ public class MiningShipManagerTest {
 
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
 
-		final MiningShipManager manager = new MiningShipManager(1, null, null, miningSiteManager, null, marketManager,
-				null, reporter);
+		final MiningShipManager manager = new MiningShipManager(1, mock(ClientProducer.class), null, miningSiteManager,
+				null, marketManager, null, reporter);
 
 		final MiningShipJob job = manager.createJob(ship);
 
@@ -151,8 +152,8 @@ public class MiningShipManagerTest {
 
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
 
-		final MiningShipManager manager = new MiningShipManager(1, null, null, miningSiteManager, null, marketManager,
-				null, reporter);
+		final MiningShipManager manager = new MiningShipManager(1, mock(ClientProducer.class), null, miningSiteManager,
+				null, marketManager, null, reporter);
 
 		final MiningShipJob job = manager.createJob(ship);
 
@@ -181,8 +182,8 @@ public class MiningShipManagerTest {
 
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
 
-		final MiningShipManager manager = new MiningShipManager(1000, null, null, miningSiteManager, null, null, null,
-				reporter);
+		final MiningShipManager manager = new MiningShipManager(1000, mock(ClientProducer.class), null,
+				miningSiteManager, null, null, null, reporter);
 
 		final MiningShipJob job = manager.createJob(ship);
 
@@ -216,8 +217,8 @@ public class MiningShipManagerTest {
 
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
 
-		final MiningShipManager manager = new MiningShipManager(1, null, null, miningSiteManager, null, null, null,
-				reporter);
+		final MiningShipManager manager = new MiningShipManager(1, mock(ClientProducer.class), null, miningSiteManager,
+				null, null, null, reporter);
 
 		final MiningShipJob job = manager.createJob(ship);
 
@@ -247,8 +248,8 @@ public class MiningShipManagerTest {
 
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
 
-		final MiningShipManager manager = new MiningShipManager(1, null, null, miningSiteManager, null, null, null,
-				reporter);
+		final MiningShipManager manager = new MiningShipManager(1, mock(ClientProducer.class), null, miningSiteManager,
+				null, null, null, reporter);
 
 		final MiningShipJob job = manager.createJob(ship);
 
@@ -267,6 +268,8 @@ public class MiningShipManagerTest {
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationHelper navigationHelper = mock(NavigationHelper.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceSurveyClient()).thenReturn(surveyClient);
 
 		final String shipId = "shippy";
 		final Ship ship = mock(Ship.class);
@@ -281,7 +284,7 @@ public class MiningShipManagerTest {
 
 		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(extractionSite));
 
-		final MiningShipManager manager = new MiningShipManager(1, surveyClient, throttler, null, navigationHelper,
+		final MiningShipManager manager = new MiningShipManager(1, clientProducer, throttler, null, navigationHelper,
 				null, null, reporter);
 
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
@@ -301,6 +304,8 @@ public class MiningShipManagerTest {
 		final NavigationHelper navigationHelper = mock();
 		final MarketplaceRequester marketRequester = mock();
 		final WebsocketReporter reporter = mock();
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceSurveyClient()).thenReturn(surveyClient);
 
 		final String extractionSiteId = "waypoint";
 		final Waypoint extractionSite = mock(Waypoint.class);
@@ -323,7 +328,7 @@ public class MiningShipManagerTest {
 		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(intermediateSite, extractionSite));
 		job.setState(State.TRAVELING_TO_RESOURCE);
 
-		final MiningShipManager manager = new MiningShipManager(0, surveyClient, throttler, null, navigationHelper,
+		final MiningShipManager manager = new MiningShipManager(0, clientProducer, throttler, null, navigationHelper,
 				null, marketRequester, reporter);
 
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
@@ -344,6 +349,8 @@ public class MiningShipManagerTest {
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationHelper navigationHelper = mock(NavigationHelper.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceSurveyClient()).thenReturn(surveyClient);
 
 		final String extractionSiteId = "waypoint";
 		final Waypoint extractionSite = mock(Waypoint.class);
@@ -368,7 +375,7 @@ public class MiningShipManagerTest {
 		final MiningShipJob job = new MiningShipJob(ship, TestUtils.makeQueue(extractionSite));
 		job.setState(State.TRAVELING_TO_RESOURCE);
 
-		final MiningShipManager manager = new MiningShipManager(0, surveyClient, throttler, null, navigationHelper,
+		final MiningShipManager manager = new MiningShipManager(0, clientProducer, throttler, null, navigationHelper,
 				null, null, reporter);
 
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
@@ -392,6 +399,8 @@ public class MiningShipManagerTest {
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationHelper navigationHelper = mock(NavigationHelper.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceSurveyClient()).thenReturn(surveyClient);
 
 		final String shipId = "shippy";
 		final Ship ship = mock(Ship.class);
@@ -418,7 +427,7 @@ public class MiningShipManagerTest {
 		job.setState(State.SURVEYING);
 		job.setSurveys(List.of(survey));
 
-		final MiningShipManager manager = new MiningShipManager(0, surveyClient, throttler, null, navigationHelper,
+		final MiningShipManager manager = new MiningShipManager(0, clientProducer, throttler, null, navigationHelper,
 				null, null, reporter);
 
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
@@ -442,6 +451,8 @@ public class MiningShipManagerTest {
 		final RequestThrottler throttler = TestRequestThrottler.get();
 		final NavigationHelper navigationHelper = mock(NavigationHelper.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceSurveyClient()).thenReturn(surveyClient);
 
 		final String shipId = "shippy";
 		final Ship ship = mock(Ship.class);
@@ -460,7 +471,7 @@ public class MiningShipManagerTest {
 		job.setState(State.SURVEYING);
 		job.setSurveys(List.of(survey));
 
-		final MiningShipManager manager = new MiningShipManager(0, surveyClient, throttler, null, navigationHelper,
+		final MiningShipManager manager = new MiningShipManager(0, clientProducer, throttler, null, navigationHelper,
 				null, null, reporter);
 
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
@@ -480,6 +491,8 @@ public class MiningShipManagerTest {
 		final NavigationHelper navigationHelper = mock(NavigationHelper.class);
 		final MarketplaceManager marketplaceManager = mock(MarketplaceManager.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceSurveyClient()).thenReturn(surveyClient);
 
 		// Want to sell this first because there are more of them
 		final CargoItem cargoItem1 = new CargoItem("eggs", 20);
@@ -527,7 +540,7 @@ public class MiningShipManagerTest {
 		job.setState(State.EXTRACTING);
 		job.setSurveys(List.of(survey));
 
-		final MiningShipManager manager = new MiningShipManager(0, surveyClient, throttler, null, navigationHelper,
+		final MiningShipManager manager = new MiningShipManager(0, clientProducer, throttler, null, navigationHelper,
 				marketplaceManager, null, reporter);
 
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
@@ -555,6 +568,8 @@ public class MiningShipManagerTest {
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceSurveyClient()).thenReturn(surveyClient);
 
 		final Waypoint extractionSite = mock(Waypoint.class);
 
@@ -574,7 +589,7 @@ public class MiningShipManagerTest {
 		job.setSellingPoint(extractionSite);
 		job.setSellingPath(TestUtils.makeQueue(intermediateWaypoint, sellingWaypoint));
 
-		final MiningShipManager manager = new MiningShipManager(1, surveyClient, throttler, miningSiteManager,
+		final MiningShipManager manager = new MiningShipManager(1, clientProducer, throttler, miningSiteManager,
 				navigationHelper, marketManager, marketRequester, reporter);
 
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
@@ -602,6 +617,8 @@ public class MiningShipManagerTest {
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final MarketplaceRequester marketRequester = mock(MarketplaceRequester.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
+		final ClientProducer clientProducer = mock();
+		when(clientProducer.produceSurveyClient()).thenReturn(surveyClient);
 
 		final String extractionSiteId = "waypoint";
 		final Waypoint extractionSite = mock(Waypoint.class);
@@ -625,7 +642,7 @@ public class MiningShipManagerTest {
 		job.setState(State.TRAVELING_TO_MARKET);
 		job.setSellingPoint(extractionSite);
 
-		final MiningShipManager manager = new MiningShipManager(1, surveyClient, throttler, miningSiteManager,
+		final MiningShipManager manager = new MiningShipManager(1, clientProducer, throttler, miningSiteManager,
 				navigationHelper, marketManager, marketRequester, reporter);
 
 		final MiningShipJob nextJob = manager.manageMiningShip(job);

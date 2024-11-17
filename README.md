@@ -20,3 +20,11 @@ Create a `.env` file in the `java` folder. Include your API token in it in this 
 QUARKUS_DATASOURCE_SPACETRADERS_API_KEY=yourTokenHere
 
 Run the `runExecutable.sh` script, it will automatically set the environment variables and then run the executable.
+
+### Running the Test Driver
+
+Running the application with the test drivers results in the app not reaching out to the space traders API, and will use local variants of each rest client.
+
+To run using the test driver, run this command from the `java` directory:
+
+quarkus dev -Dquarkus.profile=test-driver
