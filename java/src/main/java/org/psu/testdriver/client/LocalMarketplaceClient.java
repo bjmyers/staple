@@ -6,8 +6,10 @@ import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.RefuelResponse;
 import org.psu.spacetraders.dto.TradeRequest;
 import org.psu.spacetraders.dto.TradeResponse;
+import org.psu.testdriver.LocalMarketplaceManager;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * Local version of the {@link MarketplaceClient}
@@ -15,9 +17,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class LocalMarketplaceClient implements MarketplaceClient {
 
+	@Inject
+	private LocalMarketplaceManager marketplaceManager;
+
 	@Override
 	public DataWrapper<MarketInfo> getMarketInfo(String systemId, String waypointId) {
-		return null;
+		return new DataWrapper<>(marketplaceManager.getMarketInfo(waypointId), null);
 	}
 
 	@Override

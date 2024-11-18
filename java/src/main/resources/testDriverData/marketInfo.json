@@ -1,0 +1,146 @@
+[
+    {
+        "symbol": "X1-A1-A0",
+        "imports": [],
+        "exports": [
+            {
+                "symbol": "IRON",
+                "name": "Iron",
+                "description": "A common and valuable metal often used in the construction of ship hulls and other structural components."
+            }
+        ],
+        "exchange": [
+            {
+                "symbol": "FUEL",
+                "name": "Fuel",
+                "description": "High-energy fuel used in spacecraft propulsion systems to enable long-distance space travel."
+            }
+        ],
+        "tradeGoods": [
+            {
+                "symbol": "IRON",
+                "tradeVolume": 45,
+                "purchasePrice": 1200,
+                "sellPrice": 800
+            },
+            {
+                "symbol": "FUEL",
+                "tradeVolume": 10,
+                "purchasePrice": 50,
+                "sellPrice": 50
+            }
+        ]
+    },
+    {
+        "symbol": "X1-A1-A1",
+        "imports": [],
+        "exports": [],
+        "exchange": [
+            {
+                "symbol": "FUEL",
+                "name": "Fuel",
+                "description": "High-energy fuel used in spacecraft propulsion systems to enable long-distance space travel."
+            }
+        ],
+        "tradeGoods": [
+            {
+                "symbol": "FUEL",
+                "tradeVolume": 10,
+                "purchasePrice": 50,
+                "sellPrice": 50
+            }
+        ]
+    },
+    {
+        "symbol": "X1-A1-A2",
+        "imports": [],
+        "exports": [],
+        "exchange": [
+            {
+                "symbol": "FUEL",
+                "name": "Fuel",
+                "description": "High-energy fuel used in spacecraft propulsion systems to enable long-distance space travel."
+            }
+        ],
+        "tradeGoods": [
+            {
+                "symbol": "FUEL",
+                "tradeVolume": 10,
+                "purchasePrice": 50,
+                "sellPrice": 50
+            }
+        ]
+    },
+    {
+        "symbol": "X1-A1-A3",
+        "imports": [],
+        "exports": [],
+        "exchange": [
+            {
+                "symbol": "FUEL",
+                "name": "Fuel",
+                "description": "High-energy fuel used in spacecraft propulsion systems to enable long-distance space travel."
+            }
+        ],
+        "tradeGoods": [
+            {
+                "symbol": "FUEL",
+                "tradeVolume": 10,
+                "purchasePrice": 50,
+                "sellPrice": 50
+            }
+        ]
+    },
+    {
+        "symbol": "X1-A1-A4",
+        "imports": [],
+        "exports": [],
+        "exchange": [
+            {
+                "symbol": "FUEL",
+                "name": "Fuel",
+                "description": "High-energy fuel used in spacecraft propulsion systems to enable long-distance space travel."
+            }
+        ],
+        "tradeGoods": [
+            {
+                "symbol": "FUEL",
+                "tradeVolume": 10,
+                "purchasePrice": 50,
+                "sellPrice": 50
+            }
+        ]
+    },
+    {
+        "symbol": "X1-A1-A5",
+        "imports": [
+            {
+                "symbol": "IRON",
+                "name": "Iron",
+                "description": "A common and valuable metal often used in the construction of ship hulls and other structural components."
+            }
+        ],
+        "exports": [],
+        "exchange": [
+            {
+                "symbol": "FUEL",
+                "name": "Fuel",
+                "description": "High-energy fuel used in spacecraft propulsion systems to enable long-distance space travel."
+            }
+        ],
+        "tradeGoods": [
+            {
+                "symbol": "IRON",
+                "tradeVolume": 45,
+                "purchasePrice": 800,
+                "sellPrice": 1500
+            },
+            {
+                "symbol": "FUEL",
+                "tradeVolume": 10,
+                "purchasePrice": 50,
+                "sellPrice": 50
+            }
+        ]
+    }
+]

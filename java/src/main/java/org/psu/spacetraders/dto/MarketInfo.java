@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MarketInfo {
 
+	private String symbol;
 	private List<Product> imports;
 	private List<Product> exports;
 	private List<Product> exchange;

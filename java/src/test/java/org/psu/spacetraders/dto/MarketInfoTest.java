@@ -65,8 +65,8 @@ public class MarketInfoTest {
 		final Product p4 = new Product("D");
 
 		// The only common product exported by the exporting market and imported by the importing market is p1
-		final MarketInfo exportingMarket = new MarketInfo(List.of(), List.of(p1, p2, p3), List.of(), null);
-		final MarketInfo importingMarket = new MarketInfo(List.of(p1, p4), List.of(p2), List.of(p3), null);
+		final MarketInfo exportingMarket = new MarketInfo(null, List.of(), List.of(p1, p2, p3), List.of(), null);
+		final MarketInfo importingMarket = new MarketInfo(null, List.of(p1, p4), List.of(p2), List.of(p3), null);
 
 		final List<Product> potentialExports = exportingMarket.getPotentialExports(importingMarket);
 
@@ -81,10 +81,10 @@ public class MarketInfoTest {
 	public void sellsProduct() {
 		final Product product = new Product("A");
 
-		final MarketInfo importingMarket = new MarketInfo(List.of(product), List.of(), List.of(), null);
-		final MarketInfo exportingMarket = new MarketInfo(List.of(), List.of(product), List.of(), null);
-		final MarketInfo exchangingMarket = new MarketInfo(List.of(), List.of(), List.of(product), null);
-		final MarketInfo notSellingMarket = new MarketInfo(List.of(), List.of(), List.of(), null);
+		final MarketInfo importingMarket = new MarketInfo(null, List.of(product), List.of(), List.of(), null);
+		final MarketInfo exportingMarket = new MarketInfo(null, List.of(), List.of(product), List.of(), null);
+		final MarketInfo exchangingMarket = new MarketInfo(null, List.of(), List.of(), List.of(product), null);
+		final MarketInfo notSellingMarket = new MarketInfo(null, List.of(), List.of(), List.of(), null);
 
 		assertTrue(importingMarket.sellsProduct(product));
 		assertTrue(exportingMarket.sellsProduct(product));
@@ -127,7 +127,7 @@ public class MarketInfoTest {
 		tradeGood4.setSymbol(productSymbol4);
 		tradeGood4.setTradeVolume(1);
 
-		final MarketInfo marketInfo = new MarketInfo(null, null, null,
+		final MarketInfo marketInfo = new MarketInfo(null, null, null, null,
 				List.of(tradeGood1, tradeGood2, tradeGood3, tradeGood4));
 
 		// Want to purchase products 1, 2, and 4
@@ -176,7 +176,7 @@ public class MarketInfoTest {
 		tradeGood3.setSymbol(productSymbol3);
 		tradeGood3.setTradeVolume(15);
 
-		final MarketInfo marketInfo = new MarketInfo(null, null, null,
+		final MarketInfo marketInfo = new MarketInfo(null, null, null, null,
 				List.of(tradeGood1, tradeGood2, tradeGood3));
 
 		// We have 3000 credits, so we don't want to spend more than 1500 on this request
@@ -230,7 +230,7 @@ public class MarketInfoTest {
 		tradeGood4.setSymbol(productSymbol4);
 		tradeGood4.setTradeVolume(1);
 
-		final MarketInfo marketInfo = new MarketInfo(null, null, null,
+		final MarketInfo marketInfo = new MarketInfo(null, null, null, null,
 				List.of(tradeGood1, tradeGood2, tradeGood3, tradeGood4));
 
 		// We want to buy one of each item because the route is unknown, but have a capacity of 3

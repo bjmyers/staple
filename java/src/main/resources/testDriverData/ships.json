@@ -9,15 +9,15 @@
                     "symbol": "X1-A1-A1",
                     "type": "PLANET",
                     "systemSymbol": "X1-A1",
-                    "x": 23,
-                    "y": -1
+                    "x": 0,
+                    "y": 0
                 },
                 "destination": {
                     "symbol": "X1-A1-A1",
                     "type": "PLANET",
                     "systemSymbol": "X1-A1",
-                    "x": 23,
-                    "y": -3
+                    "x": 0,
+                    "y": 0
                 },
                 "arrival": "2023-11-16T19:16:33.729Z",
                 "departureTime": "2023-11-16T19:15:54.729Z"
@@ -26,12 +26,12 @@
             "flightMode": "CRUISE"
         },
         "fuel": {
-            "current": 400,
-            "capacity": 400
+            "current": 150,
+            "capacity": 150
         },
         "cargo": {
             "capacity": 40,
-            "units": 35,
+            "units": 40,
             "inventory": []
         },
         "modules": [
@@ -67,26 +67,6 @@
                     "power": 1,
                     "slots": 1
                 }
-            },
-            {
-                "symbol": "MODULE_MINERAL_PROCESSOR_I",
-                "name": "Mineral Processor",
-                "description": "Crushes and processes extracted minerals and ores into their component parts, filters out impurities, and containerizes them into raw storage units.",
-                "requirements": {
-                    "crew": 0,
-                    "power": 1,
-                    "slots": 2
-                }
-            },
-            {
-                "symbol": "MODULE_GAS_PROCESSOR_I",
-                "name": "Gas Processor",
-                "description": "Filters and processes extracted gases into their component parts, filters out impurities, and containerizes them into raw storage units.",
-                "requirements": {
-                    "crew": 0,
-                    "power": 1,
-                    "slots": 2
-                }
             }
         ],
         "mounts": [
@@ -98,51 +78,6 @@
                 "requirements": {
                     "crew": 2,
                     "power": 2
-                }
-            },
-            {
-                "symbol": "MOUNT_GAS_SIPHON_II",
-                "name": "Gas Siphon II",
-                "description": "An advanced gas siphon that can extract gas from gas giants and other gas-rich bodies more efficiently and at a higher rate.",
-                "strength": 20,
-                "requirements": {
-                    "crew": 2,
-                    "power": 2
-                }
-            },
-            {
-                "symbol": "MOUNT_MINING_LASER_II",
-                "name": "Mining Laser II",
-                "description": "An advanced mining laser that is more efficient and effective at extracting valuable minerals from asteroids and other space objects.",
-                "strength": 5,
-                "requirements": {
-                    "crew": 2,
-                    "power": 2
-                }
-            },
-            {
-                "symbol": "MOUNT_SURVEYOR_II",
-                "name": "Surveyor II",
-                "description": "An advanced survey probe that can be used to gather information about a mineral deposit with greater accuracy.",
-                "strength": 2,
-                "deposits": [
-                    "QUARTZ_SAND",
-                    "SILICON_CRYSTALS",
-                    "PRECIOUS_STONES",
-                    "ICE_WATER",
-                    "AMMONIA_ICE",
-                    "IRON_ORE",
-                    "COPPER_ORE",
-                    "SILVER_ORE",
-                    "ALUMINUM_ORE",
-                    "GOLD_ORE",
-                    "PLATINUM_ORE",
-                    "DIAMONDS",
-                    "URANITE_ORE"
-                ],
-                "requirements": {
-                    "crew": 4,
-                    "power": 3
                 }
             }
         ]
