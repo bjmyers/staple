@@ -1,10 +1,10 @@
 [
     {
         "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-B8",
-        "type": "ASTEROID",
-        "x": 297,
-        "y": 214,
+        "symbol": "X1-A1-A0",
+        "type": "PLANET",
+        "x": 0,
+        "y": 0,
         "orbitals": [],
         "traits": [
             {
@@ -13,88 +13,6 @@
                 "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
             },
             {
-                "symbol": "UNSTABLE_COMPOSITION",
-                "name": "Unstable Composition",
-                "description": "A location with volatile geological composition, making it prone to frequent seismic activities and necessitating specialized construction techniques for long-term habitation or activity."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.542Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-F44",
-        "type": "PLANET",
-        "x": 74,
-        "y": 2,
-        "orbitals": [
-            {
-                "symbol": "X1-A1-F45"
-            }
-        ],
-        "traits": [
-            {
-                "symbol": "VOLCANIC",
-                "name": "Volcanic",
-                "description": "A volatile world marked by intense volcanic activity, creating a hazardous environment with the potential for valuable resource extraction, such as rare metals and geothermal energy."
-            },
-            {
-                "symbol": "OUTPOST",
-                "name": "Outpost",
-                "description": "A small, remote settlement providing essential services and a safe haven for travelers passing through."
-            },
-            {
-                "symbol": "CANYONS",
-                "name": "Canyons",
-                "description": "Deep, winding ravines carved into the landscape by natural forces, providing shelter for settlements and hosting diverse ecosystems."
-            },
-            {
-                "symbol": "BREATHABLE_ATMOSPHERE",
-                "name": "Breathable Atmosphere",
-                "description": "A waypoint with a life-sustaining atmosphere, allowing for easy colonization and the flourishing of diverse ecosystems without the need for advanced life support systems."
-            },
-            {
-                "symbol": "MARKETPLACE",
-                "name": "Marketplace",
-                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.543Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-B7",
-        "type": "ASTEROID_BASE",
-        "x": 287,
-        "y": 191,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "HOLLOWED_INTERIOR",
-                "name": "Hollowed Interior",
-                "description": "A location with large hollow spaces beneath its surface, providing unique opportunities for subterranean construction and resource extraction, but also posing risks of structural instability."
-            },
-            {
-                "symbol": "OUTPOST",
-                "name": "Outpost",
-                "description": "A small, remote settlement providing essential services and a safe haven for travelers passing through."
-            },
-            {
                 "symbol": "MARKETPLACE",
                 "name": "Marketplace",
                 "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
@@ -104,40 +22,6 @@
         "chart": {
             "submittedBy": "COSMIC",
             "submittedOn": "2024-10-29T19:06:53.542Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-AD5C",
-        "type": "ENGINEERED_ASTEROID",
-        "x": 0,
-        "y": 26,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "COMMON_METAL_DEPOSITS",
-                "name": "Common Metal Deposits",
-                "description": "A waypoint rich in common metal ores like iron, copper, and aluminum, essential for construction and manufacturing."
-            },
-            {
-                "symbol": "STRIPPED",
-                "name": "Stripped",
-                "description": "A location that has been over-mined or over-harvested, resulting in depleted resources and barren landscapes."
-            },
-            {
-                "symbol": "MARKETPLACE",
-                "name": "Marketplace",
-                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.539Z"
         },
         "faction": {
             "symbol": "COSMIC"
@@ -148,322 +32,25 @@
         "systemSymbol": "X1-A1",
         "symbol": "X1-A1-A1",
         "type": "PLANET",
-        "x": 23,
-        "y": -3,
-        "orbitals": [
-            {
-                "symbol": "X1-A1-A3"
-            },
-            {
-                "symbol": "X1-A1-A2"
-            },
-            {
-                "symbol": "X1-A1-A4"
-            }
-        ],
-        "traits": [
-            {
-                "symbol": "FROZEN",
-                "name": "Frozen",
-                "description": "An ice-covered world with frigid temperatures, providing unique research opportunities and resources such as ice water, ammonia ice, and other frozen compounds."
-            },
-            {
-                "symbol": "OUTPOST",
-                "name": "Outpost",
-                "description": "A small, remote settlement providing essential services and a safe haven for travelers passing through."
-            },
-            {
-                "symbol": "MAGMA_SEAS",
-                "name": "Magma Seas",
-                "description": "A waypoint dominated by molten rock and intense heat, creating inhospitable conditions and requiring specialized technology to navigate and harvest resources."
-            },
-            {
-                "symbol": "VIBRANT_AURORAS",
-                "name": "Vibrant Auroras",
-                "description": "A celestial light show caused by the interaction of charged particles with the waypoint's atmosphere, creating a mesmerizing spectacle and attracting tourists from across the galaxy."
-            },
-            {
-                "symbol": "PERPETUAL_DAYLIGHT",
-                "name": "Perpetual Daylight",
-                "description": "A waypoint that never experiences darkness, providing abundant solar energy and unique living conditions for its inhabitants."
-            },
-            {
-                "symbol": "MARKETPLACE",
-                "name": "Marketplace",
-                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.540Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-B6",
-        "type": "FUEL_STATION",
-        "x": 184,
-        "y": 49,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "MARKETPLACE",
-                "name": "Marketplace",
-                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.545Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-B9",
-        "type": "ASTEROID",
-        "x": 287,
-        "y": 146,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "COMMON_METAL_DEPOSITS",
-                "name": "Common Metal Deposits",
-                "description": "A waypoint rich in common metal ores like iron, copper, and aluminum, essential for construction and manufacturing."
-            },
-            {
-                "symbol": "RADIOACTIVE",
-                "name": "Radioactive",
-                "description": "A hazardous location with elevated levels of radiation, requiring specialized equipment and shielding for safe habitation and exploration."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.545Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-J66",
-        "type": "ASTEROID",
-        "x": -25,
-        "y": -786,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "COMMON_METAL_DEPOSITS",
-                "name": "Common Metal Deposits",
-                "description": "A waypoint rich in common metal ores like iron, copper, and aluminum, essential for construction and manufacturing."
-            },
-            {
-                "symbol": "UNSTABLE_COMPOSITION",
-                "name": "Unstable Composition",
-                "description": "A location with volatile geological composition, making it prone to frequent seismic activities and necessitating specialized construction techniques for long-term habitation or activity."
-            },
-            {
-                "symbol": "SHALLOW_CRATERS",
-                "name": "Shallow Craters",
-                "description": "Numerous shallow craters, offering easier access to sub-surface resources but also creating an uneven terrain that can complicate land-based activities."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.545Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-I51",
-        "type": "JUMP_GATE",
-        "x": -117,
-        "y": -436,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "MARKETPLACE",
-                "name": "Marketplace",
-                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.545Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": true
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-G46",
-        "type": "PLANET",
-        "x": -63,
-        "y": 6,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "VOLCANIC",
-                "name": "Volcanic",
-                "description": "A volatile world marked by intense volcanic activity, creating a hazardous environment with the potential for valuable resource extraction, such as rare metals and geothermal energy."
-            },
-            {
-                "symbol": "OUTPOST",
-                "name": "Outpost",
-                "description": "A small, remote settlement providing essential services and a safe haven for travelers passing through."
-            },
-            {
-                "symbol": "FOSSILS",
-                "name": "Fossils",
-                "description": "A waypoint rich in the remains of ancient life, offering a valuable window into the past and the potential for scientific discovery."
-            },
-            {
-                "symbol": "TOXIC_ATMOSPHERE",
-                "name": "Toxic Atmosphere",
-                "description": "A waypoint with a poisonous atmosphere, necessitating the use of specialized equipment and technology to protect inhabitants and visitors from harmful substances."
-            },
-            {
-                "symbol": "INDUSTRIAL",
-                "name": "Industrial",
-                "description": "A waypoint dominated by factories, refineries, and other heavy industries, often accompanied by pollution and a bustling workforce."
-            },
-            {
-                "symbol": "MARKETPLACE",
-                "name": "Marketplace",
-                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.545Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-I52",
-        "type": "FUEL_STATION",
-        "x": -60,
-        "y": -222,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "MARKETPLACE",
-                "name": "Marketplace",
-                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.546Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-H47",
-        "type": "PLANET",
-        "x": 25,
-        "y": 38,
-        "orbitals": [
-            {
-                "symbol": "X1-A1-H50"
-            },
-            {
-                "symbol": "X1-A1-H48"
-            },
-            {
-                "symbol": "X1-A1-H49"
-            }
-        ],
-        "traits": [
-            {
-                "symbol": "JUNGLE",
-                "name": "Jungle",
-                "description": "A lush, tropical world with dense vegetation and a thriving ecosystem, offering a wealth of resources and unique opportunities for research and exploration."
-            },
-            {
-                "symbol": "SCATTERED_SETTLEMENTS",
-                "name": "Scattered Settlements",
-                "description": "A collection of dispersed communities, each independent yet connected through trade and communication networks."
-            },
-            {
-                "symbol": "PERPETUAL_DAYLIGHT",
-                "name": "Perpetual Daylight",
-                "description": "A waypoint that never experiences darkness, providing abundant solar energy and unique living conditions for its inhabitants."
-            },
-            {
-                "symbol": "TOXIC_ATMOSPHERE",
-                "name": "Toxic Atmosphere",
-                "description": "A waypoint with a poisonous atmosphere, necessitating the use of specialized equipment and technology to protect inhabitants and visitors from harmful substances."
-            },
-            {
-                "symbol": "INDUSTRIAL",
-                "name": "Industrial",
-                "description": "A waypoint dominated by factories, refineries, and other heavy industries, often accompanied by pollution and a bustling workforce."
-            },
-            {
-                "symbol": "MARKETPLACE",
-                "name": "Marketplace",
-                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.545Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-B10",
-        "type": "ASTEROID",
-        "x": 258,
-        "y": 171,
+        "x": 100,
+        "y": 0,
         "orbitals": [],
         "traits": [
             {
                 "symbol": "MINERAL_DEPOSITS",
                 "name": "Mineral Deposits",
                 "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
+            },
+            {
+                "symbol": "MARKETPLACE",
+                "name": "Marketplace",
+                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
             }
         ],
         "modifiers": [],
         "chart": {
             "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.546Z"
+            "submittedOn": "2024-10-29T19:06:53.542Z"
         },
         "faction": {
             "symbol": "COSMIC"
@@ -472,37 +59,27 @@
     },
     {
         "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-J67",
-        "type": "ASTEROID",
-        "x": 624,
-        "y": -428,
+        "symbol": "X1-A1-A2",
+        "type": "PLANET",
+        "x": 200,
+        "y": 0,
         "orbitals": [],
         "traits": [
             {
-                "symbol": "COMMON_METAL_DEPOSITS",
-                "name": "Common Metal Deposits",
-                "description": "A waypoint rich in common metal ores like iron, copper, and aluminum, essential for construction and manufacturing."
+                "symbol": "MINERAL_DEPOSITS",
+                "name": "Mineral Deposits",
+                "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
             },
             {
-                "symbol": "EXPLOSIVE_GASES",
-                "name": "Explosive Gases",
-                "description": "A volatile environment filled with highly reactive gases, posing a constant risk to those who venture too close and offering opportunities for harvesting valuable materials such as hydrocarbons."
-            },
-            {
-                "symbol": "MICRO_GRAVITY_ANOMALIES",
-                "name": "Micro-Gravity Anomalies",
-                "description": "Unpredictable gravity fields, making navigation and construction particularly challenging. These anomalies may also yield unique scientific research opportunities."
-            },
-            {
-                "symbol": "RADIOACTIVE",
-                "name": "Radioactive",
-                "description": "A hazardous location with elevated levels of radiation, requiring specialized equipment and shielding for safe habitation and exploration."
+                "symbol": "MARKETPLACE",
+                "name": "Marketplace",
+                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
             }
         ],
         "modifiers": [],
         "chart": {
             "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.546Z"
+            "submittedOn": "2024-10-29T19:06:53.542Z"
         },
         "faction": {
             "symbol": "COSMIC"
@@ -511,104 +88,17 @@
     },
     {
         "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-J68",
-        "type": "ASTEROID",
-        "x": 651,
-        "y": -399,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "COMMON_METAL_DEPOSITS",
-                "name": "Common Metal Deposits",
-                "description": "A waypoint rich in common metal ores like iron, copper, and aluminum, essential for construction and manufacturing."
-            },
-            {
-                "symbol": "RADIOACTIVE",
-                "name": "Radioactive",
-                "description": "A hazardous location with elevated levels of radiation, requiring specialized equipment and shielding for safe habitation and exploration."
-            },
-            {
-                "symbol": "DEBRIS_CLUSTER",
-                "name": "Debris Cluster",
-                "description": "A region filled with hazardous debris and remnants of celestial bodies or man-made objects, requiring advanced navigational capabilities for ships passing through."
-            },
-            {
-                "symbol": "UNSTABLE_COMPOSITION",
-                "name": "Unstable Composition",
-                "description": "A location with volatile geological composition, making it prone to frequent seismic activities and necessitating specialized construction techniques for long-term habitation or activity."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.546Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-B11",
-        "type": "ASTEROID",
+        "symbol": "X1-A1-A3",
+        "type": "PLANET",
         "x": 300,
-        "y": 185,
+        "y": 0,
         "orbitals": [],
         "traits": [
             {
                 "symbol": "MINERAL_DEPOSITS",
                 "name": "Mineral Deposits",
                 "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.546Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-J69",
-        "type": "ASTEROID",
-        "x": 700,
-        "y": -282,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "COMMON_METAL_DEPOSITS",
-                "name": "Common Metal Deposits",
-                "description": "A waypoint rich in common metal ores like iron, copper, and aluminum, essential for construction and manufacturing."
             },
-            {
-                "symbol": "DEEP_CRATERS",
-                "name": "Deep Craters",
-                "description": "Marked by deep, expansive craters, potentially formed by ancient meteor impacts. These formations may offer hidden resources but also pose challenges for mobility and construction."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.546Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-J53",
-        "type": "FUEL_STATION",
-        "x": -156,
-        "y": -579,
-        "orbitals": [],
-        "traits": [
             {
                 "symbol": "MARKETPLACE",
                 "name": "Marketplace",
@@ -618,7 +108,7 @@
         "modifiers": [],
         "chart": {
             "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.546Z"
+            "submittedOn": "2024-10-29T19:06:53.542Z"
         },
         "faction": {
             "symbol": "COSMIC"
@@ -627,39 +117,10 @@
     },
     {
         "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-J70",
-        "type": "ASTEROID",
-        "x": 723,
-        "y": 46,
-        "orbitals": [],
-        "traits": [
-            {
-                "symbol": "COMMON_METAL_DEPOSITS",
-                "name": "Common Metal Deposits",
-                "description": "A waypoint rich in common metal ores like iron, copper, and aluminum, essential for construction and manufacturing."
-            },
-            {
-                "symbol": "RADIOACTIVE",
-                "name": "Radioactive",
-                "description": "A hazardous location with elevated levels of radiation, requiring specialized equipment and shielding for safe habitation and exploration."
-            }
-        ],
-        "modifiers": [],
-        "chart": {
-            "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.546Z"
-        },
-        "faction": {
-            "symbol": "COSMIC"
-        },
-        "isUnderConstruction": false
-    },
-    {
-        "systemSymbol": "X1-A1",
-        "symbol": "X1-A1-J71",
-        "type": "ASTEROID",
-        "x": 599,
-        "y": 495,
+        "symbol": "X1-A1-A4",
+        "type": "PLANET",
+        "x": 400,
+        "y": 0,
         "orbitals": [],
         "traits": [
             {
@@ -668,15 +129,44 @@
                 "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
             },
             {
-                "symbol": "DEEP_CRATERS",
-                "name": "Deep Craters",
-                "description": "Marked by deep, expansive craters, potentially formed by ancient meteor impacts. These formations may offer hidden resources but also pose challenges for mobility and construction."
+                "symbol": "MARKETPLACE",
+                "name": "Marketplace",
+                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
             }
         ],
         "modifiers": [],
         "chart": {
             "submittedBy": "COSMIC",
-            "submittedOn": "2024-10-29T19:06:53.546Z"
+            "submittedOn": "2024-10-29T19:06:53.542Z"
+        },
+        "faction": {
+            "symbol": "COSMIC"
+        },
+        "isUnderConstruction": false
+    },
+    {
+        "systemSymbol": "X1-A1",
+        "symbol": "X1-A1-A5",
+        "type": "PLANET",
+        "x": 500,
+        "y": 0,
+        "orbitals": [],
+        "traits": [
+            {
+                "symbol": "MINERAL_DEPOSITS",
+                "name": "Mineral Deposits",
+                "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
+            },
+            {
+                "symbol": "MARKETPLACE",
+                "name": "Marketplace",
+                "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
+            }
+        ],
+        "modifiers": [],
+        "chart": {
+            "submittedBy": "COSMIC",
+            "submittedOn": "2024-10-29T19:06:53.542Z"
         },
         "faction": {
             "symbol": "COSMIC"

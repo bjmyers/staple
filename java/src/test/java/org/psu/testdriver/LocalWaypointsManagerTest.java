@@ -20,10 +20,10 @@ public class LocalWaypointsManagerTest {
 		final LocalWaypointsManager waypointsManager = new LocalWaypointsManager();
 
 		final List<Waypoint> waypoints = waypointsManager.getWaypoints();
-		assertEquals(20, waypoints.size());
+		assertEquals(6, waypoints.size());
 
 		// Do it again for lazy loading
 		final List<Waypoint> waypoints2 = waypointsManager.getWaypoints();
-		assertEquals(20, waypoints2.size());
+		assertEquals(6, waypoints2.size());
 	}
 }
