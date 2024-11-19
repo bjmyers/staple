@@ -1,6 +1,8 @@
 package org.psu.testdriver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.List;
 
@@ -25,5 +27,20 @@ public class LocalWaypointsManagerTest {
 		// Do it again for lazy loading
 		final List<Waypoint> waypoints2 = waypointsManager.getWaypoints();
 		assertEquals(6, waypoints2.size());
+	}
+
+	/**
+	 * Tests getWaypoint
+	 */
+	@Test
+	public void getWaypoint() {
+		final LocalWaypointsManager waypointsManager = new LocalWaypointsManager();
+
+		final Waypoint waypoint = waypointsManager.getWaypoint("X1-A1-A1");
+		assertNotNull(waypoint);
+
+		// Do it again for lazy loading
+		final Waypoint waypoint2 = waypointsManager.getWaypoint("Some other waypoint");
+		assertNull(waypoint2);
 	}
 }

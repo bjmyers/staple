@@ -32,6 +32,13 @@ public class LocalWaypointsManager {
 		return this.waypointsById.values().stream().toList();
 	}
 
+	public Waypoint getWaypoint(final String id) {
+		if (this.waypointsById == null) {
+			loadWaypoints();
+		}
+		return this.waypointsById.get(id);
+	}
+
 	private void loadWaypoints() {
 		this.waypointsById = LocalResourceLoader.loadResourceList("/testDriverData/waypoints.json", Waypoint.class).stream()
 				.collect(Collectors.toMap(Waypoint::getSymbol, Function.identity()));

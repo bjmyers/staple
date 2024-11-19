@@ -32,6 +32,13 @@ public class LocalShipManager {
 		return this.shipsById.values().stream().toList();
 	}
 
+	public Ship getShip(final String id) {
+		if (this.shipsById == null) {
+			loadShips();
+		}
+		return this.shipsById.get(id);
+	}
+
 	private void loadShips() {
 		this.shipsById = LocalResourceLoader.loadResourceList("/testDriverData/ships.json", Ship.class).stream()
 				.collect(Collectors.toMap(s -> s.getSymbol(), Function.identity()));
