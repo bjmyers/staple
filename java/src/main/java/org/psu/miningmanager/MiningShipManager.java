@@ -99,7 +99,7 @@ public class MiningShipManager {
 		if (optionalDestinationMarketInfo.isPresent()) {
 			final Entry<Waypoint, MarketInfo> destinationMarketInfo = optionalDestinationMarketInfo.get();
 
-			if (ship.getCargo().inventory().stream().map(c -> new Product(c.symbol())).anyMatch(
+			if (ship.getCargo().getInventory().stream().map(c -> new Product(c.getSymbol())).anyMatch(
 					p -> destinationMarketInfo.getValue().sellsProduct(p))) {
 
 				final Queue<Waypoint> marketPath = new LinkedList<>();
@@ -216,12 +216,12 @@ public class MiningShipManager {
 		final Ship ship = job.getShip();
 
 		// Sorted so that the item with the highest count is first
-		final List<CargoItem> items = ship.getCargo().inventory().stream()
-				.sorted((c1, c2) -> Integer.compare(c2.units(), c1.units()))
+		final List<CargoItem> items = ship.getCargo().getInventory().stream()
+				.sorted((c1, c2) -> Integer.compare(c2.getUnits(), c1.getUnits()))
 				.toList();
 
 		for (final CargoItem item : items) {
-			final Product product = new Product(item.symbol());
+			final Product product = new Product(item.getSymbol());
 			final Optional<Deque<Waypoint>> optionalMarketPath = marketplaceManager.getClosestTradingWaypointPath(ship, product);
 			if (optionalMarketPath.isEmpty()) {
 				// Nothing buys this product within the ship's range, skip it
@@ -252,7 +252,7 @@ public class MiningShipManager {
 	private void sellItems(final MiningShipJob job) {
 		final Ship ship = job.getShip();
 
-		marketplaceRequester.dockAndSellItems(ship, job.getSellingPoint(), ship.getCargo().inventory());
+		marketplaceRequester.dockAndSellItems(ship, job.getSellingPoint(), ship.getCargo().getInventory());
 	}
 
 }

@@ -629,7 +629,7 @@ public class MiningShipManagerTest {
 		final Ship ship = mock(Ship.class, Answers.RETURNS_DEEP_STUBS);
 		when(ship.getSymbol()).thenReturn(shipId);
 		when(ship.getNav().getWaypointSymbol()).thenReturn(extractionSiteId);
-		when(ship.getCargo().inventory()).thenReturn(cargoItems);
+		when(ship.getCargo().getInventory()).thenReturn(cargoItems);
 
 		when(miningSiteManager.getMiningSite(extractionSiteId)).thenReturn(null);
 		when(miningSiteManager.getClosestMiningSite(ship)).thenReturn(Optional.of(TestUtils.makeQueue(extractionSite)));

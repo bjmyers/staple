@@ -184,6 +184,7 @@ public class LocalNavigationClientTest {
 		final FuelStatus expectedNewFuel = new FuelStatus(50, 200);
 		verify(ship).setFuel(expectedNewFuel);
 		verify(shipRoute).setOrigin(destinationPoint);
+		verify(shipNav).setWaypointSymbol(destinationId);
 
 		assertNull(response.getMeta());
 		assertEquals(shipNav, response.getData().getNav());

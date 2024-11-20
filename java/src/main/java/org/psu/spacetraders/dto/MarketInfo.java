@@ -67,6 +67,8 @@ public class MarketInfo {
 			final int quantityToBuy = Math.min(requestCapacity, remainingBudget / tradeGood.getPurchasePrice());
 			output.add(new TradeRequest(tradeGood.getSymbol(), quantityToBuy));
 
+			System.out.println("quantity to buy: " + quantityToBuy);
+
 			remainingItemsToBuy -= quantityToBuy;
 			remainingBudget -= quantityToBuy * tradeGood.getPurchasePrice();
 			if (remainingItemsToBuy <= 0 || remainingBudget <= 0) {
@@ -88,7 +90,7 @@ public class MarketInfo {
 		for (CargoItem item : cargoItems) {
 
 			final Optional<TradeGood> optionalTradeGood = this.tradeGoods.stream()
-					.filter(t -> item.symbol().equals(t.getSymbol())).findFirst();
+					.filter(t -> item.getSymbol().equals(t.getSymbol())).findFirst();
 			if (optionalTradeGood.isEmpty()) {
 				// Item in cargo isn't traded here, skip
 				continue;
@@ -96,15 +98,15 @@ public class MarketInfo {
 			final TradeGood tradeGood = optionalTradeGood.get();
 
 			// Floor division, the number of full requests to make
-			final int numFullRequestsToMake = item.units() / tradeGood.getTradeVolume();
+			final int numFullRequestsToMake = item.getUnits() / tradeGood.getTradeVolume();
 			for (int i = 0; i < numFullRequestsToMake; i++) {
-				output.add(new TradeRequest(item.symbol(), tradeGood.getTradeVolume()));
+				output.add(new TradeRequest(item.getSymbol(), tradeGood.getTradeVolume()));
 			}
 
 			// The remaining goods which couldn't fit into a full trade request
-			final int remainingGoods = item.units() % tradeGood.getTradeVolume();
+			final int remainingGoods = item.getUnits() % tradeGood.getTradeVolume();
 			if (remainingGoods > 0) {
-				output.add(new TradeRequest(item.symbol(), remainingGoods));
+				output.add(new TradeRequest(item.getSymbol(), remainingGoods));
 			}
 		}
 		return output;

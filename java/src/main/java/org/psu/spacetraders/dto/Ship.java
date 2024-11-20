@@ -48,7 +48,7 @@ public class Ship {
 	 * @return The amount of open cargo space on the ship
 	 */
 	public int getRemainingCargo() {
-		return this.cargo.capacity() - this.cargo.units();
+		return this.cargo.getCapacity() - this.cargo.getUnits();
 	}
 
 }

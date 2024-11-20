@@ -42,8 +42,8 @@ public class ShipTest {
 		assertEquals("THE_SPACE_MAN-1", ship.getSymbol());
 		assertEquals(400, ship.getFuel().current());
 		assertEquals(400, ship.getFuel().capacity());
-		assertEquals(0, ship.getCargo().units());
-		assertEquals(40, ship.getCargo().capacity());
+		assertEquals(0, ship.getCargo().getUnits());
+		assertEquals(40, ship.getCargo().getCapacity());
 
 		final List<ShipComponent> modules = ship.getModules();
 		assertEquals(4, modules.size());
