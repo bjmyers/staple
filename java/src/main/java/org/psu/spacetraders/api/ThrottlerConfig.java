@@ -10,6 +10,7 @@ import io.smallrye.config.ConfigMapping;
 @ConfigMapping(prefix = "app.throttler")
 public interface ThrottlerConfig {
 
+	boolean enabled();
 	List<RateLimiterConfig> rateLimiters();
 
 	/**

@@ -82,7 +82,7 @@ public class LocalNavigationClient implements NavigationClient {
 		shipNav.setWaypointSymbol(destination.getSymbol());
 
 		final Instant departureTime = Instant.now();
-		final Duration travelTime = Duration.ofMillis(1).multipliedBy(navDelayMsPerUnit);
+		final Duration travelTime = Duration.ofMillis((int) dist).multipliedBy(navDelayMsPerUnit);
 		shipNav.getRoute().setDepartureTime(departureTime);
 		shipNav.getRoute().setArrival(departureTime.plus(travelTime));
 

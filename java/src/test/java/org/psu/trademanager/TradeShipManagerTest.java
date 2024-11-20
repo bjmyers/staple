@@ -65,7 +65,7 @@ public class TradeShipManagerTest {
 		when(routeManager.getBestRoute(ship)).thenReturn(routeResponse);
 		final WebsocketReporter reporter = mock();
 
-		final TradeShipManager manager = new TradeShipManager(0, null, null, null, null, routeManager, reporter);
+		final TradeShipManager manager = new TradeShipManager(0, 0, null, null, null, null, routeManager, reporter);
 
 		final TradeShipJob job = manager.createJob(ship);
 
@@ -83,7 +83,7 @@ public class TradeShipManagerTest {
 
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
-		final TradeShipManager manager = new TradeShipManager(0, null, null, null, marketManager, null, reporter);
+		final TradeShipManager manager = new TradeShipManager(0, 0, null, null, null, marketManager, null, reporter);
 
 		final String product1 = "milk";
 		final int product1Quantity = 5;
@@ -136,7 +136,7 @@ public class TradeShipManagerTest {
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
-		final TradeShipManager manager = new TradeShipManager(0, navHelper, accountManager, marketRequester,
+		final TradeShipManager manager = new TradeShipManager(0, 0, navHelper, accountManager, marketRequester,
 				marketManager, routeManager, reporter);
 
 		final Ship ship = mock(Ship.class);
@@ -179,7 +179,7 @@ public class TradeShipManagerTest {
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
-		final TradeShipManager manager = new TradeShipManager(0, navHelper, accountManager, marketRequester,
+		final TradeShipManager manager = new TradeShipManager(0, 0, navHelper, accountManager, marketRequester,
 				marketManager, routeManager, reporter);
 
 		final String exportWaypointSymbol = "export";
@@ -249,7 +249,7 @@ public class TradeShipManagerTest {
 		final MarketplaceManager marketManager = mock(MarketplaceManager.class);
 		final RouteManager routeManager = mock(RouteManager.class);
 		final WebsocketReporter reporter = mock(WebsocketReporter.class);
-		final TradeShipManager manager = new TradeShipManager(0, navHelper, accountManager, marketRequester,
+		final TradeShipManager manager = new TradeShipManager(0, 0, navHelper, accountManager, marketRequester,
 				marketManager, routeManager, reporter);
 
 		final String importWaypointSymbol = "import";

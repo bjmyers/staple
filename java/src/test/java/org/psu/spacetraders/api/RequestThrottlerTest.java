@@ -25,6 +25,29 @@ public class RequestThrottlerTest {
 
 		final ThrottlerConfig config = mock(ThrottlerConfig.class);
 		when(config.rateLimiters()).thenReturn(List.of(limiterConfig));
+		when(config.enabled()).thenReturn(true);
+
+		final RequestThrottler throttler = new RequestThrottler(config);
+
+		for (int i = 0; i < 15; i++) {
+			// Throttle a bunch of things
+			throttler.throttle(() -> 1);
+		}
+	}
+
+	/**
+	 * Tests {@link RequestThrottler#throttle} when throttling is disabled
+	 */
+	@Test
+	public void throttleDisabled() {
+
+		final RateLimiterConfig limiterConfig = mock(RateLimiterConfig.class);
+		when(limiterConfig.requests()).thenReturn(10);
+		when(limiterConfig.period()).thenReturn(1);
+
+		final ThrottlerConfig config = mock(ThrottlerConfig.class);
+		when(config.rateLimiters()).thenReturn(List.of(limiterConfig));
+		when(config.enabled()).thenReturn(false);
 
 		final RequestThrottler throttler = new RequestThrottler(config);
 

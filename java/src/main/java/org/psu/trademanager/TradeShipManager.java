@@ -39,6 +39,7 @@ import lombok.extern.jbosslog.JBossLog;
 public class TradeShipManager {
 
 	private Duration navigationPad;
+	private Duration marketUpdateDelay;
 	private NavigationHelper navigationHelper;
 	private AccountManager accountManager;
 	private MarketplaceRequester marketplaceRequester;
@@ -48,11 +49,13 @@ public class TradeShipManager {
 
 	@Inject
 	public TradeShipManager(@ConfigProperty(name = "app.cooldown-pad-ms") final int navigationPad,
+			@ConfigProperty(name = "app.marketupdate-delay-ms") final int marketUpdateDelay,
 			final NavigationHelper navigationHelper,
 			final AccountManager accountManager, final MarketplaceRequester marketplaceRequester,
 			final MarketplaceManager marketplaceManager, final RouteManager routeManager,
 			final WebsocketReporter websocketReporter) {
 		this.navigationPad = Duration.ofMillis(navigationPad);
+		this.marketUpdateDelay = Duration.ofMillis(marketUpdateDelay);
 		this.navigationHelper = navigationHelper;
 		this.accountManager = accountManager;
 		this.marketplaceRequester = marketplaceRequester;
@@ -162,7 +165,7 @@ public class TradeShipManager {
 		// TODO: Remove this when space traders fixes their bug, it takes a while for markets to realize
 		// a ship is docked at them
 		try {
-			Thread.sleep(Duration.ofSeconds(5));
+			Thread.sleep(marketUpdateDelay);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
