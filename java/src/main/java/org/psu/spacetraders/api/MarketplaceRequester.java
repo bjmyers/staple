@@ -3,6 +3,7 @@ package org.psu.spacetraders.api;
 import java.time.Duration;
 import java.util.List;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.psu.spacetraders.dto.CargoItem;
 import org.psu.spacetraders.dto.MarketInfo;
 import org.psu.spacetraders.dto.Product;
@@ -26,6 +27,7 @@ import lombok.extern.jbosslog.JBossLog;
 @ApplicationScoped
 public class MarketplaceRequester {
 
+	private Duration marketUpdateDelay;
 	private MarketplaceClient marketplaceClient;
 	private RequestThrottler throttler;
 	private AccountManager accountManager;
@@ -34,9 +36,11 @@ public class MarketplaceRequester {
 	private WebsocketReporter websocketReporter;
 
 	@Inject
-	public MarketplaceRequester(final ClientProducer clientProducer, final RequestThrottler throttler,
+	public MarketplaceRequester(@ConfigProperty(name = "app.marketupdate-delay-ms") final int marketUpdateDelay,
+			final ClientProducer clientProducer, final RequestThrottler throttler,
 			final AccountManager accountManager, final MarketplaceManager marketplaceManager,
 			final NavigationHelper navHelper, final WebsocketReporter websocketReporter) {
+		this.marketUpdateDelay = Duration.ofMillis(marketUpdateDelay);
 		this.marketplaceClient = clientProducer.produceMarketplaceClient();
 		this.throttler = throttler;
 		this.accountManager = accountManager;
@@ -106,7 +110,7 @@ public class MarketplaceRequester {
 		// TODO: Remove this when space traders fixes their bug, it takes a while for markets to realize
 		// a ship is docked at them
 		try {
-			Thread.sleep(Duration.ofSeconds(5));
+			Thread.sleep(marketUpdateDelay);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

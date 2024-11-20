@@ -57,8 +57,8 @@ public class MarketplaceRequesterTest {
 		when(client.purchase(shipId, request)).thenReturn(new DataWrapper<TradeResponse>(response, null));
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(clientProducer, throttler, manager, null, null,
-				reporter);
+		final MarketplaceRequester requester = new MarketplaceRequester(0, clientProducer, throttler, manager, null,
+				null, reporter);
 
 		final TradeResponse actualResponse = requester.purchase(ship, request);
 		assertEquals(response, actualResponse);
@@ -92,8 +92,8 @@ public class MarketplaceRequesterTest {
 		when(client.sell(shipId, request)).thenReturn(new DataWrapper<TradeResponse>(response, null));
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(clientProducer, throttler, manager, null, null,
-				reporter);
+		final MarketplaceRequester requester = new MarketplaceRequester(0, clientProducer, throttler, manager, null,
+				null, reporter);
 
 		final TradeResponse actualResponse = requester.sell(ship, request);
 		assertEquals(response, actualResponse);
@@ -126,8 +126,8 @@ public class MarketplaceRequesterTest {
 		when(client.refuel(shipId)).thenReturn(new DataWrapper<RefuelResponse>(response, null));
 
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(clientProducer, throttler, manager, null, null,
-				reporter);
+		final MarketplaceRequester requester = new MarketplaceRequester(0, clientProducer, throttler, manager, null,
+				null, reporter);
 
 		final RefuelResponse actualResponse = requester.refuel(ship);
 		assertEquals(response, actualResponse);
@@ -149,7 +149,7 @@ public class MarketplaceRequesterTest {
 		final ClientProducer clientProducer = mock();
 		when(clientProducer.produceMarketplaceClient()).thenReturn(client);
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(clientProducer, throttler, accountManager,
+		final MarketplaceRequester requester = new MarketplaceRequester(0, clientProducer, throttler, accountManager,
 				marketplaceManager, navHelper, reporter);
 
 		final List<CargoItem> cargoItems = List.of(new CargoItem("eggs", 1));
@@ -202,7 +202,7 @@ public class MarketplaceRequesterTest {
 		final ClientProducer clientProducer = mock();
 		when(clientProducer.produceMarketplaceClient()).thenReturn(client);
 		final RequestThrottler throttler = TestRequestThrottler.get();
-		final MarketplaceRequester requester = new MarketplaceRequester(clientProducer, throttler, accountManager,
+		final MarketplaceRequester requester = new MarketplaceRequester(0, clientProducer, throttler, accountManager,
 				marketplaceManager, navHelper, reporter);
 
 		final List<CargoItem> cargoItems = List.of(new CargoItem("eggs", 1));

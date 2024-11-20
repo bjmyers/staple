@@ -22,10 +22,12 @@ import lombok.extern.jbosslog.JBossLog;
 @ApplicationScoped
 public class RequestThrottler {
 
+	private final boolean enabled;
 	private final List<RateLimiter> rateLimiters;
 
 	@Inject
 	public RequestThrottler(final ThrottlerConfig config) {
+		this.enabled = config.enabled();
 		this.rateLimiters = config.rateLimiters().stream().map(c -> new RateLimiter(c)).toList();
 	}
 
@@ -40,6 +42,9 @@ public class RequestThrottler {
 	 * @return The result of invoking the supplier.
 	 */
 	public <T> T throttle(Supplier<T> apiInteraction) {
+		if (!this.enabled) {
+			return apiInteraction.get();
+		}
 
 		// The time when the api interaction can be performed.
 		// If empty, the interaction can be performed immediately
