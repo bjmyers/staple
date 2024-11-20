@@ -144,15 +144,18 @@ public class TradeShipManagerTest {
 		when(shipNav.getWaypointSymbol()).thenReturn("Starting Symbol");
 		when(ship.getNav()).thenReturn(shipNav);
 
+		final Waypoint intermediateWaypoint = mock();
+
 		final Waypoint exportWaypoint = mock(Waypoint.class);
 		when(exportWaypoint.getSymbol()).thenReturn("export waypoint");
 		final TradeRoute tradeRoute = mock(TradeRoute.class);
 		when(tradeRoute.getExportWaypoint()).thenReturn(exportWaypoint);
 
 		final Instant arrivalTime = Instant.now().plus(Duration.ofMillis(10));
-		when(navHelper.navigate(ship, exportWaypoint)).thenReturn(arrivalTime);
+		when(navHelper.navigate(ship, intermediateWaypoint)).thenReturn(arrivalTime);
 
 		final Queue<Waypoint> exports = new LinkedList<>();
+		exports.add(intermediateWaypoint);
 		exports.add(exportWaypoint);
 
 		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, exports);
