@@ -20,10 +20,12 @@ import org.psu.testdriver.LocalWaypointsManager;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.extern.jbosslog.JBossLog;
 
 /**
  * Local version of the {@link NavigationClient}
  */
+@JBossLog
 @ApplicationScoped
 public class LocalNavigationClient implements NavigationClient {
 
@@ -63,6 +65,8 @@ public class LocalNavigationClient implements NavigationClient {
 
 		// Determine distance required
 		final double dist = waypointsManager.getWaypoint(shipNav.getWaypointSymbol()).distTo(destination);
+		log.infof("Ship at %s", shipNav.getWaypointSymbol());
+		log.infof("Destination %s", navRequest.getWaypointSymbol());
 		if (dist > ship.getFuel().current()) {
 			throw new IllegalStateException("Ship does not have enough fuel to travel " + dist + " units");
 		}
@@ -75,6 +79,7 @@ public class LocalNavigationClient implements NavigationClient {
 		shipNav.getRoute().setOrigin(shipNav.getRoute().getDestination());
 		shipNav.getRoute()
 				.setDestination(new RoutePoint(destination.getSymbol(), destination.getX(), destination.getY()));
+		shipNav.setWaypointSymbol(destination.getSymbol());
 
 		final Instant departureTime = Instant.now();
 		final Duration travelTime = Duration.ofMillis(1).multipliedBy(navDelayMsPerUnit);

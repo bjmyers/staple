@@ -64,11 +64,11 @@ public class TradeShipManager {
 	public TradeShipJob createJob(final Ship ship) {
 
 		// If the ship has goods in its cargo hold, see if we can sell them
-		if (ship.getCargo().units() > 0) {
+		if (ship.getCargo().getUnits() > 0) {
 
 			// Sorted so that the item with the highest count is first
-			final List<CargoItem> items = ship.getCargo().inventory().stream()
-					.sorted((c1, c2) -> Integer.compare(c2.units(), c1.units()))
+			final List<CargoItem> items = ship.getCargo().getInventory().stream()
+					.sorted((c1, c2) -> Integer.compare(c2.getUnits(), c1.getUnits()))
 					.toList();
 
 			// First check the destination to see if it buys anything we've got
@@ -79,11 +79,11 @@ public class TradeShipManager {
 				final List<String> importProductSymbols = destinationMarketInfo.getValue().getImports().stream()
 						.map(Product::getSymbol).toList();
 				final List<CargoItem> itemsToSell = items.stream()
-						.filter(i -> importProductSymbols.contains(i.symbol())).toList();
+						.filter(i -> importProductSymbols.contains(i.getSymbol())).toList();
 				if (itemsToSell.size() > 0) {
 					// We are able to sell some of our inventory at the destination, build a trade
 					// route
-					final List<Product> productsToSell = itemsToSell.stream().map(c -> new Product(c.symbol()))
+					final List<Product> productsToSell = itemsToSell.stream().map(c -> new Product(c.getSymbol()))
 							.toList();
 					final TradeRoute route = new TradeRoute(null, destinationMarketInfo.getKey(), productsToSell);
 					final Queue<Waypoint> destinationWaypoint = new LinkedList<>();
@@ -170,6 +170,7 @@ public class TradeShipManager {
 		// Force an update to we know the most up to date prices and trade limits
 		final MarketInfo exportMarketInfo = marketplaceManager.updateMarketInfo(route.getExportWaypoint());
 		final int totalCredits = accountManager.getCredits();
+
 		final List<TradeRequest> purchaseRequests = exportMarketInfo.buildPurchaseRequest(route.getGoods(),
 				ship.getRemainingCargo(), totalCredits, route.isKnown());
 
@@ -194,8 +195,8 @@ public class TradeShipManager {
 		final TradeRoute route = job.getRoute();
 
 		final List<String> productsToSell = route.getGoods().stream().map(Product::getSymbol).toList();
-		final List<CargoItem> cargoToSell = ship.getCargo().inventory().stream()
-				.filter(c -> productsToSell.contains(c.symbol())).toList();
+		final List<CargoItem> cargoToSell = ship.getCargo().getInventory().stream()
+				.filter(c -> productsToSell.contains(c.getSymbol())).toList();
 
 		final Integer sellPrice = marketplaceRequester.dockAndSellItems(ship, route.getImportWaypoint(), cargoToSell);
 		job.modifyProfit(sellPrice);

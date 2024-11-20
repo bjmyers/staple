@@ -20,7 +20,7 @@
             {
                 "symbol": "IRON",
                 "tradeVolume": 45,
-                "purchasePrice": 1200,
+                "purchasePrice": 700,
                 "sellPrice": 800
             },
             {
@@ -132,7 +132,7 @@
             {
                 "symbol": "IRON",
                 "tradeVolume": 45,
-                "purchasePrice": 800,
+                "purchasePrice": 1400,
                 "sellPrice": 1500
             },
             {

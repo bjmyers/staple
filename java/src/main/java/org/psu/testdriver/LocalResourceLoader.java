@@ -23,14 +23,30 @@ public class LocalResourceLoader {
 	 * @return A List of <T>'s loaded from the resource file, null if an error occurs
 	 */
 	public static <T> List<T> loadResourceList(final String fileName, final Class<? extends T> resourceClass) {
+		final ObjectMapper mapper = new ObjectMapper();
+		final JavaType type = mapper.getTypeFactory().constructCollectionLikeType(List.class, resourceClass);
+		return load(fileName, type);
+	}
 
+	/**
+	 * @param <T> The type of object to return
+	 * @param fileName The file name to load from
+	 * @param resourceClass The {@link Class} of data to return
+	 * @return A <T> object loaded from the resource file, null if an error occurs
+	 */
+	public static <T> T loadResource(final String fileName, final Class<? extends T> resourceClass) {
+		final ObjectMapper mapper = new ObjectMapper();
+		final JavaType type = mapper.getTypeFactory().constructType(resourceClass);
+		return load(fileName, type);
+	}
+
+	private static <T> T load(final String fileName, final JavaType type) {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule());
 
 		try (final InputStream is = LocalResourceLoader.class.getResourceAsStream(fileName)) {
-			final JavaType listType = mapper.getTypeFactory().constructCollectionLikeType(List.class, resourceClass);
 			try {
-				return mapper.readValue(is, listType);
+				return mapper.readValue(is, type);
 			} catch (Exception e) {
 				log.error(e);
 			}
