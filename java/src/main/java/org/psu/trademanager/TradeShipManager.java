@@ -117,7 +117,7 @@ public class TradeShipManager {
 			final Waypoint destination = job.getWaypoints().peek();
 
 			log.infof("Ship %s traveling to waypoint %s", ship.getSymbol(), destination.getSymbol());
-			final Instant exportArrival = navigationHelper.navigate(ship, job.getRoute().getExportWaypoint());
+			final Instant exportArrival = navigationHelper.navigate(ship, destination);
 			job.setNextAction(exportArrival);
 			job.getWaypoints().remove();
 			job.setState(State.TRAVELING);
