@@ -1,7 +1,13 @@
 [
     {
         "symbol": "X1-A1-A0",
-        "imports": [],
+        "imports": [
+            {
+                "symbol": "GOLD",
+                "name": "Gold",
+                "description": "A rare and valuable metal that is shiny!"
+            }
+        ],
         "exports": [
             {
                 "symbol": "IRON",
@@ -17,6 +23,12 @@
             }
         ],
         "tradeGoods": [
+            {
+                "symbol": "GOLD",
+                "tradeVolume": 20,
+                "purchasePrice": 250,
+                "sellPrice": 300
+            },
             {
                 "symbol": "IRON",
                 "tradeVolume": 45,
