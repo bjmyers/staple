@@ -8,11 +8,6 @@
         "orbitals": [],
         "traits": [
             {
-                "symbol": "MINERAL_DEPOSITS",
-                "name": "Mineral Deposits",
-                "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
-            },
-            {
                 "symbol": "MARKETPLACE",
                 "name": "Marketplace",
                 "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
@@ -36,11 +31,6 @@
         "y": 0,
         "orbitals": [],
         "traits": [
-            {
-                "symbol": "MINERAL_DEPOSITS",
-                "name": "Mineral Deposits",
-                "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
-            },
             {
                 "symbol": "MARKETPLACE",
                 "name": "Marketplace",
@@ -66,11 +56,6 @@
         "orbitals": [],
         "traits": [
             {
-                "symbol": "MINERAL_DEPOSITS",
-                "name": "Mineral Deposits",
-                "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
-            },
-            {
                 "symbol": "MARKETPLACE",
                 "name": "Marketplace",
                 "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
@@ -95,11 +80,6 @@
         "orbitals": [],
         "traits": [
             {
-                "symbol": "MINERAL_DEPOSITS",
-                "name": "Mineral Deposits",
-                "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
-            },
-            {
                 "symbol": "MARKETPLACE",
                 "name": "Marketplace",
                 "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
@@ -123,11 +103,6 @@
         "y": 0,
         "orbitals": [],
         "traits": [
-            {
-                "symbol": "MINERAL_DEPOSITS",
-                "name": "Mineral Deposits",
-                "description": "Abundant mineral resources, attracting mining operations and providing valuable materials such as silicon crystals and quartz sand for various industries."
-            },
             {
                 "symbol": "MARKETPLACE",
                 "name": "Marketplace",

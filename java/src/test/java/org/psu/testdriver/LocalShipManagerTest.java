@@ -22,11 +22,11 @@ public class LocalShipManagerTest {
 		final LocalShipManager shipManager = new LocalShipManager();
 
 		final List<Ship> ships = shipManager.getShips();
-		assertEquals(1, ships.size());
+		assertEquals(2, ships.size());
 
 		// Do it again for lazy loading
 		final List<Ship> ships2 = shipManager.getShips();
-		assertEquals(1, ships2.size());
+		assertEquals(2, ships2.size());
 	}
 
 	/**
