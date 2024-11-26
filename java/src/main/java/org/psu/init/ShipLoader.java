@@ -11,6 +11,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.psu.miningmanager.MiningShipManager;
 import org.psu.miningmanager.MiningSiteManager;
 import org.psu.navigation.RefuelPathCalculator;
+import org.psu.probemanager.ShipyardManager;
 import org.psu.shiporchestrator.ShipJob;
 import org.psu.shiporchestrator.ShipJobQueue;
 import org.psu.shiporchestrator.ShipRoleManager;
@@ -49,6 +50,7 @@ public class ShipLoader {
 	private final TradeShipManager tradeShipManager;
 	private final MarketplaceManager marketplaceManager;
 	private final MiningSiteManager miningSiteManager;
+	private final ShipyardManager shipyardManager;
 	private final RefuelPathCalculator refuelPathCalculator;
 	private final ShipJobQueue jobQueue;
 	private final WebsocketReporter websocketReporter;
@@ -59,6 +61,7 @@ public class ShipLoader {
 			final SystemBuilder systemBuilder, final ShipRoleManager shipRoleManager,
 			final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager,
 			final MarketplaceManager marketplaceManager, final MiningSiteManager miningSiteManager,
+			final ShipyardManager shipyardManager,
 			final ShipJobQueue jobQueue, final RefuelPathCalculator refuelPathCalculator,
 			final WebsocketReporter websocketReporter) {
 		this.limit = limit;
@@ -70,6 +73,7 @@ public class ShipLoader {
 		this.tradeShipManager = tradeShipManager;
 		this.marketplaceManager = marketplaceManager;
 		this.miningSiteManager = miningSiteManager;
+		this.shipyardManager = shipyardManager;
 		this.jobQueue = jobQueue;
 		this.refuelPathCalculator = refuelPathCalculator;
 		this.websocketReporter = websocketReporter;
@@ -109,6 +113,8 @@ public class ShipLoader {
     	final Map<Waypoint, MarketInfo> marketInfo = systemBuilder.gatherMarketInfo(systemWaypoints);
     	marketplaceManager.updateMarketData(marketInfo);
     	log.infof("Found Market Info for %s marketplaces", marketInfo.size());
+
+    	shipyardManager.loadData(systemWaypoints);
 
     	final List<Waypoint> waypointsWhichTradeFuel = marketInfo.entrySet().stream()
     			.filter(e -> e.getValue().sellsProduct(Product.FUEL)).map(Entry::getKey).toList();

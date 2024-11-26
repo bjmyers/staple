@@ -5,6 +5,7 @@ import org.psu.testdriver.client.LocalAgentClient;
 import org.psu.testdriver.client.LocalMarketplaceClient;
 import org.psu.testdriver.client.LocalNavigationClient;
 import org.psu.testdriver.client.LocalShipsClient;
+import org.psu.testdriver.client.LocalShipyardClient;
 import org.psu.testdriver.client.LocalSurveyClient;
 import org.psu.testdriver.client.LocalWaypointsClient;
 
@@ -39,6 +40,11 @@ public class ClientProducer {
 	private LocalShipsClient localShipsClient;
 
 	@RestClient
+	private ShipyardClient shipyardClient;
+	@Inject
+	private LocalShipyardClient localShipyardClient;
+
+	@RestClient
 	private SurveyClient surveyClient;
 	@Inject
 	private LocalSurveyClient localSurveyClient;
@@ -62,6 +68,10 @@ public class ClientProducer {
 
 	public ShipsClient produceShipsClient() {
 		return ConfigUtils.getProfiles().contains("test-driver") ? localShipsClient : shipsClient;
+	}
+
+	public ShipyardClient produceShipyardClient() {
+		return ConfigUtils.getProfiles().contains("test-driver") ? localShipyardClient : shipyardClient;
 	}
 
 	public SurveyClient produceSurveyClient() {
