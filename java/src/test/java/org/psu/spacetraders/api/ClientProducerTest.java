@@ -11,6 +11,7 @@ import org.psu.testdriver.client.LocalAgentClient;
 import org.psu.testdriver.client.LocalMarketplaceClient;
 import org.psu.testdriver.client.LocalNavigationClient;
 import org.psu.testdriver.client.LocalShipsClient;
+import org.psu.testdriver.client.LocalShipyardClient;
 import org.psu.testdriver.client.LocalSurveyClient;
 import org.psu.testdriver.client.LocalWaypointsClient;
 
@@ -46,6 +47,11 @@ public class ClientProducerTest {
 	private LocalSurveyClient localSurveyClient;
 
 	@Mock
+	private ShipyardClient shipyardClient;
+	@Mock
+	private LocalShipyardClient localShipyardClient;
+
+	@Mock
 	private WaypointsClient waypointsClient;
 	@Mock
 	private LocalWaypointsClient localWaypointsClient;
@@ -60,6 +66,7 @@ public class ClientProducerTest {
 		assertEquals(marketplaceClient, clientProducer.produceMarketplaceClient());
 		assertEquals(navigationClient, clientProducer.produceNavigationClient());
 		assertEquals(shipsClient, clientProducer.produceShipsClient());
+		assertEquals(shipyardClient, clientProducer.produceShipyardClient());
 		assertEquals(surveyClient, clientProducer.produceSurveyClient());
 		assertEquals(waypointsClient, clientProducer.produceWaypointsClient());
 	}

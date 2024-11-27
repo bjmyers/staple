@@ -18,6 +18,9 @@ import lombok.extern.jbosslog.JBossLog;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Trait {
 
+	public static Trait MARKETPLACE = new Trait(Type.MARKETPLACE);
+	public static Trait SHIPYARD = new Trait(Type.SHIPYARD);
+
 	private Type symbol;
 
 	/**
