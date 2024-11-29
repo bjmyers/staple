@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.psu.miningmanager.MiningShipManager;
 import org.psu.miningmanager.dto.MiningShipJob;
+import org.psu.shippurchase.ShipPurchaseJob;
+import org.psu.shippurchase.ShipPurchaseManager;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
 
@@ -27,7 +29,7 @@ public class ShipJobQueueTest {
 	@Test
 	public void emptyQueue() {
 
-		final ShipJobQueue queue = new ShipJobQueue(null, null);
+		final ShipJobQueue queue = new ShipJobQueue(null, null, null);
 
 		assertThrows(IllegalStateException.class, () -> queue.beginJobQueue());
 	}
@@ -39,30 +41,37 @@ public class ShipJobQueueTest {
 	@Timeout(value = 5, unit = TimeUnit.SECONDS)
 	public void beginJobQueueReady() {
 
-		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
-		final MiningShipManager miningShipManager = mock(MiningShipManager.class);
-		final ShipJobQueue queue = new ShipJobQueue(miningShipManager, tradeShipManager);
+		final TradeShipManager tradeShipManager = mock();
+		final MiningShipManager miningShipManager = mock();
+		final ShipPurchaseManager shipPurchaseManager = mock();
+		final ShipJobQueue queue = new ShipJobQueue(miningShipManager, tradeShipManager, shipPurchaseManager);
 
-		final TradeShipJob tradeJob = mock(TradeShipJob.class);
+		final TradeShipJob tradeJob = mock();
 		when(tradeJob.getNextAction()).thenReturn(Instant.now());
-		final MiningShipJob miningJob = mock(MiningShipJob.class);
+		final MiningShipJob miningJob = mock();
 		when(miningJob.getNextAction()).thenReturn(Instant.now());
-		final ShipJob otherShipJob = mock(ShipJob.class);
+		final ShipPurchaseJob purchaseJob = mock();
+		when(purchaseJob.getNextAction()).thenReturn(Instant.now());
+		final ShipJob otherShipJob = mock();
 		when(otherShipJob.getNextAction()).thenReturn(Instant.now());
 
 		final Instant oneSecondFromNow = Instant.now().plus(Duration.ofSeconds(1));
-		final TradeShipJob laterTradeJob = mock(TradeShipJob.class);
+		final TradeShipJob laterTradeJob = mock();
 		when(laterTradeJob.getNextAction()).thenReturn(oneSecondFromNow);
-		final MiningShipJob laterMiningJob = mock(MiningShipJob.class);
+		final MiningShipJob laterMiningJob = mock();
 		when(laterMiningJob.getNextAction()).thenReturn(oneSecondFromNow);
+		final ShipPurchaseJob laterPurchaseJob = mock();
+		when(laterPurchaseJob.getNextAction()).thenReturn(oneSecondFromNow);
 
 		// IMPORTANT: Throw an exception on the second iteration to stop us from running
 		// forever
 		when(tradeShipManager.manageTradeShip(tradeJob)).thenReturn(laterTradeJob).thenThrow(RuntimeException.class);
 		when(miningShipManager.manageMiningShip(miningJob)).thenReturn(laterMiningJob)
 				.thenThrow(RuntimeException.class);
+		when(shipPurchaseManager.manageShipPurchase(purchaseJob)).thenReturn(laterPurchaseJob)
+				.thenThrow(RuntimeException.class);
 
-		queue.establishJobs(List.of(tradeJob, miningJob, otherShipJob));
+		queue.establishJobs(List.of(tradeJob, miningJob, purchaseJob, otherShipJob));
 		// By asserting it throws, we ensure that it was called twice
 		assertThrows(RuntimeException.class, () -> queue.beginJobQueue());
 	}
@@ -74,8 +83,10 @@ public class ShipJobQueueTest {
 	@Timeout(value = 5, unit = TimeUnit.SECONDS)
 	public void beginJobQueueWait() {
 
-		final TradeShipManager tradeShipManager = mock(TradeShipManager.class);
-		final ShipJobQueue queue = new ShipJobQueue(null, tradeShipManager);
+		final TradeShipManager tradeShipManager = mock();
+		final MiningShipManager miningShipManager = mock();
+		final ShipPurchaseManager shipPurchaseManager = mock();
+		final ShipJobQueue queue = new ShipJobQueue(miningShipManager, tradeShipManager, shipPurchaseManager);
 
 		final TradeShipJob job = mock(TradeShipJob.class);
 		// Give it enough time that it will have to wait
