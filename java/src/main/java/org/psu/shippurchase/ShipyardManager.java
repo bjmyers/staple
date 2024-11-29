@@ -1,12 +1,16 @@
-package org.psu.probemanager;
+package org.psu.shippurchase;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.psu.spacetraders.api.AccountManager;
 import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipyardClient;
+import org.psu.spacetraders.dto.ShipPurchaseRequest;
+import org.psu.spacetraders.dto.ShipPurchaseResponse;
 import org.psu.spacetraders.dto.ShipType;
 import org.psu.spacetraders.dto.ShipyardResponse;
 import org.psu.spacetraders.dto.ShipyardResponse.ShipTypeContainer;
@@ -26,13 +30,16 @@ public class ShipyardManager {
 
 	private ShipyardClient shipyardClient;
 	private RequestThrottler requestThrottler;
+	private AccountManager accountManager;
 
 	private Map<Waypoint, List<ShipType>> shipsByShipyard;
 
 	@Inject
-	public ShipyardManager(final ClientProducer clientProducer, final RequestThrottler requestThrottler) {
+	public ShipyardManager(final ClientProducer clientProducer, final RequestThrottler requestThrottler,
+			final AccountManager accountManager) {
 		this.shipyardClient = clientProducer.produceShipyardClient();
 		this.requestThrottler = requestThrottler;
+		this.accountManager = accountManager;
 		this.shipsByShipyard = null;
 	}
 
@@ -54,5 +61,17 @@ public class ShipyardManager {
 		log.infof("Loaded Shipyard Data for %s shipyards", this.shipsByShipyard.size());
 	}
 
+	public List<Waypoint> getShipyardsWhichSell(final ShipType shipType) {
+		return this.shipsByShipyard.entrySet().stream().filter(e -> e.getValue().contains(shipType)).map(Entry::getKey)
+				.toList();
+	}
+
+	public ShipPurchaseResponse purchaseShip(final ShipPurchaseRequest purchaseRequest) {
+		final ShipPurchaseResponse response = this.requestThrottler
+				.throttle(() -> shipyardClient.purchaseShip(purchaseRequest)).getData();
+		accountManager.updateAgent(response.getAgent());
+		log.infof("Purchased Ship %s", response.getShip().getSymbol());
+		return response;
+	}
 
 }

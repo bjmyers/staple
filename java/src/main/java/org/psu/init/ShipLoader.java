@@ -4,17 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.psu.miningmanager.MiningShipManager;
 import org.psu.miningmanager.MiningSiteManager;
 import org.psu.navigation.RefuelPathCalculator;
-import org.psu.probemanager.ShipyardManager;
 import org.psu.shiporchestrator.ShipJob;
 import org.psu.shiporchestrator.ShipJobQueue;
-import org.psu.shiporchestrator.ShipRoleManager;
+import org.psu.shippurchase.ShipyardManager;
 import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.RequestThrottler;
 import org.psu.spacetraders.api.ShipsClient;
@@ -27,7 +26,6 @@ import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipNavigation;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.trademanager.MarketplaceManager;
-import org.psu.trademanager.TradeShipManager;
 import org.psu.websocket.WebsocketReporter;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -45,9 +43,7 @@ public class ShipLoader {
 	private final ShipsClient shipsClient;
 	private final RequestThrottler throttler;
 	private final SystemBuilder systemBuilder;
-	private final ShipRoleManager shipRoleManager;
-	private final MiningShipManager miningShipManager;
-	private final TradeShipManager tradeShipManager;
+	private final ShipJobCreator shipJobCreator;
 	private final MarketplaceManager marketplaceManager;
 	private final MiningSiteManager miningSiteManager;
 	private final ShipyardManager shipyardManager;
@@ -57,20 +53,16 @@ public class ShipLoader {
 
 	@Inject
 	public ShipLoader(@ConfigProperty(name = "app.max-items-per-page") final int limit,
-			final ClientProducer clientProducer, final RequestThrottler throttler,
-			final SystemBuilder systemBuilder, final ShipRoleManager shipRoleManager,
-			final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager,
-			final MarketplaceManager marketplaceManager, final MiningSiteManager miningSiteManager,
-			final ShipyardManager shipyardManager,
+			final ClientProducer clientProducer, final RequestThrottler throttler, final SystemBuilder systemBuilder,
+			final ShipJobCreator shipJobCreator, final MarketplaceManager marketplaceManager,
+			final MiningSiteManager miningSiteManager, final ShipyardManager shipyardManager,
 			final ShipJobQueue jobQueue, final RefuelPathCalculator refuelPathCalculator,
 			final WebsocketReporter websocketReporter) {
 		this.limit = limit;
 		this.shipsClient = clientProducer.produceShipsClient();
 		this.throttler = throttler;
 		this.systemBuilder = systemBuilder;
-		this.shipRoleManager = shipRoleManager;
-		this.miningShipManager = miningShipManager;
-		this.tradeShipManager = tradeShipManager;
+		this.shipJobCreator = shipJobCreator;
 		this.marketplaceManager = marketplaceManager;
 		this.miningSiteManager = miningSiteManager;
 		this.shipyardManager = shipyardManager;
@@ -86,8 +78,6 @@ public class ShipLoader {
     	log.info("Initializing the Ships");
 
 		final List<Ship> ships = gatherShips();
-
-		ships.forEach(s -> log.infof("Found ship %s with type %s", s.getSymbol(), shipRoleManager.determineRole(s)));
 
 		final Map<String, Long> shipCountBySystem = ships.stream().map(Ship::getNav)
 				.collect(Collectors.groupingBy(ShipNavigation::getSystemSymbol, Collectors.counting()));
@@ -120,19 +110,7 @@ public class ShipLoader {
     			.filter(e -> e.getValue().sellsProduct(Product.FUEL)).map(Entry::getKey).toList();
     	refuelPathCalculator.loadRefuelWaypoints(waypointsWhichTradeFuel);
 
-		final List<ShipJob> jobs = new ArrayList<>();
-		for (final Ship ship : ships) {
-			switch (shipRoleManager.determineRole(ship)) {
-			case MINING:
-				jobs.add(miningShipManager.createJob(ship));
-				break;
-			case TRADE:
-				jobs.add(tradeShipManager.createJob(ship));
-				break;
-			case PROBE:
-				break;
-			}
-		}
+		final List<ShipJob> jobs = ships.stream().map(shipJobCreator::createShipJob).filter(Objects::nonNull).toList();
 
 		jobQueue.establishJobs(jobs);
 		jobQueue.beginJobQueue();

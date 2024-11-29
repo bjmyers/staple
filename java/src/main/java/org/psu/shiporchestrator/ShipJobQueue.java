@@ -8,6 +8,8 @@ import java.util.TreeMap;
 
 import org.psu.miningmanager.MiningShipManager;
 import org.psu.miningmanager.dto.MiningShipJob;
+import org.psu.shippurchase.ShipPurchaseJob;
+import org.psu.shippurchase.ShipPurchaseManager;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
 
@@ -24,13 +26,16 @@ public class ShipJobQueue {
 
 	private MiningShipManager miningShipManager;
 	private TradeShipManager tradeShipManager;
+	private ShipPurchaseManager shipPurchaseManager;
 
 	final TreeMap<Instant, ShipJob> queue;
 
 	@Inject
-	public ShipJobQueue(final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager) {
+	public ShipJobQueue(final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager,
+			final ShipPurchaseManager shipPurchaseManager) {
 		this.miningShipManager = miningShipManager;
 		this.tradeShipManager = tradeShipManager;
+		this.shipPurchaseManager = shipPurchaseManager;
 		this.queue = new TreeMap<>();
 	}
 
@@ -67,6 +72,9 @@ public class ShipJobQueue {
 			}
 			else if (jobToPerform.getValue() instanceof MiningShipJob miningJob) {
 				nextJob = miningShipManager.manageMiningShip(miningJob);
+			}
+			else if (jobToPerform.getValue() instanceof ShipPurchaseJob purchaseJob) {
+				nextJob = shipPurchaseManager.manageShipPurchase(purchaseJob);
 			}
 			else {
 				log.warnf("Unknown job type, %s", jobToPerform.getValue());
