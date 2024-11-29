@@ -11,6 +11,11 @@
                 "symbol": "MARKETPLACE",
                 "name": "Marketplace",
                 "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
+            },
+            {
+                "symbol": "SHIPYARD",
+                "name": "Shipyard",
+                "description": "Where you can buy ships"
             }
         ],
         "modifiers": [],
