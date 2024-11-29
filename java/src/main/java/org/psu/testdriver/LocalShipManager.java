@@ -26,24 +26,26 @@ public class LocalShipManager {
 	}
 
 	public List<Ship> getShips() {
-		if (this.shipsById == null) {
-			loadShips();
-		}
+		loadShips();
 		return this.shipsById.values().stream().toList();
 	}
 
 	public Ship getShip(final String id) {
-		if (this.shipsById == null) {
-			loadShips();
-		}
+		loadShips();
 		return this.shipsById.get(id);
 	}
 
-	private void loadShips() {
-		this.shipsById = LocalResourceLoader.loadResourceList("/testDriverData/ships.json", Ship.class).stream()
-				.collect(Collectors.toMap(s -> s.getSymbol(), Function.identity()));
+	public void addShip(final Ship ship) {
+		loadShips();
+		this.shipsById.put(ship.getSymbol(), ship);
+	}
 
-		log.infof("Local Ship Manager loaded %s ships", this.shipsById.size());
+	private void loadShips() {
+		if (this.shipsById == null) {
+			this.shipsById = LocalResourceLoader.loadResourceList("/testDriverData/ships.json", Ship.class).stream()
+					.collect(Collectors.toMap(s -> s.getSymbol(), Function.identity()));
+			log.infof("Local Ship Manager loaded %s ships", this.shipsById.size());
+		}
 	}
 
 }

@@ -3,6 +3,9 @@ package org.psu.testdriver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -41,6 +44,25 @@ public class LocalShipManagerTest {
 
 		final Ship ship2 = shipManager.getShip("Some other ship");
 		assertNull(ship2);
+	}
+
+	/**
+	 * Tests addShip
+	 */
+	@Test
+	public void addShip() {
+
+		final LocalShipManager shipManager = new LocalShipManager();
+
+		final String shipId = "new ship";
+		final Ship ship = mock();
+		when(ship.getSymbol()).thenReturn(shipId);
+
+		shipManager.addShip(ship);
+
+		final List<Ship> ships = shipManager.getShips();
+		assertEquals(3, ships.size());
+		assertTrue(ships.contains(ship));
 	}
 
 }
