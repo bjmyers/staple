@@ -15,10 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.psu.init.ShipJobCreator;
 import org.psu.navigation.NavigationPath;
 import org.psu.navigation.RefuelPathCalculator;
-import org.psu.shiporchestrator.ShipJob;
+import org.psu.shippurchase.ShipPurchaseManager.ShipPurchaseManagerResponse;
 import org.psu.spacetraders.api.MarketplaceRequester;
 import org.psu.spacetraders.api.NavigationHelper;
 import org.psu.spacetraders.dto.Ship;
@@ -46,9 +45,6 @@ public class ShipPurchaseManagerTest {
 
 	@Mock
 	private MarketplaceRequester marketplaceRequester;
-
-	@Mock
-	private ShipJobCreator shipJobCreator;
 
 	@InjectMocks
 	private ShipPurchaseManager shipPurchaseManager;
@@ -126,18 +122,15 @@ public class ShipPurchaseManagerTest {
 		final ShipPurchaseResponse response = mock();
 		when(response.getShip()).thenReturn(newShip);
 
-		final ShipJob newJob = mock();
-
-		when(shipJobCreator.createShipJob(newShip)).thenReturn(newJob);
-
 		final ShipPurchaseRequest expectedPurchaseRequest = new ShipPurchaseRequest(shipType, shipyardId);
 		when(shipyardManager.purchaseShip(expectedPurchaseRequest)).thenReturn(response);
 
 		final ShipPurchaseJob job = new ShipPurchaseJob(ship, path, shipyard, shipType, Instant.now());
 
-		final ShipJob nextJob = shipPurchaseManager.manageShipPurchase(job);
+		final ShipPurchaseManagerResponse managerResponse = shipPurchaseManager.manageShipPurchase(job);
 
-		assertEquals(newJob, nextJob);
+		assertEquals(newShip, managerResponse.newShip());
+		assertNull(managerResponse.nextJob());
 
 		verify(navigationHelper).dock(ship);
 	}
@@ -164,18 +157,15 @@ public class ShipPurchaseManagerTest {
 		final ShipPurchaseResponse response = mock();
 		when(response.getShip()).thenReturn(newShip);
 
-		final ShipJob newJob = mock();
-
-		when(shipJobCreator.createShipJob(newShip)).thenReturn(newJob);
-
 		final ShipPurchaseRequest expectedPurchaseRequest = new ShipPurchaseRequest(shipType, shipyardId);
 		when(shipyardManager.purchaseShip(expectedPurchaseRequest)).thenReturn(response);
 
 		final ShipPurchaseJob job = new ShipPurchaseJob(ship, path, shipyard, shipType, Instant.now());
 
-		final ShipJob nextJob = shipPurchaseManager.manageShipPurchase(job);
+		final ShipPurchaseManagerResponse managerResponse = shipPurchaseManager.manageShipPurchase(job);
 
-		assertEquals(newJob, nextJob);
+		assertEquals(newShip, managerResponse.newShip());
+		assertNull(managerResponse.nextJob());
 
 		verify(navigationHelper).dock(ship);
 	}
@@ -203,9 +193,10 @@ public class ShipPurchaseManagerTest {
 
 		final ShipPurchaseJob job = new ShipPurchaseJob(ship, path, shipyard, shipType, Instant.now());
 
-		final ShipJob nextJob = shipPurchaseManager.manageShipPurchase(job);
+		final ShipPurchaseManagerResponse managerResponse = shipPurchaseManager.manageShipPurchase(job);
 
-		assertEquals(nextAction, nextJob.getNextAction());
+		assertNull(managerResponse.newShip());
+		assertEquals(nextAction, managerResponse.nextJob().getNextAction());
 		verify(marketplaceRequester).refuel(ship);
 	}
 

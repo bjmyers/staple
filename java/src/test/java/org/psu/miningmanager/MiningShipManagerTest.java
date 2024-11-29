@@ -648,7 +648,7 @@ public class MiningShipManagerTest {
 		final MiningShipJob nextJob = manager.manageMiningShip(job);
 
 		verify(marketRequester).dockAndSellItems(ship, extractionSite, cargoItems);
-		assertEquals(State.NOT_STARTED, nextJob.getState());
+		assertNull(nextJob);
 	}
 
 }

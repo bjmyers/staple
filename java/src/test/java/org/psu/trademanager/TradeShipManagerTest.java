@@ -1,6 +1,7 @@
 package org.psu.trademanager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -270,13 +271,6 @@ public class TradeShipManagerTest {
 		final MarketInfo marketInfo = mock(MarketInfo.class);
 		when(marketManager.updateMarketInfo(importWaypoint)).thenReturn(marketInfo);
 
-		final TradeRoute newTradeRoute = mock();
-		final Waypoint way = mock();
-		final Queue<Waypoint> ways = new LinkedList<>();
-		ways.add(way);
-		final RouteResponse routeResponse = new RouteResponse(newTradeRoute, ways);
-		when(routeManager.getBestRoute(ship)).thenReturn(routeResponse);
-
 		final TradeShipJob job = new TradeShipJob(ship, tradeRoute, new LinkedList<>());
 		job.setState(State.TRAVELING);
 
@@ -285,9 +279,7 @@ public class TradeShipManagerTest {
 		final TradeShipJob outputJob = manager.manageTradeShip(job);
 
 		verify(marketRequester).dockAndSellItems(ship, importWaypoint, List.of(cargoItem));
-		assertEquals(State.NOT_STARTED, outputJob.getState());
-		assertEquals(ship, outputJob.getShip());
-		assertEquals(newTradeRoute, outputJob.getRoute());
+		assertNull(outputJob);
 	}
 
 }
