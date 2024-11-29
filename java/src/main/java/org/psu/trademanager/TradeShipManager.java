@@ -135,8 +135,8 @@ public class TradeShipManager {
 			if (ship.getNav().getWaypointSymbol().equals(job.getRoute().getImportWaypoint().getSymbol())) {
 				// We're currently at the import waypoint
 				sellGoods(job);
-				// Make a whole new job and return it
-				return createJob(ship);
+				// We've finished the job, now return null for the queue to determine what to do next
+				return null;
 			}
 
 			// So long as we're not at the import waypoint, there is at least one more waypoint to travel to

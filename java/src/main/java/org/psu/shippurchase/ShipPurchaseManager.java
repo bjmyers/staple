@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.psu.init.ShipJobCreator;
 import org.psu.navigation.NavigationPath;
 import org.psu.navigation.RefuelPathCalculator;
 import org.psu.shiporchestrator.ShipJob;
@@ -42,9 +41,6 @@ public class ShipPurchaseManager {
 	@Inject
 	private MarketplaceRequester marketplaceRequester;
 
-	@Inject
-	private ShipJobCreator shipJobCreator;
-
 	public ShipPurchaseJob createShipPurchaseJob(final Ship ship, final ShipType shipType) {
 
 		final List<Waypoint> shipyardsWhichSellShip = shipyardManager.getShipyardsWhichSell(shipType);
@@ -64,7 +60,16 @@ public class ShipPurchaseManager {
 		return new ShipPurchaseJob(ship, path, path.getLast(), shipType, nextAction);
 	}
 
-	public ShipJob manageShipPurchase(final ShipPurchaseJob job) {
+	/**
+	 * @param job The ShipPurchaseJob to progress
+	 * @return a ShipPurchaseManagerResponse, only one of the two fields will be
+	 *         non-null. If the newShip field is null, then the purchase job has not
+	 *         yet been completed and must be sent back to the manager. If the
+	 *         nextJob field is null, then the purchase job has been completed, and
+	 *         a job can be created for the new ship, and the ship which was
+	 *         performing the purchase is free to be assigned a new job
+	 */
+	public ShipPurchaseManagerResponse manageShipPurchase(final ShipPurchaseJob job) {
 
 		if (job.getPathToShipyard().isEmpty()
 				|| job.getShip().getNav().getWaypointSymbol().equals(job.getShipyard().getSymbol())) {
@@ -75,7 +80,7 @@ public class ShipPurchaseManager {
 					job.getShipyard().getSymbol());
 
 			final ShipPurchaseResponse purchaseResponse = shipyardManager.purchaseShip(purchaseRequest);
-			return shipJobCreator.createShipJob(purchaseResponse.getShip());
+			return new ShipPurchaseManagerResponse(null, purchaseResponse.getShip());
 		}
 
 		final Waypoint nextWaypoint = job.getPathToShipyard().remove();
@@ -84,7 +89,14 @@ public class ShipPurchaseManager {
 		final Instant nextAction = navigationHelper.navigate(job.getShip(), nextWaypoint);
 		job.setNextAction(nextAction);
 
-		return job;
+		return new ShipPurchaseManagerResponse(job, null);
 	}
+
+	// TODO: I don't like how this manager needs this response object, making the
+	// job queue more event based would result in a cleaner architecture, currently
+	// we need to pass back too much information to the queue so that it can produce
+	// the correct jobs
+	public record ShipPurchaseManagerResponse(ShipJob nextJob, Ship newShip) {
+	};
 
 }

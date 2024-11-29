@@ -198,8 +198,8 @@ public class MiningShipManager {
 			if (ship.getNav().getWaypointSymbol().equals(job.getSellingPoint().getSymbol())) {
 				// We've reached the market
 				sellItems(job);
-				// Make a whole new job and return it
-				return createJob(job.getShip());
+				// We've finished the job, now return null for the queue to determine what to do next
+				return null;
 			}
 			// We need to keep traveling along the path
 			final Waypoint nextSellingPathPoint = job.getSellingPath().remove();

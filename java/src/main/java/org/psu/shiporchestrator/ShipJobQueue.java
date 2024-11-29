@@ -6,10 +6,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.psu.init.ShipJobCreator;
 import org.psu.miningmanager.MiningShipManager;
 import org.psu.miningmanager.dto.MiningShipJob;
 import org.psu.shippurchase.ShipPurchaseJob;
 import org.psu.shippurchase.ShipPurchaseManager;
+import org.psu.shippurchase.ShipPurchaseManager.ShipPurchaseManagerResponse;
+import org.psu.spacetraders.dto.Ship;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
 
@@ -27,15 +30,17 @@ public class ShipJobQueue {
 	private MiningShipManager miningShipManager;
 	private TradeShipManager tradeShipManager;
 	private ShipPurchaseManager shipPurchaseManager;
+	private ShipJobCreator shipJobCreator;
 
 	final TreeMap<Instant, ShipJob> queue;
 
 	@Inject
 	public ShipJobQueue(final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager,
-			final ShipPurchaseManager shipPurchaseManager) {
+			final ShipPurchaseManager shipPurchaseManager, final ShipJobCreator shipJobCreator) {
 		this.miningShipManager = miningShipManager;
 		this.tradeShipManager = tradeShipManager;
 		this.shipPurchaseManager = shipPurchaseManager;
+		this.shipJobCreator = shipJobCreator;
 		this.queue = new TreeMap<>();
 	}
 
@@ -66,6 +71,7 @@ public class ShipJobQueue {
 			}
 
 			final Entry<Instant, ShipJob> jobToPerform = this.queue.pollFirstEntry();
+			final Ship ship = jobToPerform.getValue().getShip();
 			ShipJob nextJob = null;
 			if (jobToPerform.getValue() instanceof TradeShipJob tradeJob) {
 				nextJob = tradeShipManager.manageTradeShip(tradeJob);
@@ -74,10 +80,24 @@ public class ShipJobQueue {
 				nextJob = miningShipManager.manageMiningShip(miningJob);
 			}
 			else if (jobToPerform.getValue() instanceof ShipPurchaseJob purchaseJob) {
-				nextJob = shipPurchaseManager.manageShipPurchase(purchaseJob);
+				final ShipPurchaseManagerResponse purchaseResponse = shipPurchaseManager.manageShipPurchase(purchaseJob);
+				if (purchaseResponse.nextJob() != null) {
+					// The purchase job has not yet been finished
+					nextJob = purchaseResponse.nextJob();
+				}
+				else {
+					// The purchase job has finished, keeping nextJob null will result in a new job
+					// for ship, but we still need to make an additional job for the new ship
+					final ShipJob jobForNewShip = shipJobCreator.createShipJob(purchaseResponse.newShip());
+					this.queue.put(jobForNewShip.getNextAction(), jobForNewShip);
+				}
 			}
 			else {
 				log.warnf("Unknown job type, %s", jobToPerform.getValue());
+			}
+			if (nextJob == null) {
+				// Job has finished, make a new one
+				nextJob = shipJobCreator.createShipJob(ship);
 			}
 			this.queue.put(nextJob.getNextAction(), nextJob);
 		}
