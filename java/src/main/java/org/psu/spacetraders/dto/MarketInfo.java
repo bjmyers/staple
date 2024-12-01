@@ -67,8 +67,6 @@ public class MarketInfo {
 			final int quantityToBuy = Math.min(requestCapacity, remainingBudget / tradeGood.getPurchasePrice());
 			output.add(new TradeRequest(tradeGood.getSymbol(), quantityToBuy));
 
-			System.out.println("quantity to buy: " + quantityToBuy);
-
 			remainingItemsToBuy -= quantityToBuy;
 			remainingBudget -= quantityToBuy * tradeGood.getPurchasePrice();
 			if (remainingItemsToBuy <= 0 || remainingBudget <= 0) {

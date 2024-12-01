@@ -18,6 +18,7 @@ import org.psu.shippurchase.ShipPurchaseJob;
 import org.psu.shippurchase.ShipPurchaseManager;
 import org.psu.shippurchase.ShipPurchaseManager.ShipPurchaseManagerResponse;
 import org.psu.spacetraders.dto.Ship;
+import org.psu.spacetraders.dto.ShipType;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
 
@@ -134,6 +135,7 @@ public class ShipJobQueueTest {
 		final Ship newShip = mock();
 		final MiningShipJob jobForNewShip = mock();
 		when(jobForNewShip.getNextAction()).thenReturn(Instant.now());
+		when(jobForNewShip.getShip()).thenReturn(newShip);
 		when(shipJobCreator.createShipJob(newShip)).thenReturn(jobForNewShip);
 
 		when(shipPurchaseManager.manageShipPurchase(purchaseJob)).thenReturn(new ShipPurchaseManagerResponse(null, newShip));
@@ -142,6 +144,43 @@ public class ShipJobQueueTest {
 		when(miningShipManager.manageMiningShip(jobForNewShip)).thenThrow(IllegalArgumentException.class);
 
 		queue.establishJobs(List.of(purchaseJob));
+		assertThrows(IllegalArgumentException.class, () -> queue.beginJobQueue());
+	}
+
+	/**
+	 * Tests the case where a purchase job must be newly created
+	 */
+	@Test
+	public void beginJobQueueStartPurchase() {
+
+		final TradeShipManager tradeShipManager = mock();
+		final MiningShipManager miningShipManager = mock();
+		final ShipPurchaseManager shipPurchaseManager = mock();
+		final ShipJobCreator shipJobCreator = mock();
+		final ShipJobQueue queue = new ShipJobQueue(miningShipManager, tradeShipManager, shipPurchaseManager,
+				shipJobCreator);
+
+		final Ship ship = mock();
+
+		// The original job
+		final TradeShipJob tradeJob = mock();
+		when(tradeJob.getShip()).thenReturn(ship);
+		when(tradeJob.getNextAction()).thenReturn(Instant.now());
+
+		// Time for a new job
+		when(tradeShipManager.manageTradeShip(tradeJob)).thenReturn(null);
+
+		// Ensures that the job queue will produce a new purchase job
+		queue.setShipTypeToBuy(ShipType.SHIP_EXPLORER);
+
+		final ShipPurchaseJob shipPurchaseJob = mock();
+		when(shipPurchaseJob.getNextAction()).thenReturn(Instant.now());
+		when(shipPurchaseManager.createShipPurchaseJob(ship, ShipType.SHIP_EXPLORER)).thenReturn(shipPurchaseJob);
+
+		// When this job gets back around to the purchase manager, throw an exception so we don't go on forever
+		when(shipPurchaseManager.manageShipPurchase(shipPurchaseJob)).thenThrow(IllegalArgumentException.class);
+
+		queue.establishJobs(List.of(tradeJob));
 		assertThrows(IllegalArgumentException.class, () -> queue.beginJobQueue());
 	}
 
