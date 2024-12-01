@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.psu.init.ShipJobCreator;
 import org.psu.miningmanager.MiningShipManager;
@@ -13,6 +14,7 @@ import org.psu.shippurchase.ShipPurchaseJob;
 import org.psu.shippurchase.ShipPurchaseManager;
 import org.psu.shippurchase.ShipPurchaseManager.ShipPurchaseManagerResponse;
 import org.psu.spacetraders.dto.Ship;
+import org.psu.spacetraders.dto.ShipType;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
 
@@ -33,6 +35,7 @@ public class ShipJobQueue {
 	private ShipJobCreator shipJobCreator;
 
 	final TreeMap<Instant, ShipJob> queue;
+	final AtomicReference<ShipType> shipTypeToBuy;
 
 	@Inject
 	public ShipJobQueue(final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager,
@@ -42,6 +45,17 @@ public class ShipJobQueue {
 		this.shipPurchaseManager = shipPurchaseManager;
 		this.shipJobCreator = shipJobCreator;
 		this.queue = new TreeMap<>();
+		this.shipTypeToBuy = new AtomicReference<ShipType>();
+	}
+
+	/**
+	 * Tells the job queue to create a {@link ShipPurchaseJob} the next time a ship
+	 * finishes a job
+	 *
+	 * @param type the type of ship to buy
+	 */
+	public void setShipTypeToBuy(final ShipType type) {
+		this.shipTypeToBuy.set(type);
 	}
 
 	/**
@@ -89,6 +103,7 @@ public class ShipJobQueue {
 					// The purchase job has finished, keeping nextJob null will result in a new job
 					// for ship, but we still need to make an additional job for the new ship
 					final ShipJob jobForNewShip = shipJobCreator.createShipJob(purchaseResponse.newShip());
+					log.infof("Created new job for ship %s", jobForNewShip.getShip().getSymbol());
 					this.queue.put(jobForNewShip.getNextAction(), jobForNewShip);
 				}
 			}
@@ -97,7 +112,14 @@ public class ShipJobQueue {
 			}
 			if (nextJob == null) {
 				// Job has finished, make a new one
-				nextJob = shipJobCreator.createShipJob(ship);
+				if (this.shipTypeToBuy.get() != null) {
+					nextJob = shipPurchaseManager.createShipPurchaseJob(ship, this.shipTypeToBuy.get());
+					log.infof("Created Job for ship %s to Purchase %s", ship.getSymbol(), this.shipTypeToBuy.get());
+					this.shipTypeToBuy.set(null);
+				}
+				else {
+					nextJob = shipJobCreator.createShipJob(ship);
+				}
 			}
 			this.queue.put(nextJob.getNextAction(), nextJob);
 		}

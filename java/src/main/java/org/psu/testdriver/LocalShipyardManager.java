@@ -24,9 +24,9 @@ public class LocalShipyardManager {
 	}
 
 	public Ship getShipOfType(final ShipType type) {
-		if (this.shipsByType == null) {
-			loadShips();
-		}
+		// Want to load every time so we're not returning the same reference multiple
+		// times
+		loadShips();
 		return this.shipsByType.get(type);
 	}
 

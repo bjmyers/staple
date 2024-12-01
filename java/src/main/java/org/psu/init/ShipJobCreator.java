@@ -33,7 +33,6 @@ public class ShipJobCreator {
 	 */
 	public ShipJob createShipJob(final Ship ship) {
 		final ShipRole shipRole = shipRoleManager.determineRole(ship);
-		log.infof("Found ship %s with type %s", ship.getSymbol(), shipRole);
 
 		switch (shipRole) {
 		case MINING:
