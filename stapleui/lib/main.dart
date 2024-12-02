@@ -6,7 +6,7 @@ import 'package:stapleui/ship/event_display_widget.dart';
 import 'package:stapleui/ship/event_state.dart';
 import 'package:stapleui/ship/ship_display_widget.dart';
 import 'package:stapleui/ship/ship_state.dart';
-import 'package:stapleui/ship/ship_type_select.dart';
+import 'package:stapleui/ship/ship_purchase_widget.dart';
 import 'package:stapleui/ship/ship_type_state.dart';
 import 'package:stapleui/websocket_listener.dart';
 import 'package:web_socket_channel/io.dart';
@@ -52,7 +52,7 @@ class MainApp extends StatelessWidget {
             ),
             const Row(
               children: [
-                ShipTypeSelectionWidget(),
+                ShipPurchaseWidget(),
               ],
             ),
             const Row(
