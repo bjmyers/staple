@@ -6,10 +6,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import org.psu.shippurchase.ShipyardManager;
 import org.psu.spacetraders.api.AccountManager;
 import org.psu.spacetraders.api.ClientProducer;
 import org.psu.spacetraders.api.RequestThrottler;
@@ -25,6 +26,7 @@ import org.psu.spacetraders.dto.ShipyardResponse.ShipTypeContainer;
 import org.psu.spacetraders.dto.Trait;
 import org.psu.spacetraders.dto.Waypoint;
 import org.psu.testutils.TestRequestThrottler;
+import org.psu.websocket.WebsocketReporter;
 
 /**
  * Tests for {@link ShipyardManager}
@@ -42,6 +44,7 @@ public class ShipyardManagerTest {
 		when(clientProducer.produceShipyardClient()).thenReturn(shipyardClient);
 		final RequestThrottler requestThrottler = TestRequestThrottler.get();
 		final AccountManager accountManager = mock();
+		final WebsocketReporter websocketReporter = mock();
 
 		final String systemSymbol = "system";
 		final String way1Id = "way1";
@@ -70,7 +73,8 @@ public class ShipyardManagerTest {
 				List.of(new ShipTypeContainer(ShipType.SHIP_INTERCEPTOR), new ShipTypeContainer(ShipType.SHIP_PROBE)));
 		when(shipyardClient.getShipyardData(systemSymbol, way3Id)).thenReturn(new DataWrapper<>(shipyardResponse3, null));
 
-		final ShipyardManager shipyardManager = new ShipyardManager(clientProducer, requestThrottler, accountManager);
+		final ShipyardManager shipyardManager = new ShipyardManager(clientProducer, requestThrottler, accountManager,
+				websocketReporter);
 
 		shipyardManager.loadData(List.of(way1, way2, way3));
 
@@ -82,6 +86,12 @@ public class ShipyardManagerTest {
 		final List<Waypoint> explorerWaypoints = shipyardManager.getShipyardsWhichSell(ShipType.SHIP_EXPLORER);
 		assertEquals(1, explorerWaypoints.size());
 		assertTrue(explorerWaypoints.contains(way1));
+
+		final Set<ShipType> expectedShipTypes = new HashSet<>();
+		expectedShipTypes.add(ShipType.SHIP_EXPLORER);
+		expectedShipTypes.add(ShipType.SHIP_PROBE);
+		expectedShipTypes.add(ShipType.SHIP_INTERCEPTOR);
+		verify(websocketReporter).addShipTypes(expectedShipTypes);
 	}
 
 	/**
@@ -95,6 +105,7 @@ public class ShipyardManagerTest {
 		when(clientProducer.produceShipyardClient()).thenReturn(shipyardClient);
 		final RequestThrottler requestThrottler = TestRequestThrottler.get();
 		final AccountManager accountManager = mock();
+		final WebsocketReporter websocketReporter = mock();
 
 		final ShipPurchaseRequest request = mock();
 		final Agent agent = mock();
@@ -103,7 +114,8 @@ public class ShipyardManagerTest {
 		when(response.getShip()).thenReturn(mock(Ship.class));
 		when(shipyardClient.purchaseShip(request)).thenReturn(new DataWrapper<>(response, null));
 
-		final ShipyardManager shipyardManager = new ShipyardManager(clientProducer, requestThrottler, accountManager);
+		final ShipyardManager shipyardManager = new ShipyardManager(clientProducer, requestThrottler, accountManager,
+				websocketReporter);
 
 		final ShipPurchaseResponse actualResponse = shipyardManager.purchaseShip(request);
 

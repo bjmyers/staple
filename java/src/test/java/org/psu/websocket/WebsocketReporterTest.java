@@ -16,10 +16,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.psu.shiporchestrator.ShipRole;
 import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.dto.Ship;
+import org.psu.spacetraders.dto.ShipType;
 import org.psu.websocket.dto.CreditMessage;
 import org.psu.websocket.dto.ShipEventMessage;
 import org.psu.websocket.dto.ShipMessage;
 import org.psu.websocket.dto.ShipMessage.ShipMessageData;
+import org.psu.websocket.dto.ShipTypeMessage;
 
 import jakarta.websocket.RemoteEndpoint.Async;
 import jakarta.websocket.Session;
@@ -161,6 +163,34 @@ public class WebsocketReporterTest {
 
 		verify(async1).sendObject(expectedShipMessage);
 		verify(async2).sendObject(expectedShipMessage);
+	}
+
+	/**
+	 * Tests the addShipTypes method
+	 */
+	@Test
+	public void addShipTypes() {
+
+		final Async async1 = mock(Async.class);
+		final Session session1 = mock(Session.class);
+		when(session1.getAsyncRemote()).thenReturn(async1);
+
+		final Async async2 = mock(Async.class);
+		final Session session2 = mock(Session.class);
+		when(session2.getAsyncRemote()).thenReturn(async2);
+
+		final List<ShipType> shipTypes = List.of(ShipType.SHIP_HEAVY_FREIGHTER, ShipType.SHIP_SIPHON_DRONE);
+
+		websocketReporter.onOpen(session1);
+		websocketReporter.onOpen(session2);
+
+		// Update the ships after we've established two connections
+		websocketReporter.addShipTypes(shipTypes);
+
+		final ShipTypeMessage expectedShipTypeMessage = new ShipTypeMessage(shipTypes);
+
+		verify(async1).sendObject(expectedShipTypeMessage);
+		verify(async2).sendObject(expectedShipTypeMessage);
 	}
 
 	/**

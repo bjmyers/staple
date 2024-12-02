@@ -1,12 +1,14 @@
 package org.psu.websocket;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.dto.Ship;
+import org.psu.spacetraders.dto.ShipType;
 import org.psu.websocket.dto.CreditMessage;
 import org.psu.websocket.dto.CreditMessageEncoder;
 import org.psu.websocket.dto.ShipEventMessage;
@@ -14,6 +16,7 @@ import org.psu.websocket.dto.ShipEventMessageEncoder;
 import org.psu.websocket.dto.ShipMessage;
 import org.psu.websocket.dto.ShipMessage.ShipMessageData;
 import org.psu.websocket.dto.ShipMessageEncoder;
+import org.psu.websocket.dto.ShipTypeMessage;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -36,6 +39,7 @@ public class WebsocketReporter {
 	private final Set<Session> sessions = new HashSet<>();
 	private int creditTotal = 0;
 	private List<Ship> ships = new ArrayList<>();
+	private Collection<ShipType> shipTypes = new ArrayList<>();
 
 	@OnOpen
     public void onOpen(Session session) {
@@ -77,6 +81,13 @@ public class WebsocketReporter {
 		}
     }
 
+    public void addShipTypes(final Collection<ShipType> shipTypes) {
+    	this.shipTypes = shipTypes;
+		for (Session session : this.sessions) {
+			sendShipTypeUpdate(session);
+		}
+    }
+
     private void sendCreditUpdate(final Session session) {
     	final CreditMessage creditMessage = new CreditMessage(this.creditTotal);
         session.getAsyncRemote().sendObject(creditMessage);
@@ -86,6 +97,11 @@ public class WebsocketReporter {
 		final ShipMessage shipMessage = new ShipMessage(
 				ships.stream().map(s -> new ShipMessageData(s.getSymbol(), shipRoleManager.determineRole(s))).toList());
 		session.getAsyncRemote().sendObject(shipMessage);
+    }
+
+    private void sendShipTypeUpdate(final Session session) {
+    	final ShipTypeMessage shipTypeMessage = new ShipTypeMessage(shipTypes);
+		session.getAsyncRemote().sendObject(shipTypeMessage);
     }
 
 }
