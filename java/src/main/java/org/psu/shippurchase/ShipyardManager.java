@@ -1,9 +1,12 @@
 package org.psu.shippurchase;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.psu.spacetraders.api.AccountManager;
 import org.psu.spacetraders.api.ClientProducer;
@@ -16,6 +19,7 @@ import org.psu.spacetraders.dto.ShipyardResponse;
 import org.psu.spacetraders.dto.ShipyardResponse.ShipTypeContainer;
 import org.psu.spacetraders.dto.Trait;
 import org.psu.spacetraders.dto.Waypoint;
+import org.psu.websocket.WebsocketReporter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -31,15 +35,17 @@ public class ShipyardManager {
 	private ShipyardClient shipyardClient;
 	private RequestThrottler requestThrottler;
 	private AccountManager accountManager;
+	private WebsocketReporter websocketReporter;
 
 	private Map<Waypoint, List<ShipType>> shipsByShipyard;
 
 	@Inject
 	public ShipyardManager(final ClientProducer clientProducer, final RequestThrottler requestThrottler,
-			final AccountManager accountManager) {
+			final AccountManager accountManager, final WebsocketReporter websocketReporter) {
 		this.shipyardClient = clientProducer.produceShipyardClient();
 		this.requestThrottler = requestThrottler;
 		this.accountManager = accountManager;
+		this.websocketReporter = websocketReporter;
 		this.shipsByShipyard = null;
 	}
 
@@ -57,6 +63,10 @@ public class ShipyardManager {
 			final List<ShipType> shipTypes = shipyardResponse.getShipTypes().stream().map(ShipTypeContainer::getType).toList();
 			this.shipsByShipyard.put(shipyard, shipTypes);
 		}
+
+		final Set<ShipType> allTypes = this.shipsByShipyard.values().stream().flatMap(Collection::stream)
+				.collect(Collectors.toSet());
+		websocketReporter.addShipTypes(allTypes);
 
 		log.infof("Loaded Shipyard Data for %s shipyards", this.shipsByShipyard.size());
 	}
