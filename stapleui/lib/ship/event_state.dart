@@ -10,14 +10,12 @@ class ShipEventState with ChangeNotifier {
   String _selectedShip = "";
 
   void addMessage(ShipEventMessage message) {
-    print("Received message ${message.shipId} : ${message.message}");
     _messagesByShip.putIfAbsent(message.shipId, () => BoundedQueue<String>(maxMessagesToDisplay));
     _messagesByShip[message.shipId]!.add(message.message);
     notifyListeners();
   }
 
   void selectShip(String shipId) {
-    print("selected ship $shipId");
     _selectedShip = shipId;
     notifyListeners();
   }

@@ -17,6 +17,7 @@ import org.psu.websocket.dto.ShipMessage;
 import org.psu.websocket.dto.ShipMessage.ShipMessageData;
 import org.psu.websocket.dto.ShipMessageEncoder;
 import org.psu.websocket.dto.ShipTypeMessage;
+import org.psu.websocket.dto.ShipTypeMessageEncoder;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,7 +31,7 @@ import jakarta.websocket.server.ServerEndpoint;
  */
 @ApplicationScoped
 @ServerEndpoint(value = "/staple-update", encoders = { CreditMessageEncoder.class, ShipMessageEncoder.class,
-		ShipEventMessageEncoder.class })
+		ShipEventMessageEncoder.class, ShipTypeMessageEncoder.class })
 public class WebsocketReporter {
 
 	@Inject
@@ -46,6 +47,7 @@ public class WebsocketReporter {
 		this.sessions.add(session);
         sendCreditUpdate(session);
         sendShipUpdate(session);
+        sendShipTypeUpdate(session);
     }
 
     @OnClose
