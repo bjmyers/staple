@@ -70,6 +70,13 @@ public class WebsocketReporter {
 		}
 	}
 
+    public void addShip(final Ship ship) {
+    	this.ships.add(ship);
+		for (Session session : this.sessions) {
+			sendShipUpdate(session);
+		}
+    }
+
     private void sendCreditUpdate(final Session session) {
     	final CreditMessage creditMessage = new CreditMessage(this.creditTotal);
         session.getAsyncRemote().sendObject(creditMessage);
