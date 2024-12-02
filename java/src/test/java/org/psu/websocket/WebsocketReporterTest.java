@@ -5,6 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -115,6 +116,48 @@ public class WebsocketReporterTest {
 		websocketReporter.updateShips(List.of(ship));
 
 		final ShipMessage expectedShipMessage = new ShipMessage(List.of(new ShipMessageData(shipId, ShipRole.TRADE)));
+
+		verify(async1).sendObject(expectedShipMessage);
+		verify(async2).sendObject(expectedShipMessage);
+	}
+
+	/**
+	 * Tests the addShip method
+	 */
+	@Test
+	public void addShip() {
+
+		final Async async1 = mock(Async.class);
+		final Session session1 = mock(Session.class);
+		when(session1.getAsyncRemote()).thenReturn(async1);
+
+		final Async async2 = mock(Async.class);
+		final Session session2 = mock(Session.class);
+		when(session2.getAsyncRemote()).thenReturn(async2);
+
+		final String shipId = "ship";
+		final Ship ship = mock(Ship.class);
+		when(shipRoleManager.determineRole(ship)).thenReturn(ShipRole.TRADE);
+		when(ship.getSymbol()).thenReturn(shipId);
+		final List<Ship> ships = new ArrayList<>();
+		ships.add(ship);
+
+		final String shipId2 = "ship2";
+		final Ship ship2 = mock();
+		when(ship2.getSymbol()).thenReturn(shipId2);
+		when(shipRoleManager.determineRole(ship2)).thenReturn(ShipRole.MINING);
+
+		// Load the first ship before establishing the connections
+		websocketReporter.updateShips(ships);
+
+		websocketReporter.onOpen(session1);
+		websocketReporter.onOpen(session2);
+
+		// Now add the new ship
+		websocketReporter.addShip(ship2);
+
+		final ShipMessage expectedShipMessage = new ShipMessage(List.of(new ShipMessageData(shipId, ShipRole.TRADE),
+				new ShipMessageData(shipId2, ShipRole.MINING)));
 
 		verify(async1).sendObject(expectedShipMessage);
 		verify(async2).sendObject(expectedShipMessage);

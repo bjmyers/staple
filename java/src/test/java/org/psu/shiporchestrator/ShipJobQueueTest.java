@@ -2,6 +2,7 @@ package org.psu.shiporchestrator;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
@@ -21,6 +22,7 @@ import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipType;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
+import org.psu.websocket.WebsocketReporter;
 
 /**
  * Tests for {@link ShipJobQueue}
@@ -33,7 +35,7 @@ public class ShipJobQueueTest {
 	@Test
 	public void emptyQueue() {
 
-		final ShipJobQueue queue = new ShipJobQueue(null, null, null, null);
+		final ShipJobQueue queue = new ShipJobQueue(null, null, null, null, null);
 
 		assertThrows(IllegalStateException.class, () -> queue.beginJobQueue());
 	}
@@ -49,8 +51,9 @@ public class ShipJobQueueTest {
 		final MiningShipManager miningShipManager = mock();
 		final ShipPurchaseManager shipPurchaseManager = mock();
 		final ShipJobCreator shipJobCreator = mock();
+		final WebsocketReporter websocketReporter = mock();
 		final ShipJobQueue queue = new ShipJobQueue(miningShipManager, tradeShipManager, shipPurchaseManager,
-				shipJobCreator);
+				shipJobCreator, websocketReporter);
 
 		final TradeShipJob tradeJob = mock();
 		when(tradeJob.getNextAction()).thenReturn(Instant.now());
@@ -86,8 +89,9 @@ public class ShipJobQueueTest {
 		final MiningShipManager miningShipManager = mock();
 		final ShipPurchaseManager shipPurchaseManager = mock();
 		final ShipJobCreator shipJobCreator = mock();
+		final WebsocketReporter websocketReporter = mock();
 		final ShipJobQueue queue = new ShipJobQueue(miningShipManager, tradeShipManager, shipPurchaseManager,
-				shipJobCreator);
+				shipJobCreator, websocketReporter);
 
 		final ShipPurchaseJob purchaseJob = mock();
 		when(purchaseJob.getNextAction()).thenReturn(Instant.now());
@@ -114,8 +118,9 @@ public class ShipJobQueueTest {
 		final MiningShipManager miningShipManager = mock();
 		final ShipPurchaseManager shipPurchaseManager = mock();
 		final ShipJobCreator shipJobCreator = mock();
+		final WebsocketReporter websocketReporter = mock();
 		final ShipJobQueue queue = new ShipJobQueue(miningShipManager, tradeShipManager, shipPurchaseManager,
-				shipJobCreator);
+				shipJobCreator, websocketReporter);
 
 		final Ship ship = mock();
 
@@ -145,6 +150,7 @@ public class ShipJobQueueTest {
 
 		queue.establishJobs(List.of(purchaseJob));
 		assertThrows(IllegalArgumentException.class, () -> queue.beginJobQueue());
+		verify(websocketReporter).addShip(newShip);
 	}
 
 	/**
@@ -157,8 +163,9 @@ public class ShipJobQueueTest {
 		final MiningShipManager miningShipManager = mock();
 		final ShipPurchaseManager shipPurchaseManager = mock();
 		final ShipJobCreator shipJobCreator = mock();
+		final WebsocketReporter websocketReporter = mock();
 		final ShipJobQueue queue = new ShipJobQueue(miningShipManager, tradeShipManager, shipPurchaseManager,
-				shipJobCreator);
+				shipJobCreator, websocketReporter);
 
 		final Ship ship = mock();
 
@@ -195,8 +202,9 @@ public class ShipJobQueueTest {
 		final MiningShipManager miningShipManager = mock();
 		final ShipPurchaseManager shipPurchaseManager = mock();
 		final ShipJobCreator shipJobCreator = mock();
+		final WebsocketReporter websocketReporter = mock();
 		final ShipJobQueue queue = new ShipJobQueue(miningShipManager, tradeShipManager, shipPurchaseManager,
-				shipJobCreator);
+				shipJobCreator, websocketReporter);
 
 		final TradeShipJob job = mock(TradeShipJob.class);
 		// Give it enough time that it will have to wait

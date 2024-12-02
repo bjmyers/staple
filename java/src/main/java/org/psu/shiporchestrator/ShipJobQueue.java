@@ -2,6 +2,8 @@ package org.psu.shiporchestrator;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -17,6 +19,7 @@ import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipType;
 import org.psu.trademanager.TradeShipManager;
 import org.psu.trademanager.dto.TradeShipJob;
+import org.psu.websocket.WebsocketReporter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -33,17 +36,20 @@ public class ShipJobQueue {
 	private TradeShipManager tradeShipManager;
 	private ShipPurchaseManager shipPurchaseManager;
 	private ShipJobCreator shipJobCreator;
+	private WebsocketReporter websocketReporter;
 
-	final TreeMap<Instant, ShipJob> queue;
+	final TreeMap<Instant, Deque<ShipJob>> queue;
 	final AtomicReference<ShipType> shipTypeToBuy;
 
 	@Inject
 	public ShipJobQueue(final MiningShipManager miningShipManager, final TradeShipManager tradeShipManager,
-			final ShipPurchaseManager shipPurchaseManager, final ShipJobCreator shipJobCreator) {
+			final ShipPurchaseManager shipPurchaseManager, final ShipJobCreator shipJobCreator,
+			final WebsocketReporter websocketReporter) {
 		this.miningShipManager = miningShipManager;
 		this.tradeShipManager = tradeShipManager;
 		this.shipPurchaseManager = shipPurchaseManager;
 		this.shipJobCreator = shipJobCreator;
+		this.websocketReporter = websocketReporter;
 		this.queue = new TreeMap<>();
 		this.shipTypeToBuy = new AtomicReference<ShipType>();
 	}
@@ -63,7 +69,7 @@ public class ShipJobQueue {
 	 */
 	public void establishJobs(final List<? extends ShipJob> jobs) {
 		log.infof("Loading %s jobs into the queue", jobs.size());
-		jobs.forEach(j -> queue.put(j.getNextAction(), j));
+		jobs.forEach(j -> queue.computeIfAbsent(j.getNextAction(), i -> new LinkedList<>()).add(j));
 	}
 
 	public void beginJobQueue() {
@@ -84,16 +90,21 @@ public class ShipJobQueue {
 				}
 			}
 
-			final Entry<Instant, ShipJob> jobToPerform = this.queue.pollFirstEntry();
-			final Ship ship = jobToPerform.getValue().getShip();
+			final Entry<Instant, Deque<ShipJob>> entryToPerform = this.queue.pollFirstEntry();
+			final ShipJob jobToPerform = entryToPerform.getValue().pop();
+			if (!entryToPerform.getValue().isEmpty()) {
+				// Put it back into the queue
+				this.queue.put(entryToPerform.getKey(), entryToPerform.getValue());
+			}
+			final Ship ship = jobToPerform.getShip();
 			ShipJob nextJob = null;
-			if (jobToPerform.getValue() instanceof TradeShipJob tradeJob) {
+			if (jobToPerform instanceof TradeShipJob tradeJob) {
 				nextJob = tradeShipManager.manageTradeShip(tradeJob);
 			}
-			else if (jobToPerform.getValue() instanceof MiningShipJob miningJob) {
+			else if (jobToPerform instanceof MiningShipJob miningJob) {
 				nextJob = miningShipManager.manageMiningShip(miningJob);
 			}
-			else if (jobToPerform.getValue() instanceof ShipPurchaseJob purchaseJob) {
+			else if (jobToPerform instanceof ShipPurchaseJob purchaseJob) {
 				final ShipPurchaseManagerResponse purchaseResponse = shipPurchaseManager.manageShipPurchase(purchaseJob);
 				if (purchaseResponse.nextJob() != null) {
 					// The purchase job has not yet been finished
@@ -102,13 +113,15 @@ public class ShipJobQueue {
 				else {
 					// The purchase job has finished, keeping nextJob null will result in a new job
 					// for ship, but we still need to make an additional job for the new ship
+					websocketReporter.addShip(purchaseResponse.newShip());
 					final ShipJob jobForNewShip = shipJobCreator.createShipJob(purchaseResponse.newShip());
 					log.infof("Created new job for ship %s", jobForNewShip.getShip().getSymbol());
-					this.queue.put(jobForNewShip.getNextAction(), jobForNewShip);
+					this.queue.computeIfAbsent(jobForNewShip.getNextAction(), i -> new LinkedList<>())
+							.add(jobForNewShip);
 				}
 			}
 			else {
-				log.warnf("Unknown job type, %s", jobToPerform.getValue());
+				log.warnf("Unknown job type, %s", jobToPerform);
 			}
 			if (nextJob == null) {
 				// Job has finished, make a new one
@@ -121,7 +134,7 @@ public class ShipJobQueue {
 					nextJob = shipJobCreator.createShipJob(ship);
 				}
 			}
-			this.queue.put(nextJob.getNextAction(), nextJob);
+			this.queue.computeIfAbsent(nextJob.getNextAction(), i -> new LinkedList<>()).add(nextJob);
 		}
 	}
 
