@@ -45,16 +45,15 @@ class MainApp extends StatelessWidget {
           children: [
             Text('Space Traders Automated PLanning Engine', style: titleStyle),
             const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Total Credits: '),
+                Text('Total Credits: ',
+                  style: TextStyle(fontSize: 26),
+                ),
                 CreditDisplayWidget(),
               ],
             ),
-            const Row(
-              children: [
-                ShipPurchaseWidget(),
-              ],
-            ),
+            const ShipPurchaseWidget(),
             const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
