@@ -19,7 +19,7 @@ class ShipEventDisplayWidget extends StatelessWidget {
             color: Colors.grey[200],
             child: Text(
               message,
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 14),
             ),
           );
         }).toList(),
