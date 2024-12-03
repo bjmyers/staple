@@ -19,7 +19,7 @@ void main() {
       ChangeNotifierProvider(create: (_) => CreditState()),
       ChangeNotifierProvider(create: (_) => ShipState()),
       ChangeNotifierProvider(create: (_) => ShipEventState()),
-      ChangeNotifierProvider(create: (_) => ShipTypeState()),
+      ChangeNotifierProvider(create: (_) => ShipPurchaseState()),
       Provider(create: (_) => WebsocketListener(channel: channel)),
     ],
     child: const MainApp()),

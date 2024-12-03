@@ -8,7 +8,6 @@ import 'package:stapleui/ship/event_message.dart';
 import 'package:stapleui/ship/event_state.dart';
 import 'package:stapleui/ship/ship_message.dart';
 import 'package:stapleui/ship/ship_state.dart';
-import 'package:stapleui/ship/ship_type_message.dart';
 import 'package:stapleui/ship/ship_type_state.dart';
 import 'package:stapleui/websocket_listener.dart';
 
@@ -17,7 +16,7 @@ import 'utils/mock_websocket_channel.dart';
 class MockCreditState extends Mock implements CreditState {}
 class MockShipState extends Mock implements ShipState {}
 class MockShipEventState extends Mock implements ShipEventState {}
-class MockShipTypeState extends Mock implements ShipTypeState {}
+class MockShipPurchaseState extends Mock implements ShipPurchaseState {}
 
 void main() {
 
@@ -26,7 +25,7 @@ void main() {
     late MockCreditState mockCreditState;
     late MockShipState mockShipState;
     late MockShipEventState mockShipEventState;
-    late MockShipTypeState mockShipTypeState;
+    late MockShipPurchaseState mockShipPurchaseState;
     late MockWebSocketChannel mockChannel;
     late WebsocketListener instance;
 
@@ -34,7 +33,7 @@ void main() {
       mockCreditState = MockCreditState();
       mockShipState = MockShipState();
       mockShipEventState = MockShipEventState();
-      mockShipTypeState = MockShipTypeState();
+      mockShipPurchaseState = MockShipPurchaseState();
       mockChannel = MockWebSocketChannel();
       instance = WebsocketListener(channel: mockChannel);
     });
@@ -50,7 +49,7 @@ void main() {
             ChangeNotifierProvider<CreditState>.value(value: mockCreditState),
             ChangeNotifierProvider<ShipState>.value(value: mockShipState),
             ChangeNotifierProvider<ShipEventState>.value(value: mockShipEventState),
-            ChangeNotifierProvider<ShipTypeState>.value(value: mockShipTypeState),
+            ChangeNotifierProvider<ShipPurchaseState>.value(value: mockShipPurchaseState),
           ],
           child: Builder(
             builder: (context) {
@@ -81,7 +80,7 @@ void main() {
             ChangeNotifierProvider<CreditState>.value(value: mockCreditState),
             ChangeNotifierProvider<ShipState>.value(value: mockShipState),
             ChangeNotifierProvider<ShipEventState>.value(value: mockShipEventState),
-            ChangeNotifierProvider<ShipTypeState>.value(value: mockShipTypeState),
+            ChangeNotifierProvider<ShipPurchaseState>.value(value: mockShipPurchaseState),
           ],
           child: Builder(
             builder: (context) {
@@ -112,7 +111,7 @@ void main() {
             ChangeNotifierProvider<CreditState>.value(value: mockCreditState),
             ChangeNotifierProvider<ShipState>.value(value: mockShipState),
             ChangeNotifierProvider<ShipEventState>.value(value: mockShipEventState),
-            ChangeNotifierProvider<ShipTypeState>.value(value: mockShipTypeState),
+            ChangeNotifierProvider<ShipPurchaseState>.value(value: mockShipPurchaseState),
           ],
           child: Builder(
             builder: (context) {
@@ -127,7 +126,7 @@ void main() {
       verify(mockShipEventState.addMessage(expectedShipEventMessage)).called(1);
     });
 
-    testWidgets('updates ShipTypeState when receiving Ship Type message', (WidgetTester tester) async {
+    testWidgets('updates ShipPurchaseState when receiving Ship Type message', (WidgetTester tester) async {
       final shipMessage = jsonEncode({
         "type": "ShipTypes",
         "shipTypes": ["typeA", "typeB"],
@@ -141,7 +140,7 @@ void main() {
             ChangeNotifierProvider<CreditState>.value(value: mockCreditState),
             ChangeNotifierProvider<ShipState>.value(value: mockShipState),
             ChangeNotifierProvider<ShipEventState>.value(value: mockShipEventState),
-            ChangeNotifierProvider<ShipTypeState>.value(value: mockShipTypeState),
+            ChangeNotifierProvider<ShipPurchaseState>.value(value: mockShipPurchaseState),
           ],
           child: Builder(
             builder: (context) {
@@ -153,7 +152,36 @@ void main() {
       );
 
       final expectedShipTypes = ["typeA", "typeB"];
-      verify(mockShipTypeState.updateShipTypes(expectedShipTypes)).called(1);
+      verify(mockShipPurchaseState.updateShipTypes(expectedShipTypes)).called(1);
+    });
+
+    testWidgets('updates ShipPurchaseState when receiving purchaseStatus message', (WidgetTester tester) async {
+      final statusMessage = jsonEncode({
+        "type": "purchaseStatus",
+        "message": "buying shippy",
+      });
+
+      mockChannel.addMessage(statusMessage);
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<CreditState>.value(value: mockCreditState),
+            ChangeNotifierProvider<ShipState>.value(value: mockShipState),
+            ChangeNotifierProvider<ShipEventState>.value(value: mockShipEventState),
+            ChangeNotifierProvider<ShipPurchaseState>.value(value: mockShipPurchaseState),
+          ],
+          child: Builder(
+            builder: (context) {
+              instance.listen(context);
+              return Container();
+            },
+          ),
+        ),
+      );
+
+      const expectedMessage = "buying shippy";
+      verify(mockShipPurchaseState.updateMessage(expectedMessage)).called(1);
     });
   });
 }

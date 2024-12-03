@@ -16,7 +16,7 @@ class ShipPurchaseWidgetState extends State<ShipPurchaseWidget> {
   
   @override
   Widget build(BuildContext context) {
-    final shipTypes = Provider.of<ShipTypeState>(context).shipTypes;
+    final shipPurchaseState = Provider.of<ShipPurchaseState>(context);
     return Row(
       children: [
         DropdownButton<String>(
@@ -29,7 +29,7 @@ class ShipPurchaseWidgetState extends State<ShipPurchaseWidget> {
               dropdownValue = value!;
             });
           },
-          items: shipTypes.map<DropdownMenuItem<String>>((String value) {
+          items: shipPurchaseState.shipTypes.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(value),
@@ -37,9 +37,13 @@ class ShipPurchaseWidgetState extends State<ShipPurchaseWidget> {
           }).toList(),
         ),
         ElevatedButton(
-          onPressed: () => {purchaseShip(dropdownValue)},
+          onPressed: () {
+            purchaseShip(dropdownValue);
+            shipPurchaseState.updateMessage("Waiting on Ship to Start Purchase Job");
+          },
           child: const Text("Purchase Ship"),
         ),
+        Text(shipPurchaseState.message),
       ],
     );
   }
