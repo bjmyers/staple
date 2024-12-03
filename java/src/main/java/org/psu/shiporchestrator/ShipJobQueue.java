@@ -114,6 +114,8 @@ public class ShipJobQueue {
 					// The purchase job has finished, keeping nextJob null will result in a new job
 					// for ship, but we still need to make an additional job for the new ship
 					websocketReporter.addShip(purchaseResponse.newShip());
+					websocketReporter
+							.firePurchaseStatusEvent("Purchased Ship " + purchaseResponse.newShip().getSymbol());
 					final ShipJob jobForNewShip = shipJobCreator.createShipJob(purchaseResponse.newShip());
 					log.infof("Created new job for ship %s", jobForNewShip.getShip().getSymbol());
 					this.queue.computeIfAbsent(jobForNewShip.getNextAction(), i -> new LinkedList<>())
@@ -128,6 +130,8 @@ public class ShipJobQueue {
 				if (this.shipTypeToBuy.get() != null) {
 					nextJob = shipPurchaseManager.createShipPurchaseJob(ship, this.shipTypeToBuy.get());
 					log.infof("Created Job for ship %s to Purchase %s", ship.getSymbol(), this.shipTypeToBuy.get());
+					websocketReporter.firePurchaseStatusEvent(
+							"Ship " + ship.getSymbol() + " beginning job to purchase new ship");
 					this.shipTypeToBuy.set(null);
 				}
 				else {

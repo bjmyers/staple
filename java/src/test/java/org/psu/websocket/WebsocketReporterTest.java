@@ -18,6 +18,7 @@ import org.psu.shiporchestrator.ShipRoleManager;
 import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipType;
 import org.psu.websocket.dto.CreditMessage;
+import org.psu.websocket.dto.PurchaseStatusMessage;
 import org.psu.websocket.dto.ShipEventMessage;
 import org.psu.websocket.dto.ShipMessage;
 import org.psu.websocket.dto.ShipMessage.ShipMessageData;
@@ -246,6 +247,33 @@ public class WebsocketReporterTest {
 		websocketReporter.fireShipEvent(shipId, message);
 
 		final ShipEventMessage expectedMessage = new ShipEventMessage(shipId, message);
+
+		verify(async1).sendObject(expectedMessage);
+		verify(async2).sendObject(expectedMessage);
+	}
+
+	/**
+	 * Tests firePurchaseStatusEvent
+	 */
+	@Test
+	public void firePurchaseStatusEvent() {
+
+		final Async async1 = mock(Async.class);
+		final Session session1 = mock(Session.class);
+		when(session1.getAsyncRemote()).thenReturn(async1);
+
+		final Async async2 = mock(Async.class);
+		final Session session2 = mock(Session.class);
+		when(session2.getAsyncRemote()).thenReturn(async2);
+
+		websocketReporter.onOpen(session1);
+		websocketReporter.onOpen(session2);
+
+		final String message = "Shippy-1 was purchased!";
+
+		websocketReporter.firePurchaseStatusEvent(message);
+
+		final PurchaseStatusMessage expectedMessage = new PurchaseStatusMessage(message);
 
 		verify(async1).sendObject(expectedMessage);
 		verify(async2).sendObject(expectedMessage);

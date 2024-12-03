@@ -11,6 +11,8 @@ import org.psu.spacetraders.dto.Ship;
 import org.psu.spacetraders.dto.ShipType;
 import org.psu.websocket.dto.CreditMessage;
 import org.psu.websocket.dto.CreditMessageEncoder;
+import org.psu.websocket.dto.PurchaseStatusMessage;
+import org.psu.websocket.dto.PurchaseStatusMessageEncoder;
 import org.psu.websocket.dto.ShipEventMessage;
 import org.psu.websocket.dto.ShipEventMessageEncoder;
 import org.psu.websocket.dto.ShipMessage;
@@ -31,7 +33,7 @@ import jakarta.websocket.server.ServerEndpoint;
  */
 @ApplicationScoped
 @ServerEndpoint(value = "/staple-update", encoders = { CreditMessageEncoder.class, ShipMessageEncoder.class,
-		ShipEventMessageEncoder.class, ShipTypeMessageEncoder.class })
+		ShipEventMessageEncoder.class, ShipTypeMessageEncoder.class, PurchaseStatusMessageEncoder.class })
 public class WebsocketReporter {
 
 	@Inject
@@ -59,6 +61,13 @@ public class WebsocketReporter {
     	final ShipEventMessage eventMessage = new ShipEventMessage(shipId, message);
     	for (Session session : this.sessions) {
     		session.getAsyncRemote().sendObject(eventMessage);
+    	}
+    }
+
+    public void firePurchaseStatusEvent(final String message) {
+    	final PurchaseStatusMessage statusMessage = new PurchaseStatusMessage(message);
+    	for (Session session : this.sessions) {
+    		session.getAsyncRemote().sendObject(statusMessage);
     	}
     }
 
